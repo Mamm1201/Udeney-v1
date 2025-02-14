@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+<!-- Asegúrate de que esto coincida con tu estructura -->
+
+{% block content %}
+<div class="container mt-4">
+  <h2>Crear una cuenta</h2>
+  <form method="POST">
+    {% csrf_token %} {{ form.as_p }}
+    <!-- Renderiza el formulario automáticamente -->
+    <button type="submit" class="btn btn-primary">Registrarse</button>
+  </form>
+</div>
+{% endblock %}
