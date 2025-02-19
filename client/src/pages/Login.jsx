@@ -1,107 +1,105 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; // Importamos useNavigate para redirección
-import axios from "axios";
-import { FormControl, InputLabel, Select, MenuItem } from "@mui/material"; // Corrección en los componentes de Material-UI
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom"; // Para la redirección
+import {
+  TextField,
+  Button,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
+} from "@mui/material";
 
-const Login = () => {
+const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [roles, setRoles] = useState([]);
-  const [selectedRole, setSelectedRole] = useState(""); // Estado para almacenar el rol seleccionado
-  const navigate = useNavigate(); // Hook para la redirección
+  const [role, setRole] = useState("");
+  const navigate = useNavigate(); // Hook para redireccionar
 
-  useEffect(() => {
-    const fetchRoles = async () => {
-      try {
-        const rolesResponse = await axios.get("http://127.0.0.1:8000/roles/");
-        console.log("Roles:", rolesResponse.data);
-        setRoles(rolesResponse.data);
-      } catch (error) {
-        console.error("Error al obtener roles:", error);
+  const handleLogin = (e) => {
+    e.preventDefault(); // Evita el comportamiento por defecto del formulario
+
+    console.log({ email, password, role });
+
+    // Simulación de autenticación
+    if (email && password && role) {
+      if (role === "vendedor") {
+        navigate("/crear-articulo"); // Redirige si es vendedor
+      } else if (role === "comprador") {
+        navigate("/articulos"); // Redirige si es comprador a la sección de articulos
       }
-    };
-    fetchRoles();
-  }, []);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await axios.post("http://127.0.0.1:8000/usuarios/", {
-        email,
-        password,
-      });
-
-      const userRole = response.data.rol; // Suponiendo que el backend devuelve el rol del usuario
-      console.log("Usuario autenticado con rol:", userRole);
-
-      // Redirigir según el rol
-      if (userRole === "vendedor") {
-        navigate("/crear-articulo");
-      } else if (userRole === "comprador") {
-        navigate("/articulos");
-      } else {
-        console.error("Rol no reconocido");
-      }
-    } catch (error) {
-      console.error("Error en autenticación:", error);
+    } else {
+      alert("Por favor, completa todos los campos.");
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="bg-white shadow-md rounded p-8 max-w-md w-full">
-        <h2 className="text-2xl font-bold mb-6">Iniciar sesión</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block text-gray-700">Correo electrónico</label>
-            <input
-              type="email"
-              className="w-full p-2 border rounded mt-1"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-          <div className="mb-6">
-            <label className="block text-gray-700">Contraseña</label>
-            <input
-              type="password"
-              className="w-full p-2 border rounded mt-1"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
+    <form
+      onSubmit={handleLogin}
+      style={{
+        width: "350px",
+        margin: "auto",
+        padding: "25px",
+        textAlign: "center",
+        borderRadius: "10px",
+        boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
+        backgroundColor: "#fff",
+      }}
+    >
+      <h2>Iniciar Sesión</h2>
 
-          <FormControl variant="outlined" margin="normal" fullWidth>
-            <InputLabel>Roles</InputLabel>
-            <Select
-              value={selectedRole}
-              onChange={(e) => setSelectedRole(e.target.value)}
-              label="Roles"
-            >
-              {roles.map((rol) => (
-                <MenuItem key={rol.id_rol} value={rol.tipo_rol}>
-                  {rol.tipo_rol}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+      <TextField
+        label="Correo Electrónico"
+        variant="outlined"
+        fullWidth
+        margin="normal"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        InputProps={{ style: { fontSize: "18px", padding: "14px" } }}
+        InputLabelProps={{ style: { fontSize: "16px" } }}
+      />
 
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
-          >
-            Iniciar sesión
-          </button>
-        </form>
-        <p className="text-sm text-gray-600 mt-4">
-          ¿No tienes una cuenta?{" "}
-          <a href="/register" className="text-blue-600 hover:underline">
-            Regístrate aquí
-          </a>
-        </p>
-      </div>
-    </div>
+      <TextField
+        type="password"
+        label="Contraseña"
+        name="password"
+        autoComplete="current-password"
+        variant="outlined"
+        fullWidth
+        margin="normal"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        InputProps={{ style: { fontSize: "18px", padding: "14px" } }}
+        InputLabelProps={{ style: { fontSize: "16px" } }}
+      />
+
+      <FormControl fullWidth margin="normal">
+        <InputLabel style={{ fontSize: "16px" }}>Seleccionar Rol</InputLabel>
+        <Select
+          value={role}
+          onChange={(e) => setRole(e.target.value)}
+          variant="outlined"
+          style={{ fontSize: "18px", padding: "14px" }}
+        >
+          <MenuItem value="vendedor" style={{ fontSize: "16px" }}>
+            Vendedor
+          </MenuItem>
+          <MenuItem value="comprador" style={{ fontSize: "16px" }}>
+            Comprador
+          </MenuItem>
+        </Select>
+      </FormControl>
+
+      <Button
+        type="submit"
+        variant="contained"
+        color="primary"
+        fullWidth
+        style={{ fontSize: "18px", padding: "12px", marginTop: "10px" }}
+      >
+        Iniciar Sesión
+      </Button>
+    </form>
   );
 };
 
-export default Login;
+export default LoginForm;
