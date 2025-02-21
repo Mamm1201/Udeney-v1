@@ -79,10 +79,10 @@ WSGI_APPLICATION = 'mycrud.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql', # Motor de base de datos
-        'NAME': 'db_ecommerce', # Nombre base de datos
-        'USER': 'root', # Usuario de la base de datos
-        'PASSWORD': 'Mario1201*', # Contraseña del usuario
-        'HOST': 'localhost', # Direccion del servidor
+        'NAME': 'bgofqpuewoawpnzkvarx', # Nombre base de datos
+        'USER': 'utbuqehwwtzcxr2o', # Usuario de la base de datos
+        'PASSWORD': 'A8iKh0jknDNrXJKmOeHb', # Contraseña del usuario
+        'HOST': 'bgofqpuewoawpnzkvarx-mysql.services.clever-cloud.com', # Direccion del servidor
         'PORT': '3306', # Puerto del servidor de mysql
     }
 }
