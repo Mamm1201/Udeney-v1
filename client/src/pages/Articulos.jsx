@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { getAllArticulos } from "../api/articulos.api";
+import { Link } from "react-router-dom"; // Importamos Link
 import Navbar from "../components/Navbar";
-import Pie from "../components/Pie"; // Cambiamos "Pie" por "Footer"
+import Pie from "../components/Pie";
 import {
   Box,
   Typography,
@@ -22,17 +23,17 @@ const Articulos = () => {
 
   return (
     <>
-      <Navbar /> {/* Renderizar el Navbar */}
+      <Navbar />
       <Container
         maxWidth="md"
         sx={{
-          minHeight: "80vh", // Espacio suficiente para dejar margen para el footer
+          minHeight: "80vh",
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
           padding: "16px",
-          backgroundColor: "#f5f5f5", // Fondo claro
+          backgroundColor: "#f5f5f5",
           borderRadius: "8px",
           marginTop: "24px",
         }}
@@ -42,7 +43,7 @@ const Articulos = () => {
           gutterBottom
           sx={{
             fontWeight: "bold",
-            color: "#1976d2", // Azul de Material-UI
+            color: "#1976d2",
             textAlign: "center",
           }}
         >
@@ -61,15 +62,53 @@ const Articulos = () => {
             {articulos.length > 0 ? (
               articulos.map((articulo) => (
                 <ListItem
-                  key={articulo.id}
+                  key={articulo.id_articulo}
+                  component={Link} // Hacemos que sea un Link
+                  to={`/articulos/${articulo.id_articulo}`} // Redirige al detalle del artículo
                   sx={{
                     borderBottom: "1px solid #ddd",
                     "&:last-child": { borderBottom: "none" },
+                    cursor: "pointer",
+                    textDecoration: "none",
+                    color: "inherit",
+                    "&:hover": {
+                      backgroundColor: "#f0f0f0",
+                    },
                   }}
                 >
                   <ListItemText
-                    primary={articulo.titulo_articulo}
-                    secondary={`ID: ${articulo.id}`}
+                    primary={
+                      <Typography variant="h6" fontWeight="bold">
+                        {articulo.titulo_articulo}
+                      </Typography>
+                    }
+                    secondary={
+                      <>
+                        <Typography
+                          component="span"
+                          variant="body2"
+                          color="textSecondary"
+                        >
+                          {articulo.descripcion_articulo}
+                        </Typography>
+                        {articulo.institucion_articulo && (
+                          <Typography
+                            component="span"
+                            variant="body2"
+                            color="textSecondary"
+                          >
+                            {" • Institución: " + articulo.institucion_articulo}
+                          </Typography>
+                        )}
+                        <Typography
+                          variant="body1"
+                          fontWeight="bold"
+                          color="primary"
+                        >
+                          ${articulo.precio_articulo}
+                        </Typography>
+                      </>
+                    }
                   />
                 </ListItem>
               ))
@@ -85,7 +124,7 @@ const Articulos = () => {
           </List>
         </Box>
       </Container>
-      <Pie /> {/* Renderizar el Footer */}
+      <Pie />
     </>
   );
 };
