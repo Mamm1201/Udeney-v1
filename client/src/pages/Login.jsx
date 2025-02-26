@@ -68,8 +68,6 @@ const LoginForm = () => {
         margin="normal"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        InputProps={{ style: { fontSize: "18px", padding: "14px" } }}
-        InputLabelProps={{ style: { fontSize: "16px" } }}
       />
 
       <FormControl fullWidth margin="normal">
