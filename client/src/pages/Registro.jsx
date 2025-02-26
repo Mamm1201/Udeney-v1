@@ -1,8 +1,11 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom"; // Importa useNavigate
 import axios from "axios";
 import { TextField, Button, Box, Typography } from "@mui/material";
 
 const Registro = () => {
+  const navigate = useNavigate(); // Hook para redirección
+
   const [formData, setFormData] = useState({
     nombres_usuario: "",
     apellidos_usuario: "",
@@ -19,7 +22,7 @@ const Registro = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(formData); // Imprimir los datos que se enviarán
+    console.log(formData);
     try {
       const response = await axios.post(
         "http://127.0.0.1:8000/usuarios/",
@@ -34,6 +37,9 @@ const Registro = () => {
           email_usuario: "",
           contraseña_usuario: "",
         });
+
+        // Redirigir al usuario a /articulos
+        navigate("/articulos");
       } else {
         alert("Error al crear usuario: " + JSON.stringify(response.data));
       }

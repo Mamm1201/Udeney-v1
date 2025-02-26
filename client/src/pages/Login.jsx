@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; // Para la redirección
+import { useNavigate } from "react-router-dom";
 import {
   TextField,
   Button,
@@ -7,25 +7,26 @@ import {
   MenuItem,
   InputLabel,
   FormControl,
+  Typography,
+  Link,
 } from "@mui/material";
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("");
-  const navigate = useNavigate(); // Hook para redireccionar
+  const navigate = useNavigate();
 
   const handleLogin = (e) => {
-    e.preventDefault(); // Evita el comportamiento por defecto del formulario
+    e.preventDefault();
 
     console.log({ email, password, role });
 
-    // Simulación de autenticación
     if (email && password && role) {
       if (role === "vendedor") {
-        navigate("/crear-articulo"); // Redirige si es vendedor
+        navigate("/crear-articulo");
       } else if (role === "comprador") {
-        navigate("/articulos"); // Redirige si es comprador a la sección de articulos
+        navigate("/articulos");
       }
     } else {
       alert("Por favor, completa todos los campos.");
@@ -54,14 +55,11 @@ const LoginForm = () => {
         margin="normal"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        InputProps={{ style: { fontSize: "18px", padding: "14px" } }}
-        InputLabelProps={{ style: { fontSize: "16px" } }}
       />
 
       <TextField
         type="password"
         label="Contraseña"
-        name="password"
         autoComplete="current-password"
         variant="outlined"
         fullWidth
@@ -71,19 +69,14 @@ const LoginForm = () => {
       />
 
       <FormControl fullWidth margin="normal">
-        <InputLabel style={{ fontSize: "16px" }}>Seleccionar Rol</InputLabel>
+        <InputLabel>Seleccionar Rol</InputLabel>
         <Select
           value={role}
           onChange={(e) => setRole(e.target.value)}
           variant="outlined"
-          style={{ fontSize: "18px", padding: "14px" }}
         >
-          <MenuItem value="vendedor" style={{ fontSize: "16px" }}>
-            Vendedor
-          </MenuItem>
-          <MenuItem value="comprador" style={{ fontSize: "16px" }}>
-            Comprador
-          </MenuItem>
+          <MenuItem value="vendedor">Vendedor</MenuItem>
+          <MenuItem value="comprador">Comprador</MenuItem>
         </Select>
       </FormControl>
 
@@ -92,10 +85,23 @@ const LoginForm = () => {
         variant="contained"
         color="primary"
         fullWidth
-        style={{ fontSize: "18px", padding: "12px", marginTop: "10px" }}
+        style={{ marginTop: "10px" }}
       >
         Iniciar Sesión
       </Button>
+
+      {/* Mensaje para redirigir al usuario al registro */}
+      <Typography variant="body2" style={{ marginTop: "15px" }}>
+        ¿Aún no tienes cuenta?{" "}
+        <Link
+          component="button"
+          variant="body2"
+          onClick={() => navigate("/registro")}
+          style={{ fontWeight: "bold" }}
+        >
+          Regístrate aquí
+        </Link>
+      </Typography>
     </form>
   );
 };
