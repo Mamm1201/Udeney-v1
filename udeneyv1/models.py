@@ -2,6 +2,9 @@ from django.db import models
 
 
 # MODELO TABLA USUARIOS
+
+from django.db import models
+
 class Usuarios(models.Model):
     id_usuario = models.AutoField(primary_key=True)
     nombres_usuario = models.CharField(max_length=255)
@@ -9,10 +12,15 @@ class Usuarios(models.Model):
     email_usuario = models.EmailField(unique=True)
     contraseña_usuario = models.CharField(max_length=255)
     fecha_registro = models.DateField(auto_now_add=True)
+    fecha_nacimiento = models.DateField(null=True, blank=True)  # Nuevo campo
+    telefono_usuario = models.CharField(max_length=20)  # Nuevo campo
+    direccion_usuario = models.CharField(max_length=255)  # Nuevo campo
+    
 
     class Meta:
         db_table = "usuarios"  # Asegúrate de usar el nombre correcto de la tabla
         managed = False  # Django no intentará crear esta tabla
+
 
 
 # MODELO PARA TABLA ROLES

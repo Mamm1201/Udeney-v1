@@ -8,6 +8,13 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
 
+from rest_framework import status
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth import get_user_model
+from rest_framework.decorators import api_view
+from django.contrib.auth.models import User
+from django.contrib.auth.hashers import make_password
+
 # Importaciones de modelos y serializers
 from .models import (
     Usuarios,
@@ -35,7 +42,28 @@ from .serializers import (
 )
 
 
+
+
+# ULTIMA VISTA PARA AUTENTICACIÓN DE USUARIO
+@api_view(["POST"])
+def register(request):
+    try:
+        username = request.data["username"]
+        password = request.data["password"]
+        
+        if User.objects.filter(username=username).exists():
+            return Response({"error": "El usuario ya existe."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        user = User.objects.create(username=username, password=make_password(password))
+        return Response({"message": "Usuario registrado correctamente"}, status=status.HTTP_201_CREATED)
+    
+    except KeyError:
+        return Response({"error": "Faltan datos en la solicitud."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
 # VISTA PARA REGISTRO DE USUARIO
+#@APIView(['POST'])
 def register(request):
     if request.method == "POST":
         form = UserCreationForm(request.POST)
@@ -45,33 +73,71 @@ def register(request):
             return redirect(
                 "login"
             )  # Asegúrate de que 'login' está definido en tus URLs
+            
     else:
         form = UserCreationForm()
     return render(
         request, "registro.html", {"form": form}
-    )  # Asegúrate de que tienes esta plantilla
+        
+    )  
 
 
 # VISTA PARA LOGIN DE USUARIO
+
+User = get_user_model()
+
 class LoginView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        username = request.data.get("username")
+        email = request.data.get("email")  # Cambia username por email
         password = request.data.get("password")
-        user = authenticate(request, username=username, password=password)
 
-        if user is not None:
-            login(request, user)
-            token, _ = Token.objects.get_or_create(user=user)
-            return Response(
-                {"message": "Inicio de sesión exitoso", "token": token.key},
-                status=status.HTTP_200_OK,
-            )
-        else:
-            return Response(
-                {"error": "Credenciales inválidas"}, status=status.HTTP_401_UNAUTHORIZED
-            )
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+
+        if not user.check_password(password):
+            return Response({"error": "Contraseña incorrecta"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        refresh = RefreshToken.for_user(user)
+
+        return Response(
+            {
+                "message": "Inicio de sesión exitoso",
+                "access_token": str(refresh.access_token),
+                "refresh_token": str(refresh),
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+# class LoginView(APIView):
+#     permission_classes = [AllowAny]
+
+#     def post(self, request):
+#         username = request.data.get("username")
+#         password = request.data.get("password")
+#         user = authenticate(request, username=username, password=password)
+
+#         if user is not None:
+#             login(request, user)
+#             token, _ = Token.objects.get_or_create(user=user)
+#             return Response(
+#                 {"message": "Inicio de sesión exitoso", "token": token.key},
+#                 status=status.HTTP_200_OK,
+#             )
+#         else:
+#             return Response(
+#                 {"error": "Credenciales inválidas"}, status=status.HTTP_401_UNAUTHORIZED
+#             )
+            
+
+# class LogoutView(APIView):
+#     def post(self, request):
+#         request.auth.delete()  # Elimina el token actual
+#         return Response({'message': 'Sesión cerrada correctamente'})            
 
 
 # VISTA PARA CERRAR SESIÓN

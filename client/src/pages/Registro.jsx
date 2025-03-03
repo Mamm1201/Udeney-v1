@@ -1,16 +1,19 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; // Importa useNavigate
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { TextField, Button, Box, Typography } from "@mui/material";
 
 const Registro = () => {
-  const navigate = useNavigate(); // Hook para redirección
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     nombres_usuario: "",
     apellidos_usuario: "",
     email_usuario: "",
     contraseña_usuario: "",
+    fecha_nacimiento: "",
+    telefono_usuario: "",
+    direccion_usuario: "",
   });
 
   const handleChange = (e) => {
@@ -22,7 +25,21 @@ const Registro = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(formData);
+
+    // Validaciones rápidas
+    if (
+      !formData.nombres_usuario ||
+      !formData.apellidos_usuario ||
+      !formData.email_usuario ||
+      !formData.contraseña_usuario ||
+      !formData.fecha_nacimiento ||
+      !formData.telefono_usuario ||
+      !formData.direccion_usuario
+    ) {
+      alert("Por favor, completa todos los campos obligatorios.");
+      return;
+    }
+
     try {
       const response = await axios.post(
         "http://127.0.0.1:8000/usuarios/",
@@ -36,9 +53,11 @@ const Registro = () => {
           apellidos_usuario: "",
           email_usuario: "",
           contraseña_usuario: "",
+          fecha_nacimiento: "",
+          telefono_usuario: "",
+          direccion_usuario: "",
         });
 
-        // Redirigir al usuario a /articulos
         navigate("/articulos");
       } else {
         alert("Error al crear usuario: " + JSON.stringify(response.data));
@@ -57,7 +76,7 @@ const Registro = () => {
         alignItems: "center",
         justifyContent: "center",
         minHeight: "100vh",
-        padding: 2,
+        padding: 3,
         backgroundColor: "#f4f6f8",
       }}
     >
@@ -85,6 +104,7 @@ const Registro = () => {
           onChange={handleChange}
           variant="outlined"
           margin="normal"
+          required
         />
         <TextField
           label="Apellidos"
@@ -93,6 +113,7 @@ const Registro = () => {
           onChange={handleChange}
           variant="outlined"
           margin="normal"
+          required
         />
         <TextField
           label="Email"
@@ -102,6 +123,7 @@ const Registro = () => {
           variant="outlined"
           margin="normal"
           type="email"
+          required
         />
         <TextField
           label="Contraseña"
@@ -111,16 +133,42 @@ const Registro = () => {
           variant="outlined"
           margin="normal"
           type="password"
+          autoComplete="current-password"
+          required
         />
+        <TextField
+          label="Teléfono"
+          name="telefono_usuario"
+          value={formData.telefono_usuario}
+          onChange={handleChange}
+          variant="outlined"
+          margin="normal"
+          type="tel"
+        />
+        <TextField
+          label="Dirección"
+          name="direccion_usuario"
+          value={formData.direccion_usuario}
+          onChange={handleChange}
+          variant="outlined"
+          margin="normal"
+        />
+        <TextField
+          label="Fecha de Nacimiento"
+          name="fecha_nacimiento"
+          value={formData.fecha_nacimiento}
+          onChange={handleChange}
+          variant="outlined"
+          margin="normal"
+          type="date"
+          InputLabelProps={{ shrink: true }}
+        />
+
         <Button
           type="submit"
           variant="contained"
           color="primary"
-          sx={{
-            marginTop: 2,
-            padding: "10px 0",
-            fontSize: "16px",
-          }}
+          sx={{ marginTop: 2, padding: "10px 0", fontSize: "16px" }}
         >
           Crear Usuario
         </Button>
