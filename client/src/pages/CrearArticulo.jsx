@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import NavbarVender from "../components/NavbarVender";
+import Reverse from "../components/Reverse";
 import axios from "axios";
 import {
   TextField,
@@ -96,9 +98,13 @@ const CrearArticulo = () => {
         backgroundColor: "#f4f6f8",
       }}
     >
-      <Typography variant="h4" gutterBottom>
+      <div>
+        <NavbarVender />
+      </div>
+      {/* <Typography variant="h4" gutterBottom>
         Crear Nuevo Artículo
-      </Typography>
+      </Typography> */}
+
       <Box
         component="form"
         onSubmit={handleSubmit}
@@ -186,13 +192,17 @@ const CrearArticulo = () => {
           variant="contained"
           color="primary"
           sx={{
+            borderRadius: 4, // Aumenta el radio
             marginTop: 2,
             padding: "10px 0",
             fontSize: "16px",
           }}
         >
-          Crear Artículo
+          Subir Artículo
         </Button>
+        <div>
+          <Reverse />
+        </div>
       </Box>
     </Box>
   );
