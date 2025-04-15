@@ -1,88 +1,107 @@
 import React, { useState, useEffect } from "react";
 import NavbarVender from "../components/NavbarVender";
-import Reverse from "../components/Reverse";
-import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import {
   TextField,
   Button,
   Box,
-  Typography,
   MenuItem,
   Select,
   InputLabel,
   FormControl,
+  Snackbar,
+  Alert,
 } from "@mui/material";
+import { getCategorias, crearArticulo } from "../api/articulos.api";
 
 const CrearArticulo = () => {
+  const navigate = useNavigate();
+
+  // Obtenemos datos del usuario logueado desde localStorage
+  const idUsuario = localStorage.getItem("id_usuario");
+  const nombreUsuario = localStorage.getItem("nombres_usuario");
+
+  // Estado para el formulario, con el ID del usuario ya cargado
   const [formData, setFormData] = useState({
     titulo_articulo: "",
     descripcion_articulo: "",
     institucion_articulo: "",
     precio_articulo: "",
     id_categoria: "",
-    id_usuario: "",
+    id_usuario: parseInt(idUsuario),
   });
 
-  const [categorias, setCategorias] = useState([]);
-  const [usuarios, setUsuarios] = useState([]);
+  const [imagen, setImagen] = useState(null); // Imagen seleccionada
+  const [categorias, setCategorias] = useState([]); // Lista de categorías
+  const [articuloCreado, setArticuloCreado] = useState(null); // Artículo creado
+  const [snackbarOpen, setSnackbarOpen] = useState(false); // Estado del snackbar
 
+  // Cargar categorías al montar el componente
   useEffect(() => {
-    const fetchCategoriasYUsuarios = async () => {
+    const fetchCategorias = async () => {
       try {
-        const categoriasResponse = await axios.get(
-          "http://127.0.0.1:8000/categorias/"
-        );
-        const usuariosResponse = await axios.get(
-          "http://127.0.0.1:8000/usuarios/"
-        );
-
-        console.log("Categorías:", categoriasResponse.data);
-        console.log("Usuarios:", usuariosResponse.data);
-
-        setCategorias(categoriasResponse.data);
-        setUsuarios(usuariosResponse.data);
+        const res = await getCategorias();
+        console.log("Categorías recibidas:", res.data); // 👈 Asegúrate que esto muestra un array
+        setCategorias(res.data);
       } catch (error) {
-        console.error("Error al obtener categorías o usuarios:", error);
+        console.error("Error al obtener categorías:", error);
       }
     };
-    fetchCategoriasYUsuarios();
+    fetchCategorias();
   }, []);
 
+  // Actualizar campos del formulario
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]:
-        name === "id_categoria" || name === "id_usuario"
-          ? parseInt(value)
-          : value,
-    });
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: name === "id_categoria" ? parseInt(value) : value,
+    }));
   };
 
+  // Manejar selección de imagen
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImagen(file);
+    }
+  };
+
+  // Enviar formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      const response = await axios.post(
-        "http://127.0.0.1:8000/articulos/",
-        formData
-      );
 
+    const data = new FormData();
+    data.append("titulo_articulo", formData.titulo_articulo);
+    data.append("descripcion_articulo", formData.descripcion_articulo);
+    data.append("institucion_articulo", formData.institucion_articulo);
+    data.append("precio_articulo", formData.precio_articulo);
+    data.append("id_categoria", formData.id_categoria);
+    data.append("id_usuario", formData.id_usuario);
+    if (imagen) {
+      data.append("imagen", imagen); // adjuntamos la imagen
+    }
+
+    try {
+      const response = await crearArticulo(data); // debe aceptar FormData
       if (response.status === 201) {
-        alert("Artículo creado exitosamente");
+        setArticuloCreado(response.data);
+        setSnackbarOpen(true);
         setFormData({
           titulo_articulo: "",
           descripcion_articulo: "",
           institucion_articulo: "",
           precio_articulo: "",
           id_categoria: "",
-          id_usuario: "",
+          id_usuario: parseInt(idUsuario),
         });
-      } else {
-        alert("Error al crear artículo: " + JSON.stringify(response.data));
+        setImagen(null);
       }
     } catch (error) {
-      console.error("Error al crear artículo:", error.response?.data || error);
+      console.error("Error al crear artículo:", error);
+      console.log("Detalles del error:", error.response?.data);
       alert("Error al crear artículo: " + error.message);
+      console.log("Detalles:", error.response?.data);
     }
   };
 
@@ -94,16 +113,11 @@ const CrearArticulo = () => {
         alignItems: "center",
         justifyContent: "center",
         minHeight: "100vh",
-        padding: 2,
+        padding: 0,
         backgroundColor: "#f4f6f8",
       }}
     >
-      <div>
-        <NavbarVender />
-      </div>
-      {/* <Typography variant="h4" gutterBottom>
-        Crear Nuevo Artículo
-      </Typography> */}
+      <NavbarVender />
 
       <Box
         component="form"
@@ -119,6 +133,15 @@ const CrearArticulo = () => {
           boxShadow: 4,
         }}
       >
+        {/* Subir imagen */}
+        <TextField
+          fullWidth
+          type="file"
+          onChange={handleImageChange}
+          inputProps={{ accept: "image/*" }}
+          sx={{ mt: 2 }}
+        />
+
         <TextField
           label="Título del Artículo"
           name="titulo_articulo"
@@ -154,8 +177,10 @@ const CrearArticulo = () => {
           margin="normal"
           type="number"
         />
+
+        {/* Select de categorías */}
         <FormControl variant="outlined" margin="normal" fullWidth>
-          <InputLabel>Categoria</InputLabel>
+          <InputLabel>Categoría</InputLabel>
           <Select
             name="id_categoria"
             value={formData.id_categoria}
@@ -172,27 +197,24 @@ const CrearArticulo = () => {
             ))}
           </Select>
         </FormControl>
-        <FormControl variant="outlined" margin="normal" fullWidth>
-          <InputLabel>Usuario</InputLabel>
-          <Select
-            name="id_usuario"
-            value={formData.id_usuario}
-            onChange={handleChange}
-            label="Usuario"
-          >
-            {usuarios.map((usuario) => (
-              <MenuItem key={usuario.id_usuario} value={usuario.id_usuario}>
-                {usuario.nombres_usuario} {usuario.apellidos_usuario}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+
+        {/* Usuario actual mostrado (solo lectura) */}
+        <TextField
+          label="Usuario actual"
+          value={nombreUsuario}
+          margin="normal"
+          fullWidth
+          InputProps={{
+            readOnly: true,
+          }}
+        />
+
         <Button
           type="submit"
           variant="contained"
           color="primary"
           sx={{
-            borderRadius: 4, // Aumenta el radio
+            borderRadius: 4,
             marginTop: 2,
             padding: "10px 0",
             fontSize: "16px",
@@ -200,10 +222,34 @@ const CrearArticulo = () => {
         >
           Subir Artículo
         </Button>
-        <div>
-          <Reverse />
-        </div>
       </Box>
+
+      {/* Snackbar de éxito */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={5000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setSnackbarOpen(false)}
+          severity="success"
+          sx={{ width: "100%" }}
+          action={
+            <Button
+              color="inherit"
+              size="small"
+              onClick={() =>
+                navigate(`/articulos/${articuloCreado?.id_articulo}`)
+              }
+            >
+              Ver artículo
+            </Button>
+          }
+        >
+          🎉 ¡Artículo creado exitosamente!
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

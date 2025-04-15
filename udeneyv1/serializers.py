@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from .models import UsuarioRol, Usuarios # Importamos el modelo Usuario
 from .models import (
     Usuarios,
     Articulos,
@@ -10,20 +11,49 @@ from .models import (
     Calificaciones,
     Pagos,
     Pqrs,
-)
+)  
+
+from rest_framework import serializers
 
 
 # SERIALIZADOR DE USUARIOS
 class UsuariosSerializer(serializers.ModelSerializer):
+    password_usuario = serializers.CharField(write_only=True, required=False)
+
     class Meta:
         model = Usuarios
-        fields = "__all__"  # o especifica los campos que quieras
-        # extra_kwargs = {
-        #  'contraseña': {'write_only': True}, # protegemos el campo contraseña para que solo sea escribible, pero no visible en las respuestas.
-        # }
+        fields = [
+            'id_usuario',
+            'nombres_usuario',
+            'apellidos_usuario',
+            'email_usuario',
+            'telefono_usuario',
+            'direccion_usuario',
+            'password_usuario'
+        ]
 
+    def create(self, validated_data):
+        # Crea un usuario con la contraseña encriptada
+        user = Usuarios(
+            nombres_usuario=validated_data['nombres_usuario'],
+            apellidos_usuario=validated_data['apellidos_usuario'],
+            email_usuario=validated_data['email_usuario'],
+            telefono_usuario=validated_data['telefono_usuario'],
+            direccion_usuario=validated_data['direccion_usuario']
+        )
+        user.set_password(validated_data['password_usuario'])  # Encripta la contraseña
+        user.save()
+        return user
 
-# AUTH_USER_MODEL = 'udeneyv1.Usuario'  # Reemplaza 'tu_app' con el nombre de tu aplicación autenticar contraseña
+    def update(self, instance, validated_data):
+        # Actualiza campos, pero solo cambia contraseña si se envía
+        for attr, value in validated_data.items():
+            if attr == "password_usuario":
+                instance.set_password(value)  # encripta si la envían
+            else:
+                setattr(instance, attr, value)
+        instance.save()
+        return instance
 
 
 # SERIALIZADOR DE ROLES
@@ -32,14 +62,18 @@ class RolesSerializer(serializers.ModelSerializer):
         model = Roles
         fields = "__all__"  # o especifica los campos que quieras
 
-
 # SERIALIZADOR DE USUARIO_ROL
 class UsuarioRolSerializer(serializers.ModelSerializer):
+    id_rol = serializers.ChoiceField(choices=UsuarioRol.ROL_CHOICES)  # Mostrar "Vendedor" o "Comprador"
+   
+    id_usuario = serializers.SlugRelatedField(
+        queryset=Usuarios.objects.all(),
+        slug_field='nombres_usuario'  # Muestra el nombre del usuario en lugar del ID
+    )
+
     class Meta:
         model = UsuarioRol
-        fields = (
-            "__all__"  # ['id_usuario', 'id_rol']  # Especifica los campos a incluir
-        )
+        fields = ['id_usuario_rol', 'id_usuario', 'id_rol']
 
 
 # SERIALIZADOR DE CATEGORIAS
@@ -51,6 +85,7 @@ class CategoriasSerializer(serializers.ModelSerializer):
 
 # SERIALIZADOR DE ARTICULOS
 class ArticulosSerializer(serializers.ModelSerializer):
+    imagen = serializers.ImageField(use_url=True)
     class Meta:
         model = Articulos
         fields = "__all__"

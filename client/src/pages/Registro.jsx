@@ -1,70 +1,77 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import { TextField, Button, Box, Typography } from "@mui/material";
+import {
+  TextField,
+  Button,
+  Box,
+  Typography,
+  Snackbar,
+  Alert,
+  IconButton,
+} from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import { registrarUsuario } from "../api/register.api";
 
 const Registro = () => {
   const navigate = useNavigate();
 
+  // Formulario
   const [formData, setFormData] = useState({
+    email_usuario: "",
     nombres_usuario: "",
     apellidos_usuario: "",
-    email_usuario: "",
-    contraseña_usuario: "",
-    fecha_nacimiento: "",
+    password_usuario: "",
     telefono_usuario: "",
     direccion_usuario: "",
+    fecha_nacimiento: "",
   });
 
+  // Snackbar de éxito y error
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarError, setSnackbarError] = useState(false);
+
+  // Manejo de campos
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // Envío del formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validaciones rápidas
-    if (
-      !formData.nombres_usuario ||
-      !formData.apellidos_usuario ||
-      !formData.email_usuario ||
-      !formData.contraseña_usuario ||
-      !formData.fecha_nacimiento ||
-      !formData.telefono_usuario ||
-      !formData.direccion_usuario
-    ) {
-      alert("Por favor, completa todos los campos obligatorios.");
+    const camposRequeridos = Object.values(formData).every(
+      (campo) => campo !== ""
+    );
+    if (!camposRequeridos) {
+      setSnackbarError(true);
+      setSnackbarMessage("Por favor, completa todos los campos.");
+      setOpenSnackbar(true);
       return;
     }
 
     try {
-      const response = await axios.post(
-        "http://127.0.0.1:8000/usuarios/",
-        formData
-      );
+      const response = await registrarUsuario(formData);
 
       if (response.status === 201 || response.status === 200) {
-        alert("Usuario creado exitosamente");
-        setFormData({
-          nombres_usuario: "",
-          apellidos_usuario: "",
-          email_usuario: "",
-          contraseña_usuario: "",
-          fecha_nacimiento: "",
-          telefono_usuario: "",
-          direccion_usuario: "",
-        });
+        setSnackbarError(false);
+        setSnackbarMessage("¡Usuario registrado exitosamente!");
+        setOpenSnackbar(true);
 
-        navigate("/articulos");
+        // Redirigir al login después de 2 segundos
+        setTimeout(() => navigate("/login"), 2000);
       } else {
-        alert("Error al crear usuario: " + JSON.stringify(response.data));
+        throw new Error("Error al registrar");
       }
     } catch (error) {
       console.error("Error:", error.response?.data || error.message);
-      alert("Error en la conexión o solicitud: " + error.message);
+      setSnackbarError(true);
+      setSnackbarMessage(
+        error.response?.data?.email_usuario?.[0] ||
+          error.response?.data?.detail ||
+          "Hubo un error al registrar."
+      );
+      setOpenSnackbar(true);
     }
   };
 
@@ -83,6 +90,8 @@ const Registro = () => {
       <Typography variant="h4" gutterBottom>
         Registro de Usuario
       </Typography>
+
+      {/* Formulario */}
       <Box
         component="form"
         onSubmit={handleSubmit}
@@ -102,7 +111,6 @@ const Registro = () => {
           name="nombres_usuario"
           value={formData.nombres_usuario}
           onChange={handleChange}
-          variant="outlined"
           margin="normal"
           required
         />
@@ -111,7 +119,6 @@ const Registro = () => {
           name="apellidos_usuario"
           value={formData.apellidos_usuario}
           onChange={handleChange}
-          variant="outlined"
           margin="normal"
           required
         />
@@ -120,37 +127,34 @@ const Registro = () => {
           name="email_usuario"
           value={formData.email_usuario}
           onChange={handleChange}
-          variant="outlined"
-          margin="normal"
           type="email"
+          margin="normal"
           required
+          autoComplete="email"
         />
         <TextField
           label="Contraseña"
-          name="contraseña_usuario"
-          value={formData.contraseña_usuario}
+          name="password_usuario"
+          value={formData.password_usuario}
           onChange={handleChange}
-          variant="outlined"
-          margin="normal"
           type="password"
-          autoComplete="current-password"
+          margin="normal"
           required
+          autoComplete="new-password"
         />
         <TextField
           label="Teléfono"
           name="telefono_usuario"
           value={formData.telefono_usuario}
           onChange={handleChange}
-          variant="outlined"
           margin="normal"
-          type="tel"
+          inputProps={{ maxLength: 10 }}
         />
         <TextField
           label="Dirección"
           name="direccion_usuario"
           value={formData.direccion_usuario}
           onChange={handleChange}
-          variant="outlined"
           margin="normal"
         />
         <TextField
@@ -158,9 +162,8 @@ const Registro = () => {
           name="fecha_nacimiento"
           value={formData.fecha_nacimiento}
           onChange={handleChange}
-          variant="outlined"
-          margin="normal"
           type="date"
+          margin="normal"
           InputLabelProps={{ shrink: true }}
         />
 
@@ -173,6 +176,30 @@ const Registro = () => {
           Crear Usuario
         </Button>
       </Box>
+
+      {/* Snackbar para éxito o error */}
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={3000}
+        onClose={() => setOpenSnackbar(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          severity={snackbarError ? "error" : "success"}
+          sx={{ width: "100%" }}
+          action={
+            <IconButton
+              size="small"
+              color="inherit"
+              onClick={() => setOpenSnackbar(false)}
+            >
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          }
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

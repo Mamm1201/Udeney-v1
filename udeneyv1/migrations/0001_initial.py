@@ -203,7 +203,7 @@ class Migration(migrations.Migration):
                 ("nombres_usuario", models.CharField(max_length=255)),
                 ("apellidos_usuario", models.CharField(max_length=255)),
                 ("email_usuario", models.EmailField(max_length=254, unique=True)),
-                ("contraseña_usuario", models.CharField(max_length=255)),
+                ("password_usuario", models.CharField(max_length=255)),
                 ("fecha_registro", models.DateField(auto_now_add=True)),
                 ("fecha_nacimiento", models.DateField(blank=True, null=True)),
                 ("telefono_usuario", models.CharField(max_length=20)),

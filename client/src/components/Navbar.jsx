@@ -1,102 +1,176 @@
 import React, { useState } from "react";
+import Logo from "./Logo";
+import LoginButton from "./Loginbutton";
+import LogoutButton from "./LogoutButton";
+import PerfilMenu from "./PerfilMenu";
 import {
   AppBar,
-  Box,
-  Button,
   Toolbar,
   Typography,
-  IconButton,
+  Box,
+  Button,
   Menu,
   MenuItem,
+  IconButton,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
-import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
-import PermIdentityIcon from "@mui/icons-material/PermIdentity";
-import { Link, useNavigate } from "react-router-dom"; // useNavigate para redirigir
+import MenuIcon from "@mui/icons-material/Menu";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import { useNavigate } from "react-router-dom";
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const nombre = localStorage.getItem("nombres_usuario");
+  const isLoggedIn = !!localStorage.getItem("access_token");
 
-  // Estado para el menú desplegable
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
+  // Menú hamburguesa para móviles
+  const [mobileMenuAnchor, setMobileMenuAnchor] = useState(null);
+  const handleMobileMenuOpen = (event) =>
+    setMobileMenuAnchor(event.currentTarget);
+  const handleMobileMenuClose = () => setMobileMenuAnchor(null);
+
+  // Menú desplegable para roles
   const [anchorEl, setAnchorEl] = useState(null);
+  const handleOpenRoles = (event) => setAnchorEl(event.currentTarget);
+  const handleCloseRoles = () => setAnchorEl(null);
 
-  // Abrir menú
-  const handleMenuOpen = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
+  const handleLogout = () => {
+    const nombre = localStorage.getItem("nombres_usuario");
 
-  // Cerrar menú
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
+    // Limpia el almacenamiento local
+    localStorage.clear();
 
-  // Redirigir a la opción seleccionada
-  const handleRedirect = (path) => {
-    navigate(path);
-    handleMenuClose();
+    // Opcional: podrías mostrar un mensaje con Snackbar aquí si quieres más adelante
+
+    // Redirección a login
+    navigate("/login");
+
+    // Solo para debug o futura mejora
+    console.log(`👋 Hasta luego, ${nombre || "usuario"}!`);
   };
 
   return (
-    <AppBar position="static" sx={{ backgroundColor: "#86C388", p: 2 }}>
+    <AppBar position="static" color="#86C384">
       <Toolbar
         sx={{
           display: "flex",
           justifyContent: "space-between",
-          alignItems: "center",
+          color: "inherit",
         }}
       >
-        {/* Logo */}
-        <Box sx={{ display: "flex", alignItems: "center" }}>
-          <IconButton edge="start" color="inherit" aria-label="" sx={{ mr: 2 }}>
-            <img src=" " alt="Logo" style={{ width: 40, height: 40 }} />
-          </IconButton>
-          <Typography variant="h6" component="span" sx={{ fontWeight: "bold" }}>
-            Eduney
-          </Typography>
-        </Box>
+        {/* Logo / Título */}
+        <Logo />
 
-        {/* Botones */}
-        <Box sx={{ display: "flex", gap: 3 }}>
-          <Button component={Link} to="/" color="inherit">
-            Home
-          </Button>
-          <Button component={Link} to="/Nosotros" color="inherit">
-            Nosotros
-          </Button>
-          <Button component={Link} to="/contacto" color="inherit">
-            Contacto
-          </Button>
-          <Button component={Link} to="/registro" color="inherit">
-            Registro
-          </Button>
-          <Button component={Link} to="/ingreso" color="inherit">
-            Ingreso
-          </Button>
+        {/* Navegación */}
+        {isMobile ? (
+          <>
+            <IconButton
+              color="inherit"
+              onClick={handleMobileMenuOpen}
+              edge="end"
+            >
+              <MenuIcon />
+            </IconButton>
+            <Menu
+              anchorEl={mobileMenuAnchor}
+              open={Boolean(mobileMenuAnchor)}
+              onClose={handleMobileMenuClose}
+            >
+              <MenuItem onClick={() => navigate("/nosotros")}>
+                Nosotros
+              </MenuItem>
+              <MenuItem onClick={() => navigate("/contacto")}>
+                Contacto
+              </MenuItem>
+              <MenuItem onClick={handleOpenRoles}>
+                Seleccionar Rol <ArrowDropDownIcon fontSize="small" />
+              </MenuItem>
+              {/* <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleCloseRoles}
+              >
+                <MenuItem onClick={() => navigate("/rol?vendedor")}>
+                  Vendedor
+                </MenuItem>
+                <MenuItem onClick={() => navigate("/rol?comprador")}>
+                  Comprador
+                </MenuItem>
+              </Menu> */}
+              {!isLoggedIn ? (
+                <>
+                  <MenuItem onClick={() => navigate("/login")}>
+                    Iniciar sesión
+                  </MenuItem>
+                  <MenuItem onClick={() => navigate("/registro")}>
+                    Registrarse
+                  </MenuItem>
+                </>
+              ) : (
+                <>
+                  <MenuItem onClick={() => navigate("/user")}>Perfil</MenuItem>
+                  <MenuItem onClick={handleLogout}>Cerrar sesión</MenuItem>
+                </>
+              )}
+            </Menu>
+          </>
+        ) : (
+          <Box display="flex" alignItems="center" gap={2}>
+            <Button onClick={() => navigate("/nosotros")} color="inherit">
+              Nosotros
+            </Button>
+            <Button onClick={() => navigate("/contacto")} color="inherit">
+              Contacto
+            </Button>
 
-          {/* Botón desplegable de Roles */}
-          <Button color="inherit" onClick={handleMenuOpen}>
-            Seleccionar Rol
-          </Button>
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleMenuClose}
-          >
-            <MenuItem onClick={() => handleRedirect("/Crear-Articulo")}>
-              Vender
-            </MenuItem>
-            <MenuItem onClick={() => handleRedirect("/Articulos")}>
-              Comprar
-            </MenuItem>
-          </Menu>
+            <Button
+              onClick={handleOpenRoles}
+              color="inherit"
+              endIcon={<ArrowDropDownIcon />}
+            >
+              Seleccionar Rol
+            </Button>
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleCloseRoles}
+            >
+              <MenuItem onClick={() => navigate("/crear-articulo")}>
+                Vendedor
+              </MenuItem>
+              <MenuItem onClick={() => navigate("/articulos")}>
+                Comprador
+              </MenuItem>
+            </Menu>
 
-          {/* Íconos */}
-          <IconButton color="inherit">
-            <PermIdentityIcon />
-          </IconButton>
-          <IconButton color="primary">
-            <AddShoppingCartIcon />
-          </IconButton>
-        </Box>
+            {!isLoggedIn ? (
+              <>
+                <LoginButton />
+                <Button
+                  onClick={() => navigate("/registro")}
+                  color="inherit"
+                  variant="outlined"
+                >
+                  Registrarse
+                </Button>
+              </>
+            ) : (
+              <>
+                <Typography variant="body1">
+                  ¡Hola, <strong>{nombre}</strong>!
+                </Typography>
+                <>
+                  <PerfilMenu />
+                </>
+                <LogoutButton variant="text" size="small" />
+              </>
+            )}
+          </Box>
+        )}
       </Toolbar>
     </AppBar>
   );

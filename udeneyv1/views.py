@@ -2,20 +2,17 @@ from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.authtoken.models import Token
-from django.contrib.auth import authenticate, login
-from django.shortcuts import render, redirect
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib import messages
-
-from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.shortcuts import render, get_object_or_404
+from django.utils.dateparse import parse_date
+from django.db.models import Count
+from django.db.models.functions import TruncMonth, TruncYear
 from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required
+from rest_framework.generics import RetrieveAPIView
 from rest_framework.decorators import api_view
-from django.contrib.auth.models import User
-from django.contrib.auth.hashers import make_password
 
-# Importaciones de modelos y serializers
+# IMPORTACIÓN DE MODELOS
 from .models import (
     Usuarios,
     Articulos,
@@ -28,6 +25,7 @@ from .models import (
     Pagos,
     Pqrs,
 )
+# IMPORTACIÓN DE SERIALIZADORES
 from .serializers import (
     UsuariosSerializer,
     ArticulosSerializer,
@@ -41,117 +39,137 @@ from .serializers import (
     PqrsSerializer,
 )
 
+# VISTA REGISTRO DE USUARIO
+class RegistroUsuarioView(APIView):
+    permission_classes = [AllowAny]
 
-
-
-# ULTIMA VISTA PARA AUTENTICACIÓN DE USUARIO
-@api_view(["POST"])
-def register(request):
-    try:
-        username = request.data["username"]
-        password = request.data["password"]
+    def post(self, request):
+        serializer = UsuariosSerializer(data=request.data)
         
-        if User.objects.filter(username=username).exists():
-            return Response({"error": "El usuario ya existe."}, status=status.HTTP_400_BAD_REQUEST)
-        
-        user = User.objects.create(username=username, password=make_password(password))
-        return Response({"message": "Usuario registrado correctamente"}, status=status.HTTP_201_CREATED)
-    
-    except KeyError:
-        return Response({"error": "Faltan datos en la solicitud."}, status=status.HTTP_400_BAD_REQUEST)
+        if serializer.is_valid():
+            user = serializer.save()
+
+            # No necesitas llamar a set_password aquí, ya se hace en el serializer
+
+            # Generar tokens JWT
+            refresh = RefreshToken.for_user(user)
+
+            return Response(
+                {
+                    "message": "Usuario registrado exitosamente",
+                    "user": {
+                        "id_usuario": user.id_usuario,
+                        "email_usuario": user.email_usuario,
+                        "nombres_usuario": user.nombres_usuario,
+                        "apellidos_usuario": user.apellidos_usuario,
+                    },
+                    "access_token": str(refresh.access_token),
+                    "refresh_token": str(refresh),
+                },
+                status=status.HTTP_201_CREATED,
+            )
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
-# VISTA PARA REGISTRO DE USUARIO
-#@APIView(['POST'])
-def register(request):
-    if request.method == "POST":
-        form = UserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            messages.success(request, f"Cuenta creada para {user.username}!")
-            return redirect(
-                "login"
-            )  # Asegúrate de que 'login' está definido en tus URLs
-            
-    else:
-        form = UserCreationForm()
-    return render(
-        request, "registro.html", {"form": form}
-        
-    )  
-
-
-# VISTA PARA LOGIN DE USUARIO
-
+# VISTA LOGIN USUARIO
 User = get_user_model()
 
 class LoginView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        email = request.data.get("email")  # Cambia username por email
+        email = request.data.get("email")
         password = request.data.get("password")
 
-        try:
-            user = User.objects.get(email=email)
-        except User.DoesNotExist:
-            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+        user = get_object_or_404(Usuarios, email_usuario=email)
+
+        if not user.is_active:
+            return Response({"error": "Cuenta desactivada, contacta al administrador."}, status=status.HTTP_403_FORBIDDEN)
 
         if not user.check_password(password):
-            return Response({"error": "Contraseña incorrecta"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"error": "Credenciales incorrectas"}, status=status.HTTP_401_UNAUTHORIZED)
 
         refresh = RefreshToken.for_user(user)
 
         return Response(
             {
-                "message": "Inicio de sesión exitoso",
+                "message": f"Bienvenido {user.nombres_usuario}",
+                "id_usuario": user.id_usuario,
+                "email": user.email_usuario,
+                "nombres_usuario": user.nombres_usuario,
                 "access_token": str(refresh.access_token),
                 "refresh_token": str(refresh),
             },
             status=status.HTTP_200_OK,
-        )
+        )        
 
-
-# class LoginView(APIView):
-#     permission_classes = [AllowAny]
-
-#     def post(self, request):
-#         username = request.data.get("username")
-#         password = request.data.get("password")
-#         user = authenticate(request, username=username, password=password)
-
-#         if user is not None:
-#             login(request, user)
-#             token, _ = Token.objects.get_or_create(user=user)
-#             return Response(
-#                 {"message": "Inicio de sesión exitoso", "token": token.key},
-#                 status=status.HTTP_200_OK,
-#             )
-#         else:
-#             return Response(
-#                 {"error": "Credenciales inválidas"}, status=status.HTTP_401_UNAUTHORIZED
-#             )
-            
-
-# class LogoutView(APIView):
-#     def post(self, request):
-#         request.auth.delete()  # Elimina el token actual
-#         return Response({'message': 'Sesión cerrada correctamente'})            
-
-
-# VISTA PARA CERRAR SESIÓN
+# VISTA CERRAR SESIÓN
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        request.user.auth_token.delete()
+        print("LogoutView llamado")
         return Response(
-            {"message": "Cierre de sesión exitoso"}, status=status.HTTP_200_OK
+            {"message": "Cierre de sesión exitoso"},
+            status=status.HTTP_200_OK
         )
+           
+# HISTORIAL DE TRANSACCIONES USUARIO REGISTARDO
+@login_required
+def historial_transacciones(request):
+    usuario = request.user
 
+    # Obtener fechas desde la URL (?fecha_inicio=YYYY-MM-DD&fecha_fin=YYYY-MM-DD)
+    fecha_inicio = request.GET.get("fecha_inicio")
+    fecha_fin = request.GET.get("fecha_fin")
 
-# CRUDs para los modelos
+    # Base de consultas
+    compras_qs = Transacciones.objects.filter(
+        id_usuario=usuario, id_detalle_transaccion__tipo_transaccion="compra"
+    )
+    ventas_qs = Transacciones.objects.filter(
+        id_detalle_transaccion__id_articulo__id_usuario=usuario,
+        id_detalle_transaccion__tipo_transaccion="venta"
+    )
+
+    # Aplicar filtros de fecha
+    if fecha_inicio:
+        fecha_inicio = parse_date(fecha_inicio)
+        if fecha_inicio:
+            compras_qs = compras_qs.filter(fecha_transaccion__gte=fecha_inicio)
+            ventas_qs = ventas_qs.filter(fecha_transaccion__gte=fecha_inicio)
+
+    if fecha_fin:
+        fecha_fin = parse_date(fecha_fin)
+        if fecha_fin:
+            compras_qs = compras_qs.filter(fecha_transaccion__lte=fecha_fin)
+            ventas_qs = ventas_qs.filter(fecha_transaccion__lte=fecha_fin)
+
+    # Agrupar por año y mes
+    compras = (
+        compras_qs
+        .annotate(year=TruncYear("fecha_transaccion"), month=TruncMonth("fecha_transaccion"))
+        .values("year", "month")
+        .annotate(total_compras=Count("id_transaccion"))
+        .order_by("-year", "-month")
+    )
+
+    ventas = (
+        ventas_qs
+        .annotate(year=TruncYear("fecha_transaccion"), month=TruncMonth("fecha_transaccion"))
+        .values("year", "month")
+        .annotate(total_ventas=Count("id_transaccion"))
+        .order_by("-year", "-month")
+    )
+
+    return render(
+        request,
+        "historial_transacciones.html",
+        {"compras": compras, "ventas": ventas},
+    )
+    
+# CRUDS PARA LOS MODELOS
 class UsuariosViewSet(viewsets.ModelViewSet):
     queryset = Usuarios.objects.all()
     serializer_class = UsuariosSerializer
@@ -160,6 +178,11 @@ class UsuariosViewSet(viewsets.ModelViewSet):
 class ArticulosViewSet(viewsets.ModelViewSet):
     queryset = Articulos.objects.all()
     serializer_class = ArticulosSerializer
+    
+class ArticuloDetailAPIView(RetrieveAPIView):
+    queryset = Articulos.objects.all()
+    serializer_class = ArticulosSerializer
+    lookup_field = 'id_articulo'  # solicita el id creado
 
 
 class CategoriasViewSet(viewsets.ModelViewSet):
@@ -200,3 +223,52 @@ class PagosViewSet(viewsets.ModelViewSet):
 class PqrsViewSet(viewsets.ModelViewSet):
     queryset = Pqrs.objects.all()
     serializer_class = PqrsSerializer
+    
+
+
+@api_view(["GET"])
+def historial_transacciones_api(request):
+    id_usuario = request.query_params.get("id_usuario")
+    fecha_inicio = request.query_params.get("fecha_inicio")
+    fecha_fin = request.query_params.get("fecha_fin")
+
+    if not id_usuario:
+        return Response({"error": "Se requiere id_usuario"}, status=400)
+
+    # Filtros base
+    compras = Transacciones.objects.filter(
+        id_usuario=id_usuario,
+        id_detalle_transaccion__tipo_transaccion="compra"
+    )
+    ventas = Transacciones.objects.filter(
+        id_detalle_transaccion__id_articulo__id_usuario=id_usuario,
+        id_detalle_transaccion__tipo_transaccion="venta"
+    )
+
+    # Filtrar fechas si existen
+    if fecha_inicio:
+        fecha_inicio = parse_date(fecha_inicio)
+        compras = compras.filter(fecha_transaccion__gte=fecha_inicio)
+        ventas = ventas.filter(fecha_transaccion__gte=fecha_inicio)
+
+    if fecha_fin:
+        fecha_fin = parse_date(fecha_fin)
+        compras = compras.filter(fecha_transaccion__lte=fecha_fin)
+        ventas = ventas.filter(fecha_transaccion__lte=fecha_fin)
+
+    # Agrupar por año y mes
+    compras_agrupadas = compras.annotate(
+        year=TruncYear("fecha_transaccion"),
+        month=TruncMonth("fecha_transaccion")
+    ).values("year", "month").annotate(total_compras=Count("id_transaccion"))
+
+    ventas_agrupadas = ventas.annotate(
+        year=TruncYear("fecha_transaccion"),
+        month=TruncMonth("fecha_transaccion")
+    ).values("year", "month").annotate(total_ventas=Count("id_transaccion"))
+
+    return Response({
+        "compras": list(compras_agrupadas),
+        "ventas": list(ventas_agrupadas)
+    })
+

@@ -1,7 +1,7 @@
 import React from "react";
 import Button from "@mui/material/Button";
 
-const Reserver = () => (
+const BotonVender = () => (
   <Button variant="contained" color="primary">
     Vender
   </Button>

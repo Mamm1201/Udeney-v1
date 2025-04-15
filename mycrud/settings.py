@@ -52,13 +52,11 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),  # El token dura 1 día
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),  # El refresh dura 7 días
-}
-
-SIMPLE_JWT = {
-    "USER_ID_FIELD": "email",
-    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'USER_ID_FIELD': 'id_usuario',
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
 }
 
 
@@ -78,7 +76,7 @@ ROOT_URLCONF = "mycrud.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "templates"], # Django busque aquí las plantillas
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -113,6 +111,14 @@ DATABASES = {
         "PASSWORD": "Mario1201*",  # Contraseña del usuario
         "HOST": "localhost",  # Dirección del servidor (para entorno local)
         "PORT": "3306",  # Puerto del servidor MySQL
+    },
+     'test': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'test_db_ecommerce',  # Base de datos de prueba
+        'USER': 'root',
+        'PASSWORD': 'Mario1201*',
+        'HOST': 'localhost',
+        'PORT': '3306',
     }
 }
 
@@ -168,3 +174,10 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # DESDE ACA AUTORIZAMOS QUIEN SE PUEDE CONECTAR
 CORS_ALLOWED_ORIGINS = ["http://localhost:5173"]
+
+DEBUG = True
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+

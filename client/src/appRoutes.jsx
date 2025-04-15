@@ -12,6 +12,8 @@ import Home from "./pages/Home";
 import Nosotros from "./pages/Nosotros";
 import Contacto from "./pages/Contacto";
 import UserProfile from "./pages/UserProfile";
+import ActualizarDatos from "./pages/ActualizarDatos";
+import HistorialTransacciones from "./pages/HistorialTransacciones";
 
 const AppRoutes = () => {
   return (
@@ -24,12 +26,18 @@ const AppRoutes = () => {
         {/* Páginas de artículos */}
         <Route path="/articulos" element={<Articulos />} />
         <Route path="/articulos/:id" element={<ArticuloDetail />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/rol" element={<Rol />} />
         <Route path="/crear-articulo" element={<CrearArticulo />} />
-        <Route path="/user" element={<UserProfile />} />
         {/* Páginas de usuario */}
         <Route path="/registro" element={<Registro />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/actualizar-datos" element={<ActualizarDatos />} />
+        <Route path="/user" element={<UserProfile />} />
+        <Route path="/rol" element={<Rol />} />
+        <Route
+          path="/historial-transacciones"
+          element={<HistorialTransacciones />}
+        />
+
         <Route path="/comprar" element={<Comprar />} />
         {/* Componente Principal */}
         <Route path="/app" element={<App />} />

@@ -1,56 +1,79 @@
 from django.db import models
-
-
-# MODELO TABLA USUARIOS
+from django.contrib.auth.hashers import make_password, check_password
 
 from django.db import models
+from django.contrib.auth.hashers import make_password, check_password
+
+from django.db import models
+from django.contrib.auth.hashers import make_password, check_password
 
 class Usuarios(models.Model):
     id_usuario = models.AutoField(primary_key=True)
     nombres_usuario = models.CharField(max_length=255)
     apellidos_usuario = models.CharField(max_length=255)
     email_usuario = models.EmailField(unique=True)
-    contraseña_usuario = models.CharField(max_length=255)
+    password_usuario = models.CharField(max_length=255)
     fecha_registro = models.DateField(auto_now_add=True)
-    fecha_nacimiento = models.DateField(null=True, blank=True)  # Nuevo campo
-    telefono_usuario = models.CharField(max_length=20)  # Nuevo campo
-    direccion_usuario = models.CharField(max_length=255)  # Nuevo campo
-    
+    fecha_nacimiento = models.DateField(null=True, blank=True)
+    telefono_usuario = models.CharField(max_length=20)
+    direccion_usuario = models.CharField(max_length=255)
+
+    # 👉 Campo necesario para login
+    is_active = models.BooleanField(default=True)
 
     class Meta:
-        db_table = "usuarios"  # Asegúrate de usar el nombre correcto de la tabla
-        managed = False  # Django no intentará crear esta tabla
+        db_table = "usuarios"
+        managed = False  # o True si controlas migraciones desde Django
 
+    def __str__(self):
+        return f"{self.nombres_usuario} {self.apellidos_usuario}"
 
+    def set_password(self, raw_password):
+        self.password_usuario = make_password(raw_password)
 
-# MODELO PARA TABLA ROLES
+    def check_password(self, raw_password):
+        return check_password(raw_password, self.password_usuario)
+    
+    # MODELO ROLES
 class Roles(models.Model):
-    id_rol = models.AutoField(
-        primary_key=True
-    )  # Este campo se autoincrementará automáticamente
+    id_rol = models.AutoField(primary_key=True)
+
+    # Puedes dejarlo como CharField y manejar la validación manual
     tipo_rol = models.CharField(
-        max_length=20, choices=[("vendedor", "Vendedor"), ("comprador", "Comprador")]
+        max_length=20,
+        choices=[
+            ('vendedor', 'Vendedor'),
+            ('comprador', 'Comprador'),
+            # Agrega aquí los demás valores que tenga el ENUM
+        ]
     )
 
     class Meta:
-        db_table = "roles"  # Asegúrate de usar el nombre correcto de la tabla
-        managed = False  # Django no intentará crear esta tabla
+        db_table = 'roles'
+        managed = False  # Para evitar que Django cree/modifique esta tabla
+
+    def __str__(self):
+        return self.tipo_rol
+
 
 
 # MODELO PARA TABLA USUARIO_ROL
+
 class UsuarioRol(models.Model):
-    # usuario_rol_id  = models.AutoField(primary_key=True)  # Este campo se autoincrementará automáticamente
-    id_usuario = models.ForeignKey(
-        "usuarios", on_delete=models.CASCADE, db_column="id_usuario"
-    )
-    id_rol = models.ForeignKey("roles", on_delete=models.CASCADE, db_column="id_rol")
+    ROL_CHOICES = [
+        ('vendedor', 'Vendedor'),
+        ('comprador', 'Comprador'),
+    ]
+
+    id_usuario_rol = models.AutoField(primary_key=True)  # Nuevo campo clave primaria
+    id_usuario = models.ForeignKey("usuarios", on_delete=models.CASCADE, db_column="id_usuario")
+    id_rol = models.CharField(max_length=10, choices=ROL_CHOICES, db_column="id_rol")  # ENUM en Django
 
     class Meta:
         db_table = "usuario_rol"
-        unique_together = ("id_usuario", "id_rol")  # Evita duplicados
+        unique_together = ("id_usuario", "id_rol")
         managed = False  # Django no intentará crear esta tabla
-
-
+        
 # MODELO TABLA CATEGORIAS
 class Categorias(models.Model):
     id_categoria = models.AutoField(
@@ -89,6 +112,8 @@ class Articulos(models.Model):
     id_categoria = models.ForeignKey(
         Categorias, on_delete=models.CASCADE, db_column="id_categoria"
     )  # Nombre exacto de la columna en la base de datos
+    imagen = models.ImageField(upload_to='articulos/', null=True, blank=True)
+
 
     class Meta:
         db_table = "articulos"  # Asegúrate de usar el nombre correcto de la tabla
@@ -129,13 +154,13 @@ class Transacciones(models.Model):
     id_transaccion = models.AutoField(
         primary_key=True
     )  # Este campo se autoincrementará automáticamente
-    fecha_transaccion = models.DateField(auto_now_add=True)
     id_usuario = models.ForeignKey(
         Usuarios, on_delete=models.CASCADE, db_column="id_usuario"
     )  # Nombre exacto de la columna en la base de datos
     id_detalle_transaccion = models.ForeignKey(
         DetalleTransaccion, on_delete=models.CASCADE, db_column="id_detalle_transaccion"
     )  # Nombre exacto de la columna en la base de datos
+    fecha_transaccion = models.DateTimeField()  
 
     class Meta:
         db_table = "transacciones"  # Asegúrate de usar el nombre correcto de la tabla

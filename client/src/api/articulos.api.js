@@ -1,13 +1,21 @@
-import axios from "axios";
+// src/api/articulos.js
+import api from "./axiosConfig";
 
-// const api = axios.create({
-//   baseURL: import.meta.env.VITE_API_URL, // Ahora toma la URL del archivo .env
-// });
-
-export const getAllArticulos = async () => {
-  return await axios.get(`${import.meta.env.VITE_API_URL}`);
+// Obtener categorías
+export const getCategorias = async () => {
+  return await api.get("/categorias/");
 };
 
-export const postAllArticulos = async () => {
-  return await axios.get(`${import.meta.env.VITE_API_URL}`);
+// Obtener usuarios
+export const getUsuarios = async () => {
+  return await api.get("/usuarios/");
+};
+
+// Crear artículo
+export const crearArticulo = async (data) => {
+  return await api.post("/articulos/", data);
+};
+
+export const getAllArticulos = async () => {
+  return await api.get("/articulos/");
 };

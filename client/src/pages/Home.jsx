@@ -35,7 +35,7 @@ const Home = () => {
               <Boton1 />
             </div>
             <img
-              src="/images/vender.jpg"
+              src="./public/logo.png"
               alt=""
               className="w-full h-40 object-cover rounded-md mb-4"
             />
@@ -46,7 +46,7 @@ const Home = () => {
               <Boton2 />
             </div>
             <img
-              src="/images/comprar.jpg"
+              src="./public/logo.png"
               alt=""
               className="w-full h-40 object-cover rounded-md mb-4"
             />
