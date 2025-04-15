@@ -19,3 +19,11 @@ export const crearArticulo = async (data) => {
 export const getAllArticulos = async () => {
   return await api.get("/articulos/");
 };
+
+export const editarArticulo = async (id, data) => {
+  return await api.patch(`/articulos/${id}/`, data, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
