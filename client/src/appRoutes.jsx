@@ -14,6 +14,8 @@ import Contacto from "./pages/Contacto";
 import UserProfile from "./pages/UserProfile";
 import ActualizarDatos from "./pages/ActualizarDatos";
 import HistorialTransacciones from "./pages/HistorialTransacciones";
+import MisArticulos from "./pages/MisArticulos";
+import EditarArticulo from "./pages/EditarArticulo";
 
 const AppRoutes = () => {
   return (
@@ -27,6 +29,12 @@ const AppRoutes = () => {
         <Route path="/articulos" element={<Articulos />} />
         <Route path="/articulos/:id" element={<ArticuloDetail />} />
         <Route path="/crear-articulo" element={<CrearArticulo />} />
+        <Route path="/mis-articulos" element={<MisArticulos />} />
+        <Route
+          path="/editar-articulo/:id_articulo"
+          element={<EditarArticulo />}
+        />
+
         {/* Páginas de usuario */}
         <Route path="/registro" element={<Registro />} />
         <Route path="/login" element={<Login />} />

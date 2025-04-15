@@ -1,145 +1,170 @@
+// src/components/Navbar.jsx
 import React, { useState } from "react";
+import Logo from "./Logo";
+import LoginButton from "./Loginbutton";
+import LogoutButton from "./LogoutButton";
+import PerfilMenu from "./PerfilMenuVendedor"; // Componente de perfil (que se abre cuando el usuario hace clic en su avatar)
 import {
   AppBar,
+  Toolbar,
+  Typography,
   Box,
   Button,
-  Toolbar,
-  IconButton,
   Menu,
   MenuItem,
-  Drawer,
-  List,
-  ListItem,
-  ListItemText,
+  IconButton,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
-import MenuIcon from "@mui/icons-material/Menu"; // Ícono de menú hamburguesa
-import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
-import PermIdentityIcon from "@mui/icons-material/PermIdentity";
-import { Link, useNavigate } from "react-router-dom";
+import MenuIcon from "@mui/icons-material/Menu";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import { useNavigate } from "react-router-dom";
 
-const NavbarVender = () => {
-  const navigate = useNavigate();
-  const [mobileOpen, setMobileOpen] = useState(false);
+const Navbar = () => {
+  const navigate = useNavigate(); // Hook para navegar entre rutas
+  const nombre = localStorage.getItem("nombres_usuario"); // Obtener nombre del usuario desde localStorage
+  const isLoggedIn = !!localStorage.getItem("access_token"); // Obtener nombre del usuario desde localStorage
 
-  // Estado para el menú desplegable de roles
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // Verificar si es una vista móvil
+
+  // Menú hamburguesa para móviles
+  const [mobileMenuAnchor, setMobileMenuAnchor] = useState(null); // Abre el menú móvil
+  const handleMobileMenuOpen = (event) =>
+    setMobileMenuAnchor(event.currentTarget);
+  const handleMobileMenuClose = () => setMobileMenuAnchor(null); // Cierra el menú móvil
+
+  // Menú de acciones: ¿Qué deseas hacer hoy?
   const [anchorEl, setAnchorEl] = useState(null);
+  const handleOpenRoles = (event) => setAnchorEl(event.currentTarget); // Abre el menú para seleccionar el rol
+  const handleCloseRoles = () => setAnchorEl(null); // Cierra el menú de roles
 
-  // Abrir menú
-  const handleMenuOpen = (event) => {
-    setAnchorEl(event.currentTarget);
+  const handleLogout = () => {
+    const nombre = localStorage.getItem("nombres_usuario");
+    localStorage.clear(); // Limpiar datos del usuario en localStorage
+    navigate("/login"); // Redirigir a la página de login
+    console.log(`👋 Hasta luego, ${nombre || "usuario"}!`); // Imprimir mensaje de despedida en la consola
   };
 
-  // Cerrar menú
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
-
-  // Redirigir a la opción seleccionada
-  const handleRedirect = (path) => {
-    navigate(path);
-    handleMenuClose();
-  };
-
-  // Toggle para el menú móvil
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
+  // ⚡ Guardar el rol y navegar según la acción seleccionada
+  const seleccionarRol = (rol) => {
+    localStorage.setItem("rol_usuario", rol); // Guardar el rol seleccionado en localStorage
+    if (rol === "vendedor") {
+      navigate("/crear-articulo"); // Redirigir al formulario de crear artículo si es vendedor
+    } else {
+      navigate("/articulos"); // Redirigir a la lista de artículos si es comprador
+    }
+    handleCloseRoles(); // Cerrar el menú de roles
   };
 
   return (
-    <>
-      <AppBar position="static" sx={{ backgroundColor: "#86C388", p: 2 }}>
-        <Toolbar
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          {/* Logo */}
-          <Box sx={{ display: "flex", alignItems: "center", flexGrow: 1 }}>
-            <img
-              src="/logo.png"
-              alt="Logo"
-              style={{ height: "50px", borderRadius: "8px" }}
-            />
-          </Box>
+    <AppBar position="static" color="#86C384">
+      <Toolbar
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          color: "inherit",
+        }}
+      >
+        {/* Logo / Título */}
+        <Logo />
 
-          {/* Menú de escritorio */}
-          <Box sx={{ display: { xs: "none", md: "flex" }, gap: 3 }}>
-            <Button component={Link} to="/" color="inherit">
-              Home
-            </Button>
-            <Button component={Link} to="/Nosotros" color="inherit">
+        {/* Navegación */}
+        {isMobile ? (
+          <>
+            <IconButton
+              color="inherit"
+              onClick={handleMobileMenuOpen}
+              edge="end"
+            >
+              <MenuIcon />
+            </IconButton>
+            <Menu
+              anchorEl={mobileMenuAnchor}
+              open={Boolean(mobileMenuAnchor)}
+              onClose={handleMobileMenuClose}
+            >
+              <MenuItem onClick={() => navigate("/nosotros")}>
+                Nosotros
+              </MenuItem>
+              <MenuItem onClick={() => navigate("/contacto")}>
+                Contacto
+              </MenuItem>
+              <MenuItem onClick={handleOpenRoles}>
+                ¿Qué deseas hacer hoy? <ArrowDropDownIcon fontSize="small" />
+              </MenuItem>
+
+              {!isLoggedIn ? (
+                <>
+                  <MenuItem onClick={() => navigate("/login")}>
+                    Iniciar sesión
+                  </MenuItem>
+                  <MenuItem onClick={() => navigate("/registro")}>
+                    Registrarse
+                  </MenuItem>
+                </>
+              ) : (
+                <>
+                  <MenuItem onClick={() => navigate("/user")}>Perfil</MenuItem>
+                  <MenuItem onClick={handleLogout}>Cerrar sesión</MenuItem>
+                </>
+              )}
+            </Menu>
+          </>
+        ) : (
+          <Box display="flex" alignItems="center" gap={2}>
+            <Button onClick={() => navigate("/nosotros")} color="inherit">
               Nosotros
             </Button>
-            <Button component={Link} to="/contacto" color="inherit">
+            <Button onClick={() => navigate("/contacto")} color="inherit">
               Contacto
             </Button>
-            <Button component={Link} to="/registro" color="inherit">
-              Registro
-            </Button>
-            <Button component={Link} to="/ingreso" color="inherit">
-              Ingreso
-            </Button>
-            <Button component={Link} to="/comprar" color="inherit">
-              Comprar
-            </Button>
 
-            {/* Botón desplegable de Roles */}
-            <Button color="inherit" onClick={handleMenuOpen}>
-              Seleccionar Rol
+            <Button
+              onClick={handleOpenRoles}
+              color="inherit"
+              endIcon={<ArrowDropDownIcon />}
+            >
+              ¿Qué deseas hacer hoy?
             </Button>
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleCloseRoles}
+            >
+              <MenuItem onClick={() => seleccionarRol("vendedor")}>
+                📦 Vender artículos
+              </MenuItem>
+              <MenuItem onClick={() => seleccionarRol("comprador")}>
+                🛒 Comprar artículos
+              </MenuItem>
+            </Menu>
 
-            {/* Íconos */}
-            <IconButton color="inherit">
-              <PermIdentityIcon />
-            </IconButton>
-            <IconButton color="inherit">
-              <AddShoppingCartIcon />
-            </IconButton>
+            {!isLoggedIn ? (
+              <>
+                <LoginButton />
+                <Button
+                  onClick={() => navigate("/registro")}
+                  color="inherit"
+                  variant="outlined"
+                >
+                  Registrarse
+                </Button>
+              </>
+            ) : (
+              <>
+                <Typography variant="body1">
+                  ¡Hola, <strong>{nombre}</strong>!
+                </Typography>
+                <PerfilMenu />
+                <LogoutButton variant="text" size="small" />
+              </>
+            )}
           </Box>
-
-          {/* Menú Hamburguesa (solo en móviles) */}
-          <IconButton
-            sx={{ display: { xs: "flex", md: "none" } }}
-            onClick={handleDrawerToggle}
-          >
-            <MenuIcon />
-          </IconButton>
-        </Toolbar>
-      </AppBar>
-
-      {/* Drawer para menú en móviles */}
-      <Drawer anchor="left" open={mobileOpen} onClose={handleDrawerToggle}>
-        <Box
-          sx={{ width: 250 }}
-          role="presentation"
-          onClick={handleDrawerToggle}
-        >
-          <List>
-            <ListItem button component={Link} to="/">
-              <ListItemText primary="Home" />
-            </ListItem>
-            <ListItem button component={Link} to="/Nosotros">
-              <ListItemText primary="Nosotros" />
-            </ListItem>
-            <ListItem button component={Link} to="/contacto">
-              <ListItemText primary="Contacto" />
-            </ListItem>
-            <ListItem button component={Link} to="/registro">
-              <ListItemText primary="Registro" />
-            </ListItem>
-            <ListItem button component={Link} to="/ingreso">
-              <ListItemText primary="Ingreso" />
-            </ListItem>
-            <ListItem button component={Link} to="/comprar">
-              <ListItemText primary="Comprar" />
-            </ListItem>
-          </List>
-        </Box>
-      </Drawer>
-    </>
+        )}
+      </Toolbar>
+    </AppBar>
   );
 };
 
-export default NavbarVender;
+export default Navbar;

@@ -49,8 +49,6 @@ class RegistroUsuarioView(APIView):
         if serializer.is_valid():
             user = serializer.save()
 
-            # No necesitas llamar a set_password aquí, ya se hace en el serializer
-
             # Generar tokens JWT
             refresh = RefreshToken.for_user(user)
 
@@ -223,8 +221,8 @@ class PagosViewSet(viewsets.ModelViewSet):
 class PqrsViewSet(viewsets.ModelViewSet):
     queryset = Pqrs.objects.all()
     serializer_class = PqrsSerializer
+       
     
-
 
 @api_view(["GET"])
 def historial_transacciones_api(request):

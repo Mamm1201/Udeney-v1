@@ -1,3 +1,4 @@
+// src/components/Navbar.jsx
 import React, { useState } from "react";
 import Logo from "./Logo";
 import LoginButton from "./Loginbutton";
@@ -33,24 +34,27 @@ const Navbar = () => {
     setMobileMenuAnchor(event.currentTarget);
   const handleMobileMenuClose = () => setMobileMenuAnchor(null);
 
-  // Menú desplegable para roles
+  // Menú de acciones: ¿Qué deseas hacer hoy?
   const [anchorEl, setAnchorEl] = useState(null);
   const handleOpenRoles = (event) => setAnchorEl(event.currentTarget);
   const handleCloseRoles = () => setAnchorEl(null);
 
   const handleLogout = () => {
     const nombre = localStorage.getItem("nombres_usuario");
-
-    // Limpia el almacenamiento local
     localStorage.clear();
-
-    // Opcional: podrías mostrar un mensaje con Snackbar aquí si quieres más adelante
-
-    // Redirección a login
     navigate("/login");
-
-    // Solo para debug o futura mejora
     console.log(`👋 Hasta luego, ${nombre || "usuario"}!`);
+  };
+
+  // ⚡ Guardar el rol y navegar según la acción seleccionada
+  const seleccionarRol = (rol) => {
+    localStorage.setItem("rol_usuario", rol);
+    if (rol === "vendedor") {
+      navigate("/crear-articulo");
+    } else {
+      navigate("/articulos");
+    }
+    handleCloseRoles();
   };
 
   return (
@@ -87,20 +91,9 @@ const Navbar = () => {
                 Contacto
               </MenuItem>
               <MenuItem onClick={handleOpenRoles}>
-                Seleccionar Rol <ArrowDropDownIcon fontSize="small" />
+                ¿Qué deseas hacer hoy? <ArrowDropDownIcon fontSize="small" />
               </MenuItem>
-              {/* <Menu
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={handleCloseRoles}
-              >
-                <MenuItem onClick={() => navigate("/rol?vendedor")}>
-                  Vendedor
-                </MenuItem>
-                <MenuItem onClick={() => navigate("/rol?comprador")}>
-                  Comprador
-                </MenuItem>
-              </Menu> */}
+
               {!isLoggedIn ? (
                 <>
                   <MenuItem onClick={() => navigate("/login")}>
@@ -132,18 +125,18 @@ const Navbar = () => {
               color="inherit"
               endIcon={<ArrowDropDownIcon />}
             >
-              Seleccionar Rol
+              ¿Qué deseas hacer hoy?
             </Button>
             <Menu
               anchorEl={anchorEl}
               open={Boolean(anchorEl)}
               onClose={handleCloseRoles}
             >
-              <MenuItem onClick={() => navigate("/crear-articulo")}>
-                Vendedor
+              <MenuItem onClick={() => seleccionarRol("vendedor")}>
+                📦 Vender artículos
               </MenuItem>
-              <MenuItem onClick={() => navigate("/articulos")}>
-                Comprador
+              <MenuItem onClick={() => seleccionarRol("comprador")}>
+                🛒 Comprar artículos
               </MenuItem>
             </Menu>
 
@@ -163,9 +156,7 @@ const Navbar = () => {
                 <Typography variant="body1">
                   ¡Hola, <strong>{nombre}</strong>!
                 </Typography>
-                <>
-                  <PerfilMenu />
-                </>
+                <PerfilMenu />
                 <LogoutButton variant="text" size="small" />
               </>
             )}
