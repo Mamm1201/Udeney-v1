@@ -128,8 +128,7 @@ Editar
 
 ---
 
-¿Quieres que el nombre del proyecto en el README también diga “Eduney” o prefieres mantenerlo como “E-commerce”?
-Y si tienes nombre de usuario en GitHub, puedo actualizar la línea del `git clone` también.
+
 
 
 
