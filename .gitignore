@@ -1,19 +1,43 @@
-# Python
+# Bytecode de Python
 __pycache__/
 *.py[cod]
+*.so
+*.pyd
+
+# Archivos de bases de datos
 *.sqlite3
-*.log
+db.sqlite3
 
 # Entorno virtual
 venv/
+env/
 
-# Archivos de configuración secretos
+# Archivos de log
+*.log
+
+# Archivos de configuración sensibles
 .env
 
 # Archivos generados por Django
 /media/
 staticfiles/
-db.sqlite3
+*.pot
+*.pyc
+*.pyo
+
+# Archivos de migración vacíos
+*/migrations/__pycache__/
+*/migrations/*.pyc
+*/migrations/*.pyo
+
+# Node.js (frontend)
+client/node_modules/
+client/.env
 
 # VSCode
 .vscode/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
