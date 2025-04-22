@@ -1,4 +1,3 @@
-import React from "react";
 import Navbar from "../components/Navbar";
 import Pie from "../components/Pie";
 import Contact from "../components/Contact";
