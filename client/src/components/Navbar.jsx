@@ -4,6 +4,8 @@ import Logo from "./Logo";
 import LoginButton from "./Loginbutton";
 import LogoutButton from "./LogoutButton";
 import PerfilMenu from "./PerfilMenu";
+import { useCarrito } from "../context/CarritoContext"; // Hook del contexto del carrito
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import {
   AppBar,
   Toolbar,
@@ -15,6 +17,7 @@ import {
   IconButton,
   useMediaQuery,
   useTheme,
+  Badge, // ✅ Importar Badge para el contador
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
@@ -46,7 +49,7 @@ const Navbar = () => {
     console.log(`👋 Hasta luego, ${nombre || "usuario"}!`);
   };
 
-  // ⚡ Guardar el rol y navegar según la acción seleccionada
+  // Guardar el rol y redirigir
   const seleccionarRol = (rol) => {
     localStorage.setItem("rol_usuario", rol);
     if (rol === "vendedor") {
@@ -56,6 +59,13 @@ const Navbar = () => {
     }
     handleCloseRoles();
   };
+
+  // Obtenemos el carrito y la cantidad total
+  const { carrito } = useCarrito();
+  const cantidadEnCarrito = carrito.reduce(
+    (acc, item) => acc + item.cantidad,
+    0
+  );
 
   return (
     <AppBar position="static" color="#86C384">
@@ -69,7 +79,6 @@ const Navbar = () => {
         {/* Logo / Título */}
         <Logo />
 
-        {/* Navegación */}
         {isMobile ? (
           <>
             <IconButton
@@ -160,6 +169,13 @@ const Navbar = () => {
                 <LogoutButton variant="text" size="small" />
               </>
             )}
+
+            {/* ✅ Ícono de carrito con contador */}
+            <IconButton onClick={() => navigate("/carrito")} color="inherit">
+              <Badge badgeContent={cantidadEnCarrito} color="error">
+                <ShoppingCartIcon />
+              </Badge>
+            </IconButton>
           </Box>
         )}
       </Toolbar>
