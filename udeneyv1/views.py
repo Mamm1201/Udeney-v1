@@ -25,6 +25,7 @@ from .models import (
     Pagos,
     Pqrs,
 )
+
 # IMPORTACIÓN DE SERIALIZADORES
 from .serializers import (
     UsuariosSerializer,
@@ -45,7 +46,7 @@ class RegistroUsuarioView(APIView):
 
     def post(self, request):
         serializer = UsuariosSerializer(data=request.data)
-        
+
         if serializer.is_valid():
             user = serializer.save()
 
@@ -73,6 +74,7 @@ class RegistroUsuarioView(APIView):
 # VISTA LOGIN USUARIO
 User = get_user_model()
 
+
 class LoginView(APIView):
     permission_classes = [AllowAny]
 
@@ -80,13 +82,25 @@ class LoginView(APIView):
         email = request.data.get("email")
         password = request.data.get("password")
 
-        user = get_object_or_404(Usuarios, email_usuario=email)
+        try:
+            user = get_object_or_404(Usuarios, email_usuario=email)
+        except Exception as e:  # Especificamos la excepción
+            return Response(
+                {"error": f"Usuario no encontrado: {str(e)}"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
         if not user.is_active:
-            return Response({"error": "Cuenta desactivada, contacta al administrador."}, status=status.HTTP_403_FORBIDDEN)
+            return Response(
+                {"error": "Cuenta desactivada, contacta al administrador."},
+                status=status.HTTP_403_FORBIDDEN
+            )
 
         if not user.check_password(password):
-            return Response({"error": "Credenciales incorrectas"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response(
+                {"error": "Credenciales incorrectas"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
 
         refresh = RefreshToken.for_user(user)
 
@@ -100,7 +114,9 @@ class LoginView(APIView):
                 "refresh_token": str(refresh),
             },
             status=status.HTTP_200_OK,
-        )        
+        )
+
+
 
 # VISTA CERRAR SESIÓN
 class LogoutView(APIView):
@@ -112,13 +128,14 @@ class LogoutView(APIView):
             {"message": "Cierre de sesión exitoso"},
             status=status.HTTP_200_OK
         )
-           
-# HISTORIAL DE TRANSACCIONES USUARIO REGISTARDO
+
+
+# HISTORIAL DE TRANSACCIONES USUARIO REGISTRADO
 @login_required
 def historial_transacciones(request):
     usuario = request.user
 
-    # Obtener fechas desde la URL (?fecha_inicio=YYYY-MM-DD&fecha_fin=YYYY-MM-DD)
+    # Obtener fechas desde la URL
     fecha_inicio = request.GET.get("fecha_inicio")
     fecha_fin = request.GET.get("fecha_fin")
 
@@ -146,16 +163,18 @@ def historial_transacciones(request):
 
     # Agrupar por año y mes
     compras = (
-        compras_qs
-        .annotate(year=TruncYear("fecha_transaccion"), month=TruncMonth("fecha_transaccion"))
+        compras_qs.annotate(
+            year=TruncYear("fecha_transaccion"),
+            month=TruncMonth("fecha_transaccion"))
         .values("year", "month")
         .annotate(total_compras=Count("id_transaccion"))
         .order_by("-year", "-month")
     )
 
     ventas = (
-        ventas_qs
-        .annotate(year=TruncYear("fecha_transaccion"), month=TruncMonth("fecha_transaccion"))
+        ventas_qs.annotate(
+            year=TruncYear("fecha_transaccion"),
+            month=TruncMonth("fecha_transaccion"))
         .values("year", "month")
         .annotate(total_ventas=Count("id_transaccion"))
         .order_by("-year", "-month")
@@ -166,7 +185,8 @@ def historial_transacciones(request):
         "historial_transacciones.html",
         {"compras": compras, "ventas": ventas},
     )
-    
+
+
 # CRUDS PARA LOS MODELOS
 class UsuariosViewSet(viewsets.ModelViewSet):
     queryset = Usuarios.objects.all()
@@ -176,7 +196,8 @@ class UsuariosViewSet(viewsets.ModelViewSet):
 class ArticulosViewSet(viewsets.ModelViewSet):
     queryset = Articulos.objects.all()
     serializer_class = ArticulosSerializer
-    
+
+
 class ArticuloDetailAPIView(RetrieveAPIView):
     queryset = Articulos.objects.all()
     serializer_class = ArticulosSerializer
@@ -221,8 +242,7 @@ class PagosViewSet(viewsets.ModelViewSet):
 class PqrsViewSet(viewsets.ModelViewSet):
     queryset = Pqrs.objects.all()
     serializer_class = PqrsSerializer
-       
-    
+
 
 @api_view(["GET"])
 def historial_transacciones_api(request):
@@ -269,4 +289,3 @@ def historial_transacciones_api(request):
         "compras": list(compras_agrupadas),
         "ventas": list(ventas_agrupadas)
     })
-

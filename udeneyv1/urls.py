@@ -1,8 +1,8 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from django.views.generic import TemplateView
 from .views import ArticuloDetailAPIView
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView # importación para token de validación
+# importación para token de validación
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -38,13 +38,28 @@ router.register(r"pqrs", PqrsViewSet)
 
 urlpatterns = [
     # Incluir las rutas generadas automáticamente por el router
-    path("", include(router.urls)), 
-    path("register/", RegistroUsuarioView.as_view(), name="register"), 
+    path("", include(router.urls)),
+    path("register/", RegistroUsuarioView.as_view(), name="register"),
     path("login/", LoginView.as_view(), name="login"),
-    path("articulos/<int:id_articulo>/", ArticuloDetailAPIView.as_view(), name="detalle-articulo"),
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),  # Para obtener token
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),  # Para refrescar token
-    path("historial/", historial_transacciones_api, name="historial_api"), #Solicitar historial transacciones
-    
-] 
+    path(
+        "articulos/<int:id_articulo>/",
+        ArticuloDetailAPIView.as_view(),
+        name="detalle-articulo"),
+    path(
+        'api/token/',
+        TokenObtainPairView.as_view(),
+        name='token_obtain_pair'),
+    # Para obtener token
+    path(
+        'api/token/refresh/',
+        TokenRefreshView.as_view(),
+        name='token_refresh'),
+    # Para refrescar token
+    path(
+        "historial/",
+        historial_transacciones_api,
+        name="historial_api"),
+    # Solicitar historial transacciones
+
+]
 static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

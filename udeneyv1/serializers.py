@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from .models import UsuarioRol, Usuarios # Importamos el modelo Usuario
 from .models import (
     Usuarios,
     Articulos,
@@ -11,9 +10,7 @@ from .models import (
     Calificaciones,
     Pagos,
     Pqrs,
-)  
-
-from rest_framework import serializers
+)
 
 
 # SERIALIZADOR DE USUARIOS
@@ -41,7 +38,8 @@ class UsuariosSerializer(serializers.ModelSerializer):
             telefono_usuario=validated_data['telefono_usuario'],
             direccion_usuario=validated_data['direccion_usuario']
         )
-        user.set_password(validated_data['password_usuario'])  # Encripta la contraseña
+        # Encripta la contraseña
+        user.set_password(validated_data['password_usuario'])
         user.save()
         return user
 
@@ -62,10 +60,12 @@ class RolesSerializer(serializers.ModelSerializer):
         model = Roles
         fields = "__all__"  # o especifica los campos que quieras
 
+
 # SERIALIZADOR DE USUARIO_ROL
 class UsuarioRolSerializer(serializers.ModelSerializer):
-    id_rol = serializers.ChoiceField(choices=UsuarioRol.ROL_CHOICES)  # Mostrar "Vendedor" o "Comprador"
-   
+    # Mostrar "Vendedor" o "Comprador"
+    id_rol = serializers.ChoiceField(choices=UsuarioRol.ROL_CHOICES)
+
     id_usuario = serializers.SlugRelatedField(
         queryset=Usuarios.objects.all(),
         slug_field='nombres_usuario'  # Muestra el nombre del usuario en lugar del ID
@@ -86,6 +86,7 @@ class CategoriasSerializer(serializers.ModelSerializer):
 # SERIALIZADOR DE ARTICULOS
 class ArticulosSerializer(serializers.ModelSerializer):
     imagen = serializers.ImageField(use_url=True)
+
     class Meta:
         model = Articulos
         fields = "__all__"
@@ -124,3 +125,8 @@ class PqrsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pqrs
         fields = "__all__"
+
+
+
+
+
