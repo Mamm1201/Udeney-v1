@@ -21,7 +21,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      DJANGO_SETTINGS_MODULE: udeney_backend.settings
+      DJANGO_SETTINGS_MODULE: e-commerce.settings
       PYTHONUNBUFFERED: 1
       DATABASE_HOST: db
       DATABASE_NAME: udeney_db

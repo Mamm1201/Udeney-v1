@@ -12,6 +12,10 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
+import os
+from dotenv import load_dotenv
+
+load_dotenv()  # Carga las variables desde el archivo .env
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -105,22 +109,23 @@ WSGI_APPLICATION = "e-commerce.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.mysql",  # Motor de base de datos
-        "NAME": "db_ecommerce",  # Nombre de la base de datos
-        "USER": "root",  # Usuario de la base de datos
-        "PASSWORD": "Mario1201*",  # Contraseña del usuario
-        "HOST": "localhost",  # Dirección del servidor (para entorno local)
-        "PORT": "3306",  # Puerto del servidor MySQL
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": os.getenv("DB_NAME"),
+        "USER": os.getenv("DB_USER"),
+        "PASSWORD": os.getenv("DB_PASSWORD"),
+        "HOST": os.getenv("DB_HOST"),
+        "PORT": os.getenv("DB_PORT"),
     },
-     'test': {
+    'test': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'test_db_ecommerce',  # Base de datos de prueba
-        'USER': 'root',
-        'PASSWORD': 'Mario1201*',
-        'HOST': 'localhost',
-        'PORT': '3306',
+        'NAME': 'test_' + os.getenv("DB_NAME"),
+        'USER': os.getenv("DB_USER"),
+        'PASSWORD': os.getenv("DB_PASSWORD"),
+        'HOST': os.getenv("DB_HOST"),
+        'PORT': os.getenv("DB_PORT"),
     }
 }
+
 
 
 
