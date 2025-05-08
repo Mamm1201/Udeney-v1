@@ -1,0 +1,49 @@
+version: "3.8"
+
+services:
+  db:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword # 🔐 Reemplaza por una contraseña segura
+      MYSQL_DATABASE: udeney_db
+      MYSQL_USER: udeney_user
+      MYSQL_PASSWORD: userpassword # 🔐 Reemplaza por una contraseña segura
+    volumes:
+      - db_data:/var/lib/mysql # 📁 Persistencia de la base de datos
+    ports:
+      - "3307:3306" # 🌐 Puerto MySQL accesible desde host
+
+  backend:
+    build:
+      context: . # 📦 Dockerfile del backend en raíz
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app # 🔁 Monta el proyecto completo dentro del contenedor
+    ports:
+      - "8000:8000" # 🌐 Puerto de desarrollo de Django
+    environment:
+      DJANGO_SETTINGS_MODULE: e_commerce.settings
+      PYTHONUNBUFFERED: 1
+      DATABASE_HOST: db
+      DATABASE_NAME: udeney_db
+      DATABASE_USER: udeney_user
+      DATABASE_PASSWORD: userpassword
+    depends_on:
+      - db # ⏳ Espera a que la base de datos esté lista
+
+  frontend:
+    build:
+      context: ./client # 📁 Directorio donde está tu frontend con Vite
+    command: npm run dev # 🚀 Lanza Vite en modo desarrollo
+    working_dir: /app
+    volumes:
+      - ./client:/app # 🔁 Monta el código para hot reload
+      - /app/node_modules # ⚠️ Evita sobrescribir node_modules dentro del contenedor
+    ports:
+      - "5173:5173" # 🌐 Puerto de desarrollo de Vite
+    depends_on:
+      - backend # ⏳ Espera a que el backend esté disponible
+
+volumes:
+  db_data: # 💾 Volumen para MySQL
+
