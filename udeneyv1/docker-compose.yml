@@ -1,0 +1,41 @@
+version: "3.8"
+
+services:
+  db:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword # Cambia esto por una contraseña segura
+      MYSQL_DATABASE: udeney_db
+      MYSQL_USER: udeney_user
+      MYSQL_PASSWORD: userpassword # Cambia esto por una contraseña segura
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+
+  backend:
+    build: ./e-commerce/backend
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./e-commerce/backend:/app
+    ports:
+      - "8000:8000"
+    environment:
+      DJANGO_SETTINGS_MODULE: udeney_backend.settings
+      PYTHONUNBUFFERED: 1
+      DATABASE_HOST: db
+      DATABASE_NAME: udeney_db
+      DATABASE_USER: udeney_user
+      DATABASE_PASSWORD: userpassword
+    depends_on:
+      - db
+
+  frontend:
+    build: ./client/frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  db_data:
