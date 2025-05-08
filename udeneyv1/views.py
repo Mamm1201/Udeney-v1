@@ -40,6 +40,7 @@ from .serializers import (
     PqrsSerializer,
 )
 
+
 # VISTA REGISTRO DE USUARIO
 class RegistroUsuarioView(APIView):
     permission_classes = [AllowAny]
@@ -115,7 +116,6 @@ class LoginView(APIView):
             },
             status=status.HTTP_200_OK,
         )
-
 
 
 # VISTA CERRAR SESIÓN

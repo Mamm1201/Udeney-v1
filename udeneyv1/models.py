@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.hashers import make_password, check_password
 
+
 class Usuarios(models.Model):
     id_usuario = models.AutoField(primary_key=True)
     nombres_usuario = models.CharField(max_length=255)
@@ -67,7 +68,6 @@ class UsuarioRol(models.Model):
         max_length=10,
         choices=ROL_CHOICES,
         db_column="id_rol")  # ENUM en Django
-
 
     class Meta:
         db_table = "usuario_rol"
@@ -232,8 +232,3 @@ class Pqrs(models.Model):
     class Meta:
         db_table = "pqrs"  # Asegúrate de usar el nombre correcto de la tabla
         managed = False  # Django no intentará crear esta tabla
-
-
-
-
-

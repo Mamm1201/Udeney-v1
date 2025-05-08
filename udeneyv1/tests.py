@@ -1,8 +1,7 @@
 from django.test import TestCase
 from django.urls import reverse
-# Usa el modelo de usuario de Django
 from django.contrib.auth.models import User
-from .models import Transacciones,DetalleTransaccion
+from .models import Transacciones, DetalleTransaccion
 from django.utils.timezone import now, timedelta
 
 

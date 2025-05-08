@@ -125,8 +125,3 @@ class PqrsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pqrs
         fields = "__all__"
-
-
-
-
-
