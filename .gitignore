@@ -41,3 +41,25 @@ client/.env
 .DS_Store
 Thumbs.db
 
+client/dist/
+
+*.swp
+*.bak
+*.tmp
+.idea/
+
+htmlcov/
+.coverage
+.tox/
+
+*/migrations/*.py
+!*/migrations/__init__.py
+
+*.pyc
+*.pyo
+__pycache__/
+
+
+
+
+
