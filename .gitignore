@@ -1,16 +1,16 @@
-# Bytecode de Python
+# =========================
+# Python
+# =========================
 __pycache__/
 *.py[cod]
 *.so
 *.pyd
+*.pyc
+*.pyo
 
-# Archivos de bases de datos
-*.sqlite3
-db.sqlite3
-
-# Entorno virtual
-venv/
+# Entornos virtuales
 env/
+venv/
 
 # Archivos de log
 *.log
@@ -18,46 +18,52 @@ env/
 # Archivos de configuración sensibles
 .env
 
-# Archivos generados por Django
-/media/
-staticfiles/
-*.pot
-*.pyc
-*.pyo
-
-# Archivos de migración vacíos
-*/migrations/__pycache__/
-*/migrations/*.pyc
-*/migrations/*.pyo
-
-# Node.js (frontend)
-client/node_modules/
-client/.env
-
-# VSCode
-.vscode/
-
-# Sistema operativo
-.DS_Store
-Thumbs.db
-
-client/dist/
-
-*.swp
-*.bak
-*.tmp
-.idea/
-
+# Archivos de cobertura y pruebas
 htmlcov/
 .coverage
 .tox/
 
-*/migrations/*.py
+# =========================
+# Django
+# =========================
+*.sqlite3
+db.sqlite3
+
+# Archivos generados por Django
+/media/
+staticfiles/
+*.pot
+
+# Migraciones (excepto __init__.py)
+*/migrations/
 !*/migrations/__init__.py
 
-*.pyc
-*.pyo
-__pycache__/
+# =========================
+# Frontend (Node.js + Vite)
+# =========================
+client/node_modules/
+client/.env
+client/dist/
+
+# =========================
+# Entornos de desarrollo
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# Sistema operativo
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Archivos temporales
+# =========================
+*.swp
+*.bak
+*.tmp
+
 
 
 

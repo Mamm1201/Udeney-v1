@@ -1,7 +1,7 @@
 module.exports = {
   content: [
-    "./index.html", // o tu archivo HTML
-    "./src/**/*.{js,jsx,ts,tsx}", // Aquí se incluyen los archivos JS/TS, JSX/TSX donde utilizarás Tailwind
+    './index.html',
+    './src/**/*.{js,jsx,ts,tsx}', // USA slashes / en vez de backslashes \
   ],
   theme: {
     extend: {},

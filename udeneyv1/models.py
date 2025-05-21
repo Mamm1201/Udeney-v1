@@ -12,6 +12,8 @@ class Usuarios(models.Model):
     fecha_nacimiento = models.DateField(null=True, blank=True)
     telefono_usuario = models.CharField(max_length=20)
     direccion_usuario = models.CharField(max_length=255)
+    is_active = models.BooleanField(default=True)
+
 
     # Campo necesario para login
     is_active = models.BooleanField(default=True)
