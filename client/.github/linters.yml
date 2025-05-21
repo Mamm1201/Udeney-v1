@@ -35,6 +35,19 @@ jobs:
           [ -f .stylelintrc.json ] || wget https://raw.githubusercontent.com/microverseinc/linters-config/master/react-redux/.stylelintrc.json
       - name: Stylelint Report
         run: npx stylelint "**/*.{css,scss}"
+  flake8:
+    name: flake8 (Python Lint)
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Install flake8
+        run: pip install flake8
+      - name: Run flake8
+        run: flake8
   nodechecker:
     name: node_modules checker
     runs-on: ubuntu-22.04
