@@ -18,6 +18,8 @@ Udeney es una plataforma de **e-commerce educativo** orientada a promover la reu
 - Estructura del Proyecto
 - Configuración del Entorno
 - 🐳 Despliegue con Docker (opcional)
+- Gestión de Migraciones
+- Justificación del motor de base de datos (MySQL)
 - 📄 Licencia
 - 🤝 Autor
 - 🚧 Estado del Proyecto
@@ -77,6 +79,9 @@ Udeney-v1/
 ---
 
 ## ⚙️ Configuración del Entorno
+
+### 📦 Requisitos Previos
+
 
 ### 📦 Requisitos Previos
 
@@ -195,6 +200,17 @@ Este proyecto también incluye configuración para ejecutar todo el stack usando
 
 ### ⚙️ Requisitos Previos
 
+
+## 🐳 Despliegue con Docker (opcional)
+
+Este proyecto también incluye configuración para ejecutar todo el stack usando Docker y Docker Compose. Se levantan tres servicios:
+
+- 🛢️ **db**: MySQL 5.7 con volumen persistente.
+- 🐍 **backend**: Django REST Framework (modo desarrollo).
+- ⚛️ **frontend**: React + Vite (modo desarrollo).
+
+### ⚙️ Requisitos Previos
+
 - [Docker](https://www.docker.com/)
 - [Docker Compose](https://docs.docker.com/compose/)
 
@@ -229,6 +245,28 @@ Editar
 docker-compose down
 Esto detiene los contenedores, pero conserva los volúmenes de datos (base de datos persistente).
 ```
+
+``
+
+#### 🧾 Gestión de Migraciones
+
+En el proyecto, se recomienda mantener managed = True en los modelos para que Django gestione automáticamente las tablas y cambios en la base de datos mediante migraciones. Aunque es posible trabajar sin migraciones adicionales después de la migración inicial, usar las migraciones (python manage.py makemigrations y python manage.py migrate) garantiza un control más seguro y ordenado de los cambios en el esquema, facilitando el trabajo en equipo y los despliegues futuros.
+
+### 🛢️ Justificación del motor de base de datos (MySQL)
+
+Se eligió MySQL como motor de base de datos debido a su estabilidad, rendimiento y amplia compatibilidad con Django y otras tecnologías usadas en el proyecto. Además, el equipo tiene experiencia previa con MySQL, lo que facilita la configuración y mantenimiento. MySQL ofrece características sólidas como soporte para transacciones, replicación y seguridad, haciendo que sea una opción sólida para un proyecto de e-commerce como Udeney.
+
+markdown
+
+## 🧼 CALIDAD DEL CÓDIGO
+
+Este proyecto mantiene altos estándares de calidad en el código fuente tanto para el backend (Python) como para el frontend (React).
+
+### 🐍 Backend (Python)
+
+- **flake8**: Se usa para detectar errores de estilo y mantener el código limpio.
+  - Configuración ubicada en `.flake8`.
+  - Comando para ejecutar: `flake8 .`
 ````
 
 markdown
@@ -295,6 +333,58 @@ Stylelint para CSS/SCSS
 
 Verificación de que node_modules/ no se haya subido por error
 
+```bash
+# .flake8
+[flake8]
+exclude = migrations,venv,node_modules,__pycache__
+max-line-length = 88
+```
+````
+
+### ⚛️ Frontend (JavaScript/React)
+
+ESLint: Verificador de buenas prácticas y errores comunes en JS/JSX.
+
+Stylelint: Verificador para estilos CSS/SCSS.
+
+Prettier (opcional pero recomendado): Formateador automático de código.
+
+```bash
+
+bash
+Copiar
+Editar
+
+# Ejecutar ESLint
+
+npx eslint "**/*.{js,jsx}"
+
+# Ejecutar Stylelint
+
+npx stylelint "**/*.{css,scss}"
+
+# Ejecutar Prettier (requiere .prettierrc)
+
+npx prettier --write .
+Archivo .prettierrc sugerido ( colócalo en client/):
+json
+Copiar
+Editar
+{
+  "semi": true,
+  "singleQuote": true,
+  "trailingComma": "all",
+  "tabWidth": 2
+}
+🤖 CI - Integración Continua
+El proyecto incluye un flujo de trabajo automatizado en .github/workflows/linters.yml que ejecuta:
+
+ESLint para JS/React
+
+Stylelint para CSS/SCSS
+
+Verificación de que node_modules/ no se haya subido por error
+
 ```
 
 ### 📄 Licencia
@@ -309,3 +399,5 @@ Este proyecto está licenciado bajo la Licencia MIT. Consulta el archivo LICENSE
 ### 🚧 Estado del Proyecto
 
 🔨 En desarrollo activo – nuevas funcionalidades y mejoras están en curso.
+
+``
