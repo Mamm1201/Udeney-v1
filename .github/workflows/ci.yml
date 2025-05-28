@@ -43,7 +43,7 @@ jobs:
 
       - name: Run tests with pytest
         run: |
-          pytest tests/ --verbose
+          pytest client/tests/ --verbose
 
       # Opcional: Subir reporte de cobertura como artifact (si usas pytest-cov)
       - name: Upload coverage report
