@@ -1,5 +1,5 @@
 // src/pages/MisArticulos.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Grid,
@@ -16,29 +16,29 @@ import {
   DialogActions,
   Snackbar,
   Alert,
-} from "@mui/material";
-import { useNavigate } from "react-router-dom";
-import api from "../api/axiosConfig";
+} from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import api from '../api/axiosConfig';
 
 const MisArticulos = () => {
   const navigate = useNavigate();
   const [articulos, setArticulos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [articuloAEliminar, setArticuloAEliminar] = useState(null);
-  const [snackbar, setSnackbar] = useState({ open: false, message: "" });
+  const [snackbar, setSnackbar] = useState({ open: false, message: '' });
 
-  const id_usuario = localStorage.getItem("id_usuario");
+  const id_usuario = localStorage.getItem('id_usuario');
 
   // 🔁 Cargar artículos del usuario
   const fetchArticulos = async () => {
     try {
       const res = await api.get(`/articulos/`);
       const filtrados = res.data.filter(
-        (art) => parseInt(art.id_usuario) === parseInt(id_usuario)
+        (art) => parseInt(art.id_usuario) === parseInt(id_usuario),
       );
       setArticulos(filtrados);
     } catch (error) {
-      console.error("Error al obtener artículos:", error);
+      console.error('Error al obtener artículos:', error);
     } finally {
       setLoading(false);
     }
@@ -53,17 +53,17 @@ const MisArticulos = () => {
     try {
       await api.delete(`/articulos/${articuloAEliminar.id_articulo}/`);
       setArticulos((prev) =>
-        prev.filter((a) => a.id_articulo !== articuloAEliminar.id_articulo)
+        prev.filter((a) => a.id_articulo !== articuloAEliminar.id_articulo),
       );
       setSnackbar({
         open: true,
-        message: "✅ Artículo eliminado exitosamente",
+        message: '✅ Artículo eliminado exitosamente',
       });
     } catch (error) {
-      console.error("Error al eliminar artículo:", error);
+      console.error('Error al eliminar artículo:', error);
       setSnackbar({
         open: true,
-        message: "❌ Error al eliminar el artículo",
+        message: '❌ Error al eliminar el artículo',
       });
     } finally {
       setArticuloAEliminar(null);
@@ -77,20 +77,20 @@ const MisArticulos = () => {
       <Button
         variant="outlined"
         color="secondary"
-        startIcon={<span style={{ fontSize: "1.2rem" }}>🏠</span>}
+        startIcon={<span style={{ fontSize: '1.2rem' }}>🏠</span>}
         sx={{
           mb: 3,
-          borderRadius: "12px",
-          textTransform: "none",
-          fontWeight: "bold",
-          fontSize: "1rem",
+          borderRadius: '12px',
+          textTransform: 'none',
+          fontWeight: 'bold',
+          fontSize: '1rem',
           px: 3,
           py: 1,
-          ":hover": {
-            backgroundColor: "#f0f0f0",
+          ':hover': {
+            backgroundColor: '#f0f0f0',
           },
         }}
-        onClick={() => navigate("/")}
+        onClick={() => navigate('/')}
       >
         Volver al inicio
       </Button>
@@ -105,13 +105,13 @@ const MisArticulos = () => {
         <Grid container spacing={3}>
           {articulos.map((articulo) => (
             <Grid item xs={12} sm={6} md={4} key={articulo.id_articulo}>
-              <Card sx={{ height: "100%" }}>
+              <Card sx={{ height: '100%' }}>
                 <CardMedia
                   component="img"
                   height="160"
                   image={
                     articulo.imagen ||
-                    "https://via.placeholder.com/300x160?text=Sin+imagen"
+                    'https://via.placeholder.com/300x160?text=Sin+imagen'
                   }
                   alt={articulo.titulo_articulo}
                 />
@@ -170,13 +170,13 @@ const MisArticulos = () => {
       <Snackbar
         open={snackbar.open}
         autoHideDuration={4000}
-        onClose={() => setSnackbar({ open: false, message: "" })}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        onClose={() => setSnackbar({ open: false, message: '' })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         <Alert
           severity="success"
-          sx={{ width: "100%" }}
-          onClose={() => setSnackbar({ open: false, message: "" })}
+          sx={{ width: '100%' }}
+          onClose={() => setSnackbar({ open: false, message: '' })}
         >
           {snackbar.message}
         </Alert>

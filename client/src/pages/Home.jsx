@@ -1,8 +1,8 @@
-import React from "react";
-import Navbar from "../components/Navbar";
-import Boton1 from "../components/Boton1";
-import Boton2 from "../components/Boton2";
-import Pie from "../components/Pie";
+import React from 'react';
+import Navbar from '../components/Navbar';
+import Boton1 from '../components/Boton1';
+import Boton2 from '../components/Boton2';
+import Pie from '../components/Pie';
 
 const Home = () => {
   return (

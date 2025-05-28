@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import api from "../api/axiosConfig";
+import React, { useEffect, useState } from 'react';
+import api from '../api/axiosConfig';
 import {
   Box,
   Typography,
@@ -9,24 +9,24 @@ import {
   Grid,
   CircularProgress,
   Alert,
-} from "@mui/material";
-import axios from "axios";
+} from '@mui/material';
+import axios from 'axios';
 
 const HistorialTransacciones = () => {
   const [compras, setCompras] = useState([]);
   const [ventas, setVentas] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [fechaInicio, setFechaInicio] = useState("");
-  const [fechaFin, setFechaFin] = useState("");
+  const [error, setError] = useState('');
+  const [fechaInicio, setFechaInicio] = useState('');
+  const [fechaFin, setFechaFin] = useState('');
 
-  const id_usuario = localStorage.getItem("id_usuario");
+  const id_usuario = localStorage.getItem('id_usuario');
 
   const fetchHistorial = async () => {
     setLoading(true);
-    setError("");
+    setError('');
     try {
-      const res = await api.get("/historial/", {
+      const res = await api.get('/historial/', {
         params: {
           id_usuario,
           fecha_inicio: fechaInicio || undefined,
@@ -37,7 +37,7 @@ const HistorialTransacciones = () => {
       setCompras(res.data.compras || []);
       setVentas(res.data.ventas || []);
     } catch (err) {
-      setError("No se pudo cargar el historial.");
+      setError('No se pudo cargar el historial.');
     } finally {
       setLoading(false);
     }

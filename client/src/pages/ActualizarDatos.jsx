@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   TextField,
@@ -9,44 +9,44 @@ import {
   CircularProgress,
   Snackbar,
   Alert,
-} from "@mui/material";
-import axios from "axios";
+} from '@mui/material';
+import axios from 'axios';
 
 const ActualizarDatos = () => {
-  console.log("👉 API URL:", import.meta.env.VITE_API_URL);
+  console.log('👉 API URL:', import.meta.env.VITE_API_URL);
 
   const navigate = useNavigate(); // 🔄 Hook de navegación (¡debe ir aquí!)
 
   const [formData, setFormData] = useState({
-    nombres_usuario: "",
-    apellidos_usuario: "",
-    email_usuario: "",
-    telefono_usuario: "",
-    direccion_usuario: "",
+    nombres_usuario: '',
+    apellidos_usuario: '',
+    email_usuario: '',
+    telefono_usuario: '',
+    direccion_usuario: '',
   });
 
   const [loading, setLoading] = useState(false); // 🔄 Indicador de carga
   const [snackbar, setSnackbar] = useState({
     open: false,
-    message: "",
-    severity: "info",
+    message: '',
+    severity: 'info',
   });
 
-  const id_usuario = localStorage.getItem("id_usuario");
+  const id_usuario = localStorage.getItem('id_usuario');
 
   // 🔽 Cargar los datos del usuario al montar el componente
   useEffect(() => {
     const fetchDatos = async () => {
       try {
         const res = await axios.get(
-          `${import.meta.env.VITE_API_URL}usuarios/${id_usuario}/`
+          `${import.meta.env.VITE_API_URL}usuarios/${id_usuario}/`,
         );
         setFormData(res.data);
       } catch (error) {
         setSnackbar({
           open: true,
-          message: "Error al cargar datos",
-          severity: "error",
+          message: 'Error al cargar datos',
+          severity: 'error',
         });
       }
     };
@@ -67,28 +67,28 @@ const ActualizarDatos = () => {
     try {
       await axios.put(
         `${import.meta.env.VITE_API_URL}usuarios/${id_usuario}/`,
-        formData
+        formData,
       );
 
       setSnackbar({
         open: true,
-        message: "Datos actualizados correctamente",
-        severity: "success",
+        message: 'Datos actualizados correctamente',
+        severity: 'success',
       });
 
       // 🔁 Redirigir después de 2 segundos
       setTimeout(() => {
-        navigate("/");
+        navigate('/');
       }, 2000);
     } catch (error) {
       console.error(
-        "Error al actualizar:",
-        error.response?.data || error.message
+        'Error al actualizar:',
+        error.response?.data || error.message,
       );
       setSnackbar({
         open: true,
-        message: "Error al actualizar datos",
-        severity: "error",
+        message: 'Error al actualizar datos',
+        severity: 'error',
       });
     } finally {
       setLoading(false);
@@ -103,7 +103,7 @@ const ActualizarDatos = () => {
       minHeight="100vh"
       bgcolor="#f4f6f8"
     >
-      <Paper sx={{ p: 4, width: "100%", maxWidth: 500 }}>
+      <Paper sx={{ p: 4, width: '100%', maxWidth: 500 }}>
         <Typography variant="h5" gutterBottom>
           Actualizar mis datos
         </Typography>
@@ -164,7 +164,7 @@ const ActualizarDatos = () => {
             sx={{ mt: 2 }}
             disabled={loading}
           >
-            {loading ? <CircularProgress size={24} /> : "Actualizar"}
+            {loading ? <CircularProgress size={24} /> : 'Actualizar'}
           </Button>
         </Box>
       </Paper>
@@ -174,12 +174,12 @@ const ActualizarDatos = () => {
         open={snackbar.open}
         autoHideDuration={4000}
         onClose={() => setSnackbar({ ...snackbar, open: false })}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
         <Alert
           severity={snackbar.severity}
           onClose={() => setSnackbar({ ...snackbar, open: false })}
-          sx={{ width: "100%" }}
+          sx={{ width: '100%' }}
         >
           {snackbar.message}
         </Alert>

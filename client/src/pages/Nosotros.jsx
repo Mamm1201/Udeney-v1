@@ -1,6 +1,6 @@
-import React from "react";
-import Navbar from "../components/Navbar";
-import Pie from "../components/Pie";
+import React from 'react';
+import Navbar from '../components/Navbar';
+import Pie from '../components/Pie';
 
 const Nosotros = () => {
   return (

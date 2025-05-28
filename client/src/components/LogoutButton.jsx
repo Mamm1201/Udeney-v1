@@ -1,12 +1,12 @@
-import React, { useState } from "react";
-import { Button, Snackbar, Alert } from "@mui/material";
-import LogoutIcon from "@mui/icons-material/Logout";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from 'react';
+import { Button, Snackbar, Alert } from '@mui/material';
+import LogoutIcon from '@mui/icons-material/Logout';
+import { useNavigate } from 'react-router-dom';
 
 const LogoutButton = ({
-  variant = "text",
-  size = "medium",
-  label = "Cerrar sesión",
+  variant = 'text',
+  size = 'medium',
+  label = 'Cerrar sesión',
 }) => {
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const navigate = useNavigate();
@@ -15,7 +15,7 @@ const LogoutButton = ({
     localStorage.clear();
     setOpenSnackbar(true);
     setTimeout(() => {
-      navigate("/login");
+      navigate('/login');
     }, 2000);
   };
 
@@ -35,12 +35,12 @@ const LogoutButton = ({
         open={openSnackbar}
         autoHideDuration={3000}
         onClose={() => setOpenSnackbar(false)}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
         <Alert
           severity="success"
           variant="filled"
-          sx={{ width: "100%" }}
+          sx={{ width: '100%' }}
           onClose={() => setOpenSnackbar(false)}
         >
           ¡Sesión cerrada correctamente!

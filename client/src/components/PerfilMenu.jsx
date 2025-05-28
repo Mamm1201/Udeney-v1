@@ -1,5 +1,5 @@
 // src/components/PerfilMenu.jsx
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   IconButton,
   Menu,
@@ -8,10 +8,10 @@ import {
   Divider,
   Box,
   Avatar,
-} from "@mui/material";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import LogoutButton from "./LogoutButton"; // ya lo creamos antes
-import { useNavigate } from "react-router-dom";
+} from '@mui/material';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import LogoutButton from './LogoutButton'; // ya lo creamos antes
+import { useNavigate } from 'react-router-dom';
 
 const PerfilMenu = () => {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -22,8 +22,8 @@ const PerfilMenu = () => {
   const handleClose = () => setAnchorEl(null);
 
   // Obtenemos datos guardados en localStorage
-  const nombres = localStorage.getItem("nombres_usuario");
-  const email = localStorage.getItem("email_usuario");
+  const nombres = localStorage.getItem('nombres_usuario');
+  const email = localStorage.getItem('email_usuario');
 
   return (
     <>
@@ -37,8 +37,8 @@ const PerfilMenu = () => {
         anchorEl={anchorEl}
         open={open}
         onClose={handleClose}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-        transformOrigin={{ vertical: "top", horizontal: "right" }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
         {/* Datos del usuario */}
         <Box sx={{ px: 2, py: 1 }}>
@@ -55,7 +55,7 @@ const PerfilMenu = () => {
         {/* Acciones */}
         <MenuItem
           onClick={() => {
-            navigate("/Actualizar-Datos");
+            navigate('/Actualizar-Datos');
             handleClose();
           }}
         >
@@ -64,7 +64,7 @@ const PerfilMenu = () => {
 
         <MenuItem
           onClick={() => {
-            navigate("/historial-transacciones");
+            navigate('/historial-transacciones');
             handleClose();
           }}
         >

@@ -1,11 +1,11 @@
-import React, { useState } from "react";
-import { Box, TextField, Button, Typography, Grid } from "@mui/material";
+import React, { useState } from 'react';
+import { Box, TextField, Button, Typography, Grid } from '@mui/material';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
-    fullName: "",
-    email: "",
-    subject: "",
+    fullName: '',
+    email: '',
+    subject: '',
   });
 
   const handleChange = (e) => {
@@ -15,10 +15,10 @@ const Contact = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Datos del formulario:", formData);
+    console.log('Datos del formulario:', formData);
     // Aquí puedes enviar los datos al backend o manejarlos según tu lógica
-    alert("¡Gracias por contactarnos!");
-    setFormData({ fullName: "", email: "", subject: "" });
+    alert('¡Gracias por contactarnos!');
+    setFormData({ fullName: '', email: '', subject: '' });
   };
 
   return (
@@ -27,14 +27,14 @@ const Contact = () => {
       onSubmit={handleSubmit}
       sx={{
         maxWidth: 600,
-        margin: "auto",
+        margin: 'auto',
         padding: 3,
-        backgroundColor: "#f9f9f9",
+        backgroundColor: '#f9f9f9',
         borderRadius: 2,
         boxShadow: 3,
       }}
     >
-      <Typography variant="h4" sx={{ mb: 3, textAlign: "center" }}>
+      <Typography variant="h4" sx={{ mb: 3, textAlign: 'center' }}>
         Contáctanos
       </Typography>
       <Grid container spacing={2}>
@@ -75,7 +75,7 @@ const Contact = () => {
           />
         </Grid>
       </Grid>
-      <Box sx={{ mt: 3, textAlign: "center" }}>
+      <Box sx={{ mt: 3, textAlign: 'center' }}>
         <Button
           type="submit"
           variant="contained"

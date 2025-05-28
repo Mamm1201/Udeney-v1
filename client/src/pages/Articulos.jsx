@@ -1,11 +1,11 @@
 // src/pages/Articulos.jsx
-import { useEffect, useState } from "react";
-import { getAllArticulos } from "../api/articulos.api";
-import { Link } from "react-router-dom";
-import Navbar from "../components/Navbar";
-import Pie from "../components/Pie";
-import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
-import { useCarrito } from "../context/CarritoContext";
+import { useEffect, useState } from 'react';
+import { getAllArticulos } from '../api/articulos.api';
+import { Link } from 'react-router-dom';
+import Navbar from '../components/Navbar';
+import Pie from '../components/Pie';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import { useCarrito } from '../context/CarritoContext';
 import {
   Box,
   Typography,
@@ -17,11 +17,11 @@ import {
   Container,
   Snackbar,
   Alert,
-} from "@mui/material";
+} from '@mui/material';
 
 const Articulos = () => {
   const [articulos, setArticulos] = useState([]);
-  const [snackbar, setSnackbar] = useState({ open: false, message: "" });
+  const [snackbar, setSnackbar] = useState({ open: false, message: '' });
   const { agregarAlCarrito } = useCarrito(); // ✅ Usamos el contexto global
 
   useEffect(() => {
@@ -32,7 +32,7 @@ const Articulos = () => {
 
   const handleAgregar = (articulo) => {
     agregarAlCarrito(articulo);
-    setSnackbar({ open: true, message: "✅ Artículo agregado al carrito" });
+    setSnackbar({ open: true, message: '✅ Artículo agregado al carrito' });
   };
 
   return (
@@ -41,35 +41,35 @@ const Articulos = () => {
       <Container
         maxWidth="md"
         sx={{
-          minHeight: "80vh",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          padding: "16px",
-          backgroundColor: "#f5f5f5",
-          borderRadius: "8px",
-          marginTop: "24px",
+          minHeight: '80vh',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: '16px',
+          backgroundColor: '#f5f5f5',
+          borderRadius: '8px',
+          marginTop: '24px',
         }}
       >
         <Typography
           variant="h4"
           gutterBottom
           sx={{
-            fontWeight: "bold",
-            color: "#1976d2",
-            textAlign: "center",
+            fontWeight: 'bold',
+            color: '#1976d2',
+            textAlign: 'center',
           }}
         >
           LISTA DE ARTÍCULOS
         </Typography>
         <Box
           sx={{
-            width: "100%",
-            backgroundColor: "white",
-            boxShadow: "0px 4px 6px rgba(0,0,0,0.1)",
-            borderRadius: "8px",
-            padding: "16px",
+            width: '100%',
+            backgroundColor: 'white',
+            boxShadow: '0px 4px 6px rgba(0,0,0,0.1)',
+            borderRadius: '8px',
+            padding: '16px',
           }}
         >
           <Grid container spacing={3}>
@@ -78,20 +78,20 @@ const Articulos = () => {
                 <Grid item xs={12} sm={6} md={4} key={articulo.id_articulo}>
                   <Card
                     sx={{
-                      height: "100%",
+                      height: '100%',
                       boxShadow: 3,
                       borderRadius: 2,
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "space-between",
-                      "&:hover": { boxShadow: 6 },
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      '&:hover': { boxShadow: 6 },
                     }}
                   >
                     <CardMedia
                       component="img"
                       height="180"
                       image={
-                        articulo.imagen || "https://via.placeholder.com/300x180"
+                        articulo.imagen || 'https://via.placeholder.com/300x180'
                       }
                       alt={articulo.titulo_articulo}
                     />
@@ -158,13 +158,13 @@ const Articulos = () => {
       <Snackbar
         open={snackbar.open}
         autoHideDuration={3000}
-        onClose={() => setSnackbar({ open: false, message: "" })}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        onClose={() => setSnackbar({ open: false, message: '' })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         <Alert
-          onClose={() => setSnackbar({ open: false, message: "" })}
+          onClose={() => setSnackbar({ open: false, message: '' })}
           severity="success"
-          sx={{ width: "100%" }}
+          sx={{ width: '100%' }}
         >
           {snackbar.message}
         </Alert>

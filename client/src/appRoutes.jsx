@@ -1,22 +1,22 @@
-import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Articulos from "./pages/Articulos";
-import ArticuloDetail from "./pages/ArticuloDetail";
-import Login from "./pages/Login";
-import Rol from "./pages/Rol";
-import CrearArticulo from "./pages/CrearArticulo";
-import Registro from "./pages/Registro";
-import Comprar from "./pages/Comprar";
-import App from "./pages/App";
-import Home from "./pages/Home";
-import Nosotros from "./pages/Nosotros";
-import Contacto from "./pages/Contacto";
-import UserProfile from "./pages/UserProfile";
-import ActualizarDatos from "./pages/ActualizarDatos";
-import HistorialTransacciones from "./pages/HistorialTransacciones";
-import MisArticulos from "./pages/MisArticulos";
-import EditarArticulo from "./pages/EditarArticulo";
-import Carrito from "./pages/Carrito";
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Articulos from './pages/Articulos';
+import ArticuloDetail from './pages/ArticuloDetail';
+import Login from './pages/Login';
+import Rol from './pages/Rol';
+import CrearArticulo from './pages/CrearArticulo';
+import Registro from './pages/Registro';
+import Comprar from './pages/Comprar';
+import App from './pages/App';
+import Home from './pages/Home';
+import Nosotros from './pages/Nosotros';
+import Contacto from './pages/Contacto';
+import UserProfile from './pages/UserProfile';
+import ActualizarDatos from './pages/ActualizarDatos';
+import HistorialTransacciones from './pages/HistorialTransacciones';
+import MisArticulos from './pages/MisArticulos';
+import EditarArticulo from './pages/EditarArticulo';
+import Carrito from './pages/Carrito';
 
 const AppRoutes = () => {
   return (

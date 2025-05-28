@@ -1,5 +1,5 @@
 // src/context/CarritoContext.jsx
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState } from 'react';
 
 // 1️⃣ Crear contexto
 const CarritoContext = createContext();
@@ -8,7 +8,7 @@ const CarritoContext = createContext();
 export const useCarrito = () => {
   const context = useContext(CarritoContext);
   if (!context) {
-    console.error("⚠️ useCarrito debe usarse dentro de un <CarritoProvider>");
+    console.error('⚠️ useCarrito debe usarse dentro de un <CarritoProvider>');
     return {
       carrito: [],
       agregarAlCarrito: () => {},
@@ -30,7 +30,7 @@ export const CarritoProvider = ({ children }) => {
         return prev.map((i) =>
           i.id_articulo === item.id_articulo
             ? { ...i, cantidad: i.cantidad + 1 }
-            : i
+            : i,
         );
       }
       return [...prev, { ...item, cantidad: 1 }];

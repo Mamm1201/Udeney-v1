@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   TextField,
   Button,
@@ -8,27 +8,27 @@ import {
   Snackbar,
   Alert,
   IconButton,
-} from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
-import { registrarUsuario } from "../api/register.api";
+} from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import { registrarUsuario } from '../api/register.api';
 
 const Registro = () => {
   const navigate = useNavigate();
 
   // Formulario
   const [formData, setFormData] = useState({
-    email_usuario: "",
-    nombres_usuario: "",
-    apellidos_usuario: "",
-    password_usuario: "",
-    telefono_usuario: "",
-    direccion_usuario: "",
-    fecha_nacimiento: "",
+    email_usuario: '',
+    nombres_usuario: '',
+    apellidos_usuario: '',
+    password_usuario: '',
+    telefono_usuario: '',
+    direccion_usuario: '',
+    fecha_nacimiento: '',
   });
 
   // Snackbar de éxito y error
   const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarError, setSnackbarError] = useState(false);
 
   // Manejo de campos
@@ -41,11 +41,11 @@ const Registro = () => {
     e.preventDefault();
 
     const camposRequeridos = Object.values(formData).every(
-      (campo) => campo !== ""
+      (campo) => campo !== '',
     );
     if (!camposRequeridos) {
       setSnackbarError(true);
-      setSnackbarMessage("Por favor, completa todos los campos.");
+      setSnackbarMessage('Por favor, completa todos los campos.');
       setOpenSnackbar(true);
       return;
     }
@@ -55,21 +55,21 @@ const Registro = () => {
 
       if (response.status === 201 || response.status === 200) {
         setSnackbarError(false);
-        setSnackbarMessage("¡Usuario registrado exitosamente!");
+        setSnackbarMessage('¡Usuario registrado exitosamente!');
         setOpenSnackbar(true);
 
         // Redirigir al login después de 2 segundos
-        setTimeout(() => navigate("/login"), 2000);
+        setTimeout(() => navigate('/login'), 2000);
       } else {
-        throw new Error("Error al registrar");
+        throw new Error('Error al registrar');
       }
     } catch (error) {
-      console.error("Error:", error.response?.data || error.message);
+      console.error('Error:', error.response?.data || error.message);
       setSnackbarError(true);
       setSnackbarMessage(
         error.response?.data?.email_usuario?.[0] ||
           error.response?.data?.detail ||
-          "Hubo un error al registrar."
+          'Hubo un error al registrar.',
       );
       setOpenSnackbar(true);
     }
@@ -78,13 +78,13 @@ const Registro = () => {
   return (
     <Box
       sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        minHeight: "100vh",
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
         padding: 3,
-        backgroundColor: "#f4f6f8",
+        backgroundColor: '#f4f6f8',
       }}
     >
       <Typography variant="h4" gutterBottom>
@@ -96,13 +96,13 @@ const Registro = () => {
         component="form"
         onSubmit={handleSubmit}
         sx={{
-          display: "flex",
-          flexDirection: "column",
-          width: "100%",
+          display: 'flex',
+          flexDirection: 'column',
+          width: '100%',
           maxWidth: 400,
           padding: 3,
           borderRadius: 2,
-          backgroundColor: "white",
+          backgroundColor: 'white',
           boxShadow: 3,
         }}
       >
@@ -171,7 +171,7 @@ const Registro = () => {
           type="submit"
           variant="contained"
           color="primary"
-          sx={{ marginTop: 2, padding: "10px 0", fontSize: "16px" }}
+          sx={{ marginTop: 2, padding: '10px 0', fontSize: '16px' }}
         >
           Crear Usuario
         </Button>
@@ -182,11 +182,11 @@ const Registro = () => {
         open={openSnackbar}
         autoHideDuration={3000}
         onClose={() => setOpenSnackbar(false)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         <Alert
-          severity={snackbarError ? "error" : "success"}
-          sx={{ width: "100%" }}
+          severity={snackbarError ? 'error' : 'success'}
+          sx={{ width: '100%' }}
           action={
             <IconButton
               size="small"

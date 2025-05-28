@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
-import NavbarVender from "../components/NavbarVender";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import NavbarVender from '../components/NavbarVender';
+import { useNavigate } from 'react-router-dom';
 import {
   TextField,
   Button,
@@ -11,23 +11,23 @@ import {
   FormControl,
   Snackbar,
   Alert,
-} from "@mui/material";
-import { getCategorias, crearArticulo } from "../api/articulos.api";
+} from '@mui/material';
+import { getCategorias, crearArticulo } from '../api/articulos.api';
 
 const CrearArticulo = () => {
   const navigate = useNavigate();
 
   // Obtenemos datos del usuario logueado desde localStorage
-  const idUsuario = localStorage.getItem("id_usuario");
-  const nombreUsuario = localStorage.getItem("nombres_usuario");
+  const idUsuario = localStorage.getItem('id_usuario');
+  const nombreUsuario = localStorage.getItem('nombres_usuario');
 
   // Estado para el formulario, con el ID del usuario ya cargado
   const [formData, setFormData] = useState({
-    titulo_articulo: "",
-    descripcion_articulo: "",
-    institucion_articulo: "",
-    precio_articulo: "",
-    id_categoria: "",
+    titulo_articulo: '',
+    descripcion_articulo: '',
+    institucion_articulo: '',
+    precio_articulo: '',
+    id_categoria: '',
     id_usuario: parseInt(idUsuario),
   });
 
@@ -41,10 +41,10 @@ const CrearArticulo = () => {
     const fetchCategorias = async () => {
       try {
         const res = await getCategorias();
-        console.log("Categorías recibidas:", res.data); // 👈 Asegúrate que esto muestra un array
+        console.log('Categorías recibidas:', res.data); // 👈 Asegúrate que esto muestra un array
         setCategorias(res.data);
       } catch (error) {
-        console.error("Error al obtener categorías:", error);
+        console.error('Error al obtener categorías:', error);
       }
     };
     fetchCategorias();
@@ -55,7 +55,7 @@ const CrearArticulo = () => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
-      [name]: name === "id_categoria" ? parseInt(value) : value,
+      [name]: name === 'id_categoria' ? parseInt(value) : value,
     }));
   };
 
@@ -72,14 +72,14 @@ const CrearArticulo = () => {
     e.preventDefault();
 
     const data = new FormData();
-    data.append("titulo_articulo", formData.titulo_articulo);
-    data.append("descripcion_articulo", formData.descripcion_articulo);
-    data.append("institucion_articulo", formData.institucion_articulo);
-    data.append("precio_articulo", formData.precio_articulo);
-    data.append("id_categoria", formData.id_categoria);
-    data.append("id_usuario", formData.id_usuario);
+    data.append('titulo_articulo', formData.titulo_articulo);
+    data.append('descripcion_articulo', formData.descripcion_articulo);
+    data.append('institucion_articulo', formData.institucion_articulo);
+    data.append('precio_articulo', formData.precio_articulo);
+    data.append('id_categoria', formData.id_categoria);
+    data.append('id_usuario', formData.id_usuario);
     if (imagen) {
-      data.append("imagen", imagen); // adjuntamos la imagen
+      data.append('imagen', imagen); // adjuntamos la imagen
     }
 
     try {
@@ -88,33 +88,33 @@ const CrearArticulo = () => {
         setArticuloCreado(response.data);
         setSnackbarOpen(true);
         setFormData({
-          titulo_articulo: "",
-          descripcion_articulo: "",
-          institucion_articulo: "",
-          precio_articulo: "",
-          id_categoria: "",
+          titulo_articulo: '',
+          descripcion_articulo: '',
+          institucion_articulo: '',
+          precio_articulo: '',
+          id_categoria: '',
           id_usuario: parseInt(idUsuario),
         });
         setImagen(null);
       }
     } catch (error) {
-      console.error("Error al crear artículo:", error);
-      console.log("Detalles del error:", error.response?.data);
-      alert("Error al crear artículo: " + error.message);
-      console.log("Detalles:", error.response?.data);
+      console.error('Error al crear artículo:', error);
+      console.log('Detalles del error:', error.response?.data);
+      alert('Error al crear artículo: ' + error.message);
+      console.log('Detalles:', error.response?.data);
     }
   };
 
   return (
     <Box
       sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        minHeight: "100vh",
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
         padding: 0,
-        backgroundColor: "#f4f6f8",
+        backgroundColor: '#f4f6f8',
       }}
     >
       <NavbarVender />
@@ -123,13 +123,13 @@ const CrearArticulo = () => {
         component="form"
         onSubmit={handleSubmit}
         sx={{
-          display: "flex",
-          flexDirection: "column",
-          width: "100%",
+          display: 'flex',
+          flexDirection: 'column',
+          width: '100%',
           maxWidth: 500,
           padding: 3,
           borderRadius: 2,
-          backgroundColor: "white",
+          backgroundColor: 'white',
           boxShadow: 4,
         }}
       >
@@ -138,7 +138,7 @@ const CrearArticulo = () => {
           fullWidth
           type="file"
           onChange={handleImageChange}
-          inputProps={{ accept: "image/*" }}
+          inputProps={{ accept: 'image/*' }}
           sx={{ mt: 2 }}
         />
 
@@ -216,8 +216,8 @@ const CrearArticulo = () => {
           sx={{
             borderRadius: 4,
             marginTop: 2,
-            padding: "10px 0",
-            fontSize: "16px",
+            padding: '10px 0',
+            fontSize: '16px',
           }}
         >
           Subir Artículo
@@ -229,12 +229,12 @@ const CrearArticulo = () => {
         open={snackbarOpen}
         autoHideDuration={5000}
         onClose={() => setSnackbarOpen(false)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         <Alert
           onClose={() => setSnackbarOpen(false)}
           severity="success"
-          sx={{ width: "100%" }}
+          sx={{ width: '100%' }}
           action={
             <Button
               color="inherit"

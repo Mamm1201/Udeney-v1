@@ -1,29 +1,29 @@
 // src/api/articulos.js
-import api from "./axiosConfig";
+import api from './axiosConfig';
 
 // Obtener categorías
 export const getCategorias = async () => {
-  return await api.get("/categorias/");
+  return await api.get('/categorias/');
 };
 
 // Obtener usuarios
 export const getUsuarios = async () => {
-  return await api.get("/usuarios/");
+  return await api.get('/usuarios/');
 };
 
 // Crear artículo
 export const crearArticulo = async (data) => {
-  return await api.post("/articulos/", data);
+  return await api.post('/articulos/', data);
 };
 
 export const getAllArticulos = async () => {
-  return await api.get("/articulos/");
+  return await api.get('/articulos/');
 };
 
 export const editarArticulo = async (id, data) => {
   return await api.patch(`/articulos/${id}/`, data, {
     headers: {
-      "Content-Type": "multipart/form-data",
+      'Content-Type': 'multipart/form-data',
     },
   });
 };
