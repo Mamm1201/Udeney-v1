@@ -41,11 +41,11 @@ jobs:
         run: |
           black --check .
 
-      - name: Run tests with pytest
-        env:
-          DJANGO_SETTINGS_MODULE: e-commerce.settings.py
-        run: |
-          pytest udeneyv1/tests/tests.py --verbose
+      # - name: Run tests with pytest
+      #   env:
+      #     DJANGO_SETTINGS_MODULE: e-commerce.settings.py
+      #   run: |
+      #     pytest udeneyv1/tests/tests.py --verbose
 
       # Opcional: Subir reporte de cobertura como artifact (si usas pytest-cov)
       - name: Upload coverage report

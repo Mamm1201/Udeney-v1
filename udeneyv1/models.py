@@ -14,7 +14,7 @@ class Usuarios(models.Model):
     direccion_usuario = models.CharField(max_length=255)
 
     # Campo necesario para login
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True, null=True)
 
     class Meta:
         db_table = "usuarios"
