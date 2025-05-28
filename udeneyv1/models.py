@@ -38,13 +38,13 @@ class Roles(models.Model):
     tipo_rol = models.CharField(
         max_length=20,
         choices=[
-            ('vendedor', 'Vendedor'),
-            ('comprador', 'Comprador'),
-        ]
+            ("vendedor", "Vendedor"),
+            ("comprador", "Comprador"),
+        ],
     )
 
     class Meta:
-        db_table = 'roles'
+        db_table = "roles"
         managed = False  # Para evitar que Django cree/modifique esta tabla
 
     def __str__(self):
@@ -54,20 +54,17 @@ class Roles(models.Model):
 # MODELO PARA TABLA USUARIO_ROL
 class UsuarioRol(models.Model):
     ROL_CHOICES = [
-        ('vendedor', 'Vendedor'),
-        ('comprador', 'Comprador'),
+        ("vendedor", "Vendedor"),
+        ("comprador", "Comprador"),
     ]
 
-    id_usuario_rol = models.AutoField(
-        primary_key=True)  # Nuevo campo clave primaria
+    id_usuario_rol = models.AutoField(primary_key=True)  # Nuevo campo clave primaria
     id_usuario = models.ForeignKey(
-        "usuarios",
-        on_delete=models.CASCADE,
-        db_column="id_usuario")
+        "usuarios", on_delete=models.CASCADE, db_column="id_usuario"
+    )
     id_rol = models.CharField(
-        max_length=10,
-        choices=ROL_CHOICES,
-        db_column="id_rol")  # ENUM en Django
+        max_length=10, choices=ROL_CHOICES, db_column="id_rol"
+    )  # ENUM en Django
 
     class Meta:
         db_table = "usuario_rol"
@@ -102,8 +99,7 @@ class Articulos(models.Model):
     )  # Este campo se autoincrementará automáticamente
     titulo_articulo = models.CharField(max_length=255)
     descripcion_articulo = models.TextField()
-    institucion_articulo = models.CharField(
-        max_length=255, null=True, blank=True)
+    institucion_articulo = models.CharField(max_length=255, null=True, blank=True)
     precio_articulo = models.DecimalField(
         max_digits=10,
         decimal_places=2,
@@ -114,7 +110,7 @@ class Articulos(models.Model):
     id_categoria = models.ForeignKey(
         Categorias, on_delete=models.CASCADE, db_column="id_categoria"
     )  # Nombre exacto de la columna en la base de datos
-    imagen = models.ImageField(upload_to='articulos/', null=True, blank=True)
+    imagen = models.ImageField(upload_to="articulos/", null=True, blank=True)
 
     class Meta:
         db_table = "articulos"  # Asegúrate de usar el nombre correcto de la tabla
@@ -170,11 +166,8 @@ class Calificaciones(models.Model):
         primary_key=True
     )  # Este campo se autoincrementará automáticamente
     tipo_calificacion = models.CharField(
-        max_length=20, choices=[
-            ("excelente", "Excelente"),
-            ("buena", "Buena"),
-            ("mala", "Mala")
-        ]
+        max_length=20,
+        choices=[("excelente", "Excelente"), ("buena", "Buena"), ("mala", "Mala")],
     )
     comentario = models.TextField()
     id_transaccion = models.ForeignKey(
@@ -197,10 +190,7 @@ class Pagos(models.Model):
     fecha_pago = models.DateTimeField(auto_now_add=True)
     valor_pago = models.DecimalField(max_digits=10, decimal_places=2)
     estado_pago = models.CharField(
-        max_length=20, choices=[
-            ("aprobado", "Aprobado"),
-            ("pendiente", "Pendiente")
-        ]
+        max_length=20, choices=[("aprobado", "Aprobado"), ("pendiente", "Pendiente")]
     )
 
     class Meta:
@@ -214,11 +204,8 @@ class Pqrs(models.Model):
         primary_key=True
     )  # Este campo se autoincrementará automáticamente
     tipo_pqr = models.CharField(
-        max_length=20, choices=[
-            ("peticion", "Peticion"),
-            ("queja", "Queja"),
-            ("reclamo", "Reclamo")
-        ]
+        max_length=20,
+        choices=[("peticion", "Peticion"), ("queja", "Queja"), ("reclamo", "Reclamo")],
     )
     descripcion_pqr = models.TextField()
     fecha_pqr = models.DateTimeField(auto_now_add=True)
