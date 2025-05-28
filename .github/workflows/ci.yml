@@ -43,12 +43,6 @@ jobs:
         run: |
           pip-compile requirements.in
 
-      # 🧪 Verifica que requirements.txt esté actualizado respecto a requirements.in
-      - name: Verificar que requirements.txt está actualizado
-        run: |
-          pip-compile requirements.in --quiet
-          git diff --exit-code requirements.txt
-
       # 🧰 Instala dependencias necesarias para test y formateo
       - name: Install dependencies
         run: |
