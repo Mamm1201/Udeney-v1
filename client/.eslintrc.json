@@ -33,6 +33,12 @@
       "files": ["webpack.config.js", "tailwind.config.js", "postcss.config.js"],
       "env": {
         "node": true
+      },
+      "parserOptions": {
+        "sourceType": "script"
+      },
+      "rules": {
+        "no-undef": "off"
       }
     }
   ],
