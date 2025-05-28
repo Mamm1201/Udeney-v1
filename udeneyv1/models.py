@@ -1,8 +1,10 @@
 from django.db import models
 from django.contrib.auth.hashers import make_password, check_password
 
+
 class Roles(models.Model):
     """Modelo que representa los roles disponibles en el sistema."""
+
     id_rol = models.AutoField(primary_key=True)
     nombre_rol = models.CharField(max_length=255)
 
@@ -18,6 +20,7 @@ class Usuarios(models.Model):
     Modelo que representa los usuarios registrados.
     Incluye métodos para establecer y verificar contraseñas encriptadas.
     """
+
     id_usuario = models.AutoField(primary_key=True)
     nombres_usuario = models.CharField(max_length=255)
     apellidos_usuario = models.CharField(max_length=255)
@@ -28,7 +31,6 @@ class Usuarios(models.Model):
     telefono_usuario = models.CharField(max_length=20)
     direccion_usuario = models.CharField(max_length=255)
     is_active = models.BooleanField(default=True)
-
 
     # Campo necesario para login
     is_active = models.BooleanField(default=True)
@@ -51,6 +53,7 @@ class Usuarios(models.Model):
 
 class TipoReportes(models.Model):
     """Modelo que representa los tipos de reportes disponibles."""
+
     id_tipo_reporte = models.AutoField(primary_key=True)
     nombre_tipo_reporte = models.CharField(max_length=255)
 
@@ -63,6 +66,7 @@ class TipoReportes(models.Model):
 
 class Estados(models.Model):
     """Modelo que representa los estados posibles de un reporte."""
+
     id_estado = models.AutoField(primary_key=True)
     nombre_estado = models.CharField(max_length=255)
 
@@ -78,6 +82,7 @@ class Reportes(models.Model):
     Modelo que representa un reporte realizado por un usuario.
     Incluye relaciones con tipo de reporte, estado actual y usuario asociado.
     """
+
     id_reporte = models.AutoField(primary_key=True)
     fecha_reporte = models.DateField(auto_now_add=True)
     descripcion_reporte = models.TextField()
@@ -95,8 +100,9 @@ class Reportes(models.Model):
 
 class ImagenesReportes(models.Model):
     """Modelo que almacena las imágenes asociadas a un reporte."""
+
     id_imagen = models.AutoField(primary_key=True)
-    imagen = models.ImageField(upload_to='imagenes_reportes/')
+    imagen = models.ImageField(upload_to="imagenes_reportes/")
     id_reporte = models.ForeignKey(Reportes, on_delete=models.CASCADE)
 
     class Meta:
@@ -104,4 +110,3 @@ class ImagenesReportes(models.Model):
 
     def __str__(self):
         return f"Imagen {self.id_imagen} - Reporte {self.id_reporte.id_reporte}"
-           

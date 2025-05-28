@@ -17,18 +17,34 @@ from rest_framework.decorators import api_view
 
 # Importación de modelos del sistema
 from .models import (
-    Usuarios, Articulos, Categorias, Roles, UsuarioRol,
-    DetalleTransaccion, Transacciones, Calificaciones, Pagos, Pqrs
+    Usuarios,
+    Articulos,
+    Categorias,
+    Roles,
+    UsuarioRol,
+    DetalleTransaccion,
+    Transacciones,
+    Calificaciones,
+    Pagos,
+    Pqrs,
 )
 
 # Importación de serializadores
 from .serializers import (
-    UsuariosSerializer, ArticulosSerializer, CategoriasSerializer,
-    RolesSerializer, UsuarioRolSerializer, DetalleTransaccionSerializer,
-    TransaccionesSerializer, CalificacionesSerializer, PagosSerializer, PqrsSerializer
+    UsuariosSerializer,
+    ArticulosSerializer,
+    CategoriasSerializer,
+    RolesSerializer,
+    UsuarioRolSerializer,
+    DetalleTransaccionSerializer,
+    TransaccionesSerializer,
+    CalificacionesSerializer,
+    PagosSerializer,
+    PqrsSerializer,
 )
 
 User = get_user_model()
+
 
 # ====================================
 # REGISTRO DE USUARIO
@@ -41,18 +57,22 @@ class RegistroUsuarioView(APIView):
         if serializer.is_valid():
             user = serializer.save()
             refresh = RefreshToken.for_user(user)
-            return Response({
-                "message": "Usuario registrado exitosamente",
-                "user": {
-                    "id_usuario": user.id_usuario,
-                    "email_usuario": user.email_usuario,
-                    "nombres_usuario": user.nombres_usuario,
-                    "apellidos_usuario": user.apellidos_usuario,
+            return Response(
+                {
+                    "message": "Usuario registrado exitosamente",
+                    "user": {
+                        "id_usuario": user.id_usuario,
+                        "email_usuario": user.email_usuario,
+                        "nombres_usuario": user.nombres_usuario,
+                        "apellidos_usuario": user.apellidos_usuario,
+                    },
+                    "access_token": str(refresh.access_token),
+                    "refresh_token": str(refresh),
                 },
-                "access_token": str(refresh.access_token),
-                "refresh_token": str(refresh),
-            }, status=status.HTTP_201_CREATED)
+                status=status.HTTP_201_CREATED,
+            )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 # ====================================
 # INICIO DE SESIÓN (LOGIN)
@@ -73,27 +93,31 @@ class LoginView(APIView):
             return Response({"error": "Correo o contraseña incorrectos"}, status=401)
             # user = get_object_or_404(Usuarios, email_usuario=email)
             user = Usuarios.objects.get(email_usuario=email)
-        except Usuarios.DoesNotExist:          # Exception as e:
+        except Usuarios.DoesNotExist:  # Exception as e:
             return Response(
                 {"error": f"Usuario no encontrado: {str(e)}"},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
         if not user.is_active:
-            return Response({"error": "Cuenta desactivada. Contacta al administrador."}, status=403)
+            return Response(
+                {"error": "Cuenta desactivada. Contacta al administrador."}, status=403
+            )
 
         if not user.check_password(password):
             return Response({"error": "Correo o contraseña incorrectos"}, status=401)
 
         refresh = RefreshToken.for_user(user)
-        return Response({
-            "message": f"Bienvenido {user.nombres_usuario}",
-            "id_usuario": user.id_usuario,
-            "email": user.email_usuario,
-            "nombres_usuario": user.nombres_usuario,
-            "access_token": str(refresh.access_token),
-            "refresh_token": str(refresh),
-        })
+        return Response(
+            {
+                "message": f"Bienvenido {user.nombres_usuario}",
+                "id_usuario": user.id_usuario,
+                "email": user.email_usuario,
+                "nombres_usuario": user.nombres_usuario,
+                "access_token": str(refresh.access_token),
+                "refresh_token": str(refresh),
+            }
+        )
 
 
 # ====================================
@@ -118,12 +142,11 @@ def historial_transacciones(request):
 
     # Filtrar compras y ventas por usuario
     compras = Transacciones.objects.filter(
-        id_usuario=usuario,
-        id_detalle_transaccion__tipo_transaccion="compra"
+        id_usuario=usuario, id_detalle_transaccion__tipo_transaccion="compra"
     )
     ventas = Transacciones.objects.filter(
         id_detalle_transaccion__id_articulo__id_usuario=usuario,
-        id_detalle_transaccion__tipo_transaccion="venta"
+        id_detalle_transaccion__tipo_transaccion="venta",
     )
 
     # Aplicar filtros de fecha si existen
@@ -135,20 +158,28 @@ def historial_transacciones(request):
         ventas = ventas.filter(fecha_transaccion__lte=fecha_fin)
 
     # Agrupar compras y ventas por año y mes
-    compras_grouped = compras.annotate(
-        year=TruncYear("fecha_transaccion"),
-        month=TruncMonth("fecha_transaccion")
-    ).values("year", "month").annotate(total_compras=Count("id_transaccion"))
+    compras_grouped = (
+        compras.annotate(
+            year=TruncYear("fecha_transaccion"), month=TruncMonth("fecha_transaccion")
+        )
+        .values("year", "month")
+        .annotate(total_compras=Count("id_transaccion"))
+    )
 
-    ventas_grouped = ventas.annotate(
-        year=TruncYear("fecha_transaccion"),
-        month=TruncMonth("fecha_transaccion")
-    ).values("year", "month").annotate(total_ventas=Count("id_transaccion"))
+    ventas_grouped = (
+        ventas.annotate(
+            year=TruncYear("fecha_transaccion"), month=TruncMonth("fecha_transaccion")
+        )
+        .values("year", "month")
+        .annotate(total_ventas=Count("id_transaccion"))
+    )
 
-    return render(request, "historial_transacciones.html", {
-        "compras": compras_grouped,
-        "ventas": ventas_grouped
-    })
+    return render(
+        request,
+        "historial_transacciones.html",
+        {"compras": compras_grouped, "ventas": ventas_grouped},
+    )
+
 
 # ====================================
 # HISTORIAL DE TRANSACCIONES (API)
@@ -163,12 +194,11 @@ def historial_transacciones_api(request):
     fecha_fin = parse_date(request.query_params.get("fecha_fin"))
 
     compras = Transacciones.objects.filter(
-        id_usuario=id_usuario,
-        id_detalle_transaccion__tipo_transaccion="compra"
+        id_usuario=id_usuario, id_detalle_transaccion__tipo_transaccion="compra"
     )
     ventas = Transacciones.objects.filter(
         id_detalle_transaccion__id_articulo__id_usuario=id_usuario,
-        id_detalle_transaccion__tipo_transaccion="venta"
+        id_detalle_transaccion__tipo_transaccion="venta",
     )
 
     if fecha_inicio:
@@ -178,20 +208,23 @@ def historial_transacciones_api(request):
         compras = compras.filter(fecha_transaccion__lte=fecha_fin)
         ventas = ventas.filter(fecha_transaccion__lte=fecha_fin)
 
-    compras_grouped = compras.annotate(
-        year=TruncYear("fecha_transaccion"),
-        month=TruncMonth("fecha_transaccion")
-    ).values("year", "month").annotate(total_compras=Count("id_transaccion"))
+    compras_grouped = (
+        compras.annotate(
+            year=TruncYear("fecha_transaccion"), month=TruncMonth("fecha_transaccion")
+        )
+        .values("year", "month")
+        .annotate(total_compras=Count("id_transaccion"))
+    )
 
-    ventas_grouped = ventas.annotate(
-        year=TruncYear("fecha_transaccion"),
-        month=TruncMonth("fecha_transaccion")
-    ).values("year", "month").annotate(total_ventas=Count("id_transaccion"))
+    ventas_grouped = (
+        ventas.annotate(
+            year=TruncYear("fecha_transaccion"), month=TruncMonth("fecha_transaccion")
+        )
+        .values("year", "month")
+        .annotate(total_ventas=Count("id_transaccion"))
+    )
 
-    return Response({
-        "compras": list(compras_grouped),
-        "ventas": list(ventas_grouped)
-    })
+    return Response({"compras": list(compras_grouped), "ventas": list(ventas_grouped)})
 
 
 # ====================================
@@ -211,7 +244,8 @@ class ArticulosViewSet(viewsets.ModelViewSet):
 class ArticuloDetailAPIView(RetrieveAPIView):
     queryset = Articulos.objects.all()
     serializer_class = ArticulosSerializer
-    lookup_field = 'id_articulo'  # Se usa para buscar el artículo por ID
+    lookup_field = "id_articulo"  # Se usa para buscar el artículo por ID
+
 
 class CategoriasViewSet(viewsets.ModelViewSet):
     queryset = Categorias.objects.all()
@@ -251,4 +285,3 @@ class PagosViewSet(viewsets.ModelViewSet):
 class PqrsViewSet(viewsets.ModelViewSet):
     queryset = Pqrs.objects.all()
     serializer_class = PqrsSerializer
-    

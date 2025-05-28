@@ -22,7 +22,9 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/v1/", include("udeneyv1.urls")), # Se coloco prefijo api/v1/ para versiones futuras
+    path(
+        "api/v1/", include("udeneyv1.urls")
+    ),  # Se coloco prefijo api/v1/ para versiones futuras
 ]
 
 # Esta línea permite servir archivos multimedia en desarrollo

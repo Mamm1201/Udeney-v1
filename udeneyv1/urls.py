@@ -1,6 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import ArticuloDetailAPIView
+
 # importación para token de validación
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from django.conf import settings
@@ -19,7 +20,7 @@ from .views import (
     PqrsViewSet,
     LoginView,
     RegistroUsuarioView,
-    historial_transacciones_api
+    historial_transacciones_api,
 )
 
 # Configura el router para las rutas generadas automáticamente
@@ -44,21 +45,12 @@ urlpatterns = [
     path(
         "articulos/<int:id_articulo>/",
         ArticuloDetailAPIView.as_view(),
-        name="detalle-articulo"),
-    path(
-        'api/token/',
-        TokenObtainPairView.as_view(),
-        name='token_obtain_pair'),
+        name="detalle-articulo",
+    ),
+    path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     # Para obtener token
-    path(
-        'api/token/refresh/',
-        TokenRefreshView.as_view(),
-        name='token_refresh'),
+    path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     # Para refrescar token
-    path(
-        "historial/",
-        historial_transacciones_api,
-        name="historial_api"),
+    path("historial/", historial_transacciones_api, name="historial_api"),
     # Solicitar historial transacciones
-
-]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

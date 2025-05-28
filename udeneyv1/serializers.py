@@ -20,26 +20,26 @@ class UsuariosSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuarios
         fields = [
-            'id_usuario',
-            'nombres_usuario',
-            'apellidos_usuario',
-            'email_usuario',
-            'telefono_usuario',
-            'direccion_usuario',
-            'password_usuario'
+            "id_usuario",
+            "nombres_usuario",
+            "apellidos_usuario",
+            "email_usuario",
+            "telefono_usuario",
+            "direccion_usuario",
+            "password_usuario",
         ]
 
     def create(self, validated_data):
         # Crea un usuario con la contraseña encriptada
         user = Usuarios(
-            nombres_usuario=validated_data['nombres_usuario'],
-            apellidos_usuario=validated_data['apellidos_usuario'],
-            email_usuario=validated_data['email_usuario'],
-            telefono_usuario=validated_data['telefono_usuario'],
-            direccion_usuario=validated_data['direccion_usuario']
+            nombres_usuario=validated_data["nombres_usuario"],
+            apellidos_usuario=validated_data["apellidos_usuario"],
+            email_usuario=validated_data["email_usuario"],
+            telefono_usuario=validated_data["telefono_usuario"],
+            direccion_usuario=validated_data["direccion_usuario"],
         )
         # Encripta la contraseña
-        user.set_password(validated_data['password_usuario'])
+        user.set_password(validated_data["password_usuario"])
         user.save()
         return user
 
@@ -68,12 +68,12 @@ class UsuarioRolSerializer(serializers.ModelSerializer):
 
     id_usuario = serializers.SlugRelatedField(
         queryset=Usuarios.objects.all(),
-        slug_field='nombres_usuario'  # Muestra el nombre del usuario en lugar del ID
+        slug_field="nombres_usuario",  # Muestra el nombre del usuario en lugar del ID
     )
 
     class Meta:
         model = UsuarioRol
-        fields = ['id_usuario_rol', 'id_usuario', 'id_rol']
+        fields = ["id_usuario_rol", "id_usuario", "id_rol"]
 
 
 # SERIALIZADOR DE CATEGORIAS
