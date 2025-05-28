@@ -1,10 +1,11 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
+/* eslint-env node */
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
   css: {
-    postcss: "./postcss.config.js", // Configura el archivo de PostCSS
+    postcss: './postcss.config.js', // Configura el archivo de PostCSS
   },
 });
