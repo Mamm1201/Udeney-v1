@@ -28,6 +28,10 @@ class Usuarios(models.Model):
     telefono_usuario = models.CharField(max_length=20)
     direccion_usuario = models.CharField(max_length=255)
     is_active = models.BooleanField(default=True)
+
+
+    # Campo necesario para login
+    is_active = models.BooleanField(default=True)
     id_rol = models.ForeignKey(Roles, on_delete=models.CASCADE)
 
     class Meta:

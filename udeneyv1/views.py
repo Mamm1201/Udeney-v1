@@ -71,6 +71,13 @@ class LoginView(APIView):
             user = Usuarios.objects.get(email_usuario=email)
         except Usuarios.DoesNotExist:
             return Response({"error": "Correo o contraseña incorrectos"}, status=401)
+            # user = get_object_or_404(Usuarios, email_usuario=email)
+            user = Usuarios.objects.get(email_usuario=email)
+        except Usuarios.DoesNotExist:          # Exception as e:
+            return Response(
+                {"error": f"Usuario no encontrado: {str(e)}"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
         if not user.is_active:
             return Response({"error": "Cuenta desactivada. Contacta al administrador."}, status=403)

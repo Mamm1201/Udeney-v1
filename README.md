@@ -82,6 +82,9 @@ Udeney-v1/
 
 ### 📦 Requisitos Previos
 
+
+### 📦 Requisitos Previos
+
 - Python 3.10+
 - Node.js 18+
 - MySQL 8.x
@@ -197,6 +200,17 @@ Este proyecto también incluye configuración para ejecutar todo el stack usando
 
 ### ⚙️ Requisitos Previos
 
+
+## 🐳 Despliegue con Docker (opcional)
+
+Este proyecto también incluye configuración para ejecutar todo el stack usando Docker y Docker Compose. Se levantan tres servicios:
+
+- 🛢️ **db**: MySQL 5.7 con volumen persistente.
+- 🐍 **backend**: Django REST Framework (modo desarrollo).
+- ⚛️ **frontend**: React + Vite (modo desarrollo).
+
+### ⚙️ Requisitos Previos
+
 - [Docker](https://www.docker.com/)
 - [Docker Compose](https://docs.docker.com/compose/)
 
@@ -253,6 +267,71 @@ Este proyecto mantiene altos estándares de calidad en el código fuente tanto p
 - **flake8**: Se usa para detectar errores de estilo y mantener el código limpio.
   - Configuración ubicada en `.flake8`.
   - Comando para ejecutar: `flake8 .`
+````
+
+markdown
+
+## 🧼 CALIDAD DEL CÓDIGO
+
+Este proyecto mantiene altos estándares de calidad en el código fuente tanto para el backend (Python) como para el frontend (React).
+
+### 🐍 Backend (Python)
+
+- **flake8**: Se usa para detectar errores de estilo y mantener el código limpio.
+  - Configuración ubicada en `.flake8`.
+  - Comando para ejecutar: `flake8 .`
+
+```bash
+# .flake8
+[flake8]
+exclude = migrations,venv,node_modules,__pycache__
+max-line-length = 88
+
+```
+
+### ⚛️ Frontend (JavaScript/React)
+
+ESLint: Verificador de buenas prácticas y errores comunes en JS/JSX.
+
+Stylelint: Verificador para estilos CSS/SCSS.
+
+Prettier (opcional pero recomendado): Formateador automático de código.
+
+```bash
+
+bash
+Copiar
+Editar
+
+# Ejecutar ESLint
+
+npx eslint "**/*.{js,jsx}"
+
+# Ejecutar Stylelint
+
+npx stylelint "**/*.{css,scss}"
+
+# Ejecutar Prettier (requiere .prettierrc)
+
+npx prettier --write .
+Archivo .prettierrc sugerido ( colócalo en client/):
+json
+Copiar
+Editar
+{
+  "semi": true,
+  "singleQuote": true,
+  "trailingComma": "all",
+  "tabWidth": 2
+}
+🤖 CI - Integración Continua
+El proyecto incluye un flujo de trabajo automatizado en .github/workflows/linters.yml que ejecuta:
+
+ESLint para JS/React
+
+Stylelint para CSS/SCSS
+
+Verificación de que node_modules/ no se haya subido por error
 
 ```bash
 # .flake8
