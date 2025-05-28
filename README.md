@@ -18,6 +18,8 @@ Udeney es una plataforma de **e-commerce educativo** orientada a promover la reu
 - Estructura del Proyecto
 - Configuración del Entorno
 - 🐳 Despliegue con Docker (opcional)
+- Gestión de Migraciones
+- Justificación del motor de base de datos (MySQL)
 - 📄 Licencia
 - 🤝 Autor
 - 🚧 Estado del Proyecto
@@ -229,7 +231,16 @@ Editar
 docker-compose down
 Esto detiene los contenedores, pero conserva los volúmenes de datos (base de datos persistente).
 ```
-````
+
+``
+
+#### 🧾 Gestión de Migraciones
+
+En el proyecto, se recomienda mantener managed = True en los modelos para que Django gestione automáticamente las tablas y cambios en la base de datos mediante migraciones. Aunque es posible trabajar sin migraciones adicionales después de la migración inicial, usar las migraciones (python manage.py makemigrations y python manage.py migrate) garantiza un control más seguro y ordenado de los cambios en el esquema, facilitando el trabajo en equipo y los despliegues futuros.
+
+### 🛢️ Justificación del motor de base de datos (MySQL)
+
+Se eligió MySQL como motor de base de datos debido a su estabilidad, rendimiento y amplia compatibilidad con Django y otras tecnologías usadas en el proyecto. Además, el equipo tiene experiencia previa con MySQL, lo que facilita la configuración y mantenimiento. MySQL ofrece características sólidas como soporte para transacciones, replicación y seguridad, haciendo que sea una opción sólida para un proyecto de e-commerce como Udeney.
 
 markdown
 
@@ -248,8 +259,8 @@ Este proyecto mantiene altos estándares de calidad en el código fuente tanto p
 [flake8]
 exclude = migrations,venv,node_modules,__pycache__
 max-line-length = 88
-
 ```
+````
 
 ### ⚛️ Frontend (JavaScript/React)
 
@@ -309,3 +320,5 @@ Este proyecto está licenciado bajo la Licencia MIT. Consulta el archivo LICENSE
 ### 🚧 Estado del Proyecto
 
 🔨 En desarrollo activo – nuevas funcionalidades y mejoras están en curso.
+
+``

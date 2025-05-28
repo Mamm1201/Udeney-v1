@@ -1,81 +1,62 @@
+# Importaciones necesarias de Django
+from django.shortcuts import render
+from django.utils.dateparse import parse_date
+from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required
+from django.db.models import Count
+from django.db.models.functions import TruncMonth, TruncYear
+
+# Importaciones de DRF (Django Rest Framework)
 from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.shortcuts import render, get_object_or_404
-from django.utils.dateparse import parse_date
-from django.db.models import Count
-from django.db.models.functions import TruncMonth, TruncYear
-from django.contrib.auth import get_user_model
-from django.contrib.auth.decorators import login_required
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.decorators import api_view
 
-# IMPORTACIÓN DE MODELOS
+# Importación de modelos del sistema
 from .models import (
-    Usuarios,
-    Articulos,
-    Categorias,
-    Roles,
-    UsuarioRol,
-    DetalleTransaccion,
-    Transacciones,
-    Calificaciones,
-    Pagos,
-    Pqrs,
+    Usuarios, Articulos, Categorias, Roles, UsuarioRol,
+    DetalleTransaccion, Transacciones, Calificaciones, Pagos, Pqrs
 )
 
-# IMPORTACIÓN DE SERIALIZADORES
+# Importación de serializadores
 from .serializers import (
-    UsuariosSerializer,
-    ArticulosSerializer,
-    CategoriasSerializer,
-    RolesSerializer,
-    UsuarioRolSerializer,
-    DetalleTransaccionSerializer,
-    TransaccionesSerializer,
-    CalificacionesSerializer,
-    PagosSerializer,
-    PqrsSerializer,
+    UsuariosSerializer, ArticulosSerializer, CategoriasSerializer,
+    RolesSerializer, UsuarioRolSerializer, DetalleTransaccionSerializer,
+    TransaccionesSerializer, CalificacionesSerializer, PagosSerializer, PqrsSerializer
 )
 
+User = get_user_model()
 
-# VISTA REGISTRO DE USUARIO
+# ====================================
+# REGISTRO DE USUARIO
+# ====================================
 class RegistroUsuarioView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [AllowAny]  # Permite el acceso sin autenticación
 
     def post(self, request):
         serializer = UsuariosSerializer(data=request.data)
-
         if serializer.is_valid():
             user = serializer.save()
-
-            # Generar tokens JWT
             refresh = RefreshToken.for_user(user)
-
-            return Response(
-                {
-                    "message": "Usuario registrado exitosamente",
-                    "user": {
-                        "id_usuario": user.id_usuario,
-                        "email_usuario": user.email_usuario,
-                        "nombres_usuario": user.nombres_usuario,
-                        "apellidos_usuario": user.apellidos_usuario,
-                    },
-                    "access_token": str(refresh.access_token),
-                    "refresh_token": str(refresh),
+            return Response({
+                "message": "Usuario registrado exitosamente",
+                "user": {
+                    "id_usuario": user.id_usuario,
+                    "email_usuario": user.email_usuario,
+                    "nombres_usuario": user.nombres_usuario,
+                    "apellidos_usuario": user.apellidos_usuario,
                 },
-                status=status.HTTP_201_CREATED,
-            )
-
+                "access_token": str(refresh.access_token),
+                "refresh_token": str(refresh),
+            }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-# VISTA LOGIN USUARIO
-User = get_user_model()
-
-
+# ====================================
+# INICIO DE SESIÓN (LOGIN)
+# ====================================
 class LoginView(APIView):
     permission_classes = [AllowAny]
 
@@ -83,112 +64,133 @@ class LoginView(APIView):
         email = request.data.get("email")
         password = request.data.get("password")
 
+        if not email or not password:
+            return Response({"error": "Debe ingresar correo y contraseña"}, status=400)
+
         try:
-            # user = get_object_or_404(Usuarios, email_usuario=email)
             user = Usuarios.objects.get(email_usuario=email)
-        except Usuarios.DoesNotExist:          # Exception as e:
-            return Response(
-                {"error": f"Usuario no encontrado: {str(e)}"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+        except Usuarios.DoesNotExist:
+            return Response({"error": "Correo o contraseña incorrectos"}, status=401)
 
         if not user.is_active:
-            return Response(
-                {"error": "Cuenta desactivada, contacta al administrador."},
-                status=status.HTTP_403_FORBIDDEN
-            )
+            return Response({"error": "Cuenta desactivada. Contacta al administrador."}, status=403)
 
         if not user.check_password(password):
-            return Response(
-                {"error": "Credenciales incorrectas"},
-                status=status.HTTP_401_UNAUTHORIZED
-            )
+            return Response({"error": "Correo o contraseña incorrectos"}, status=401)
 
         refresh = RefreshToken.for_user(user)
-
-        return Response(
-            {
-                "message": f"Bienvenido {user.nombres_usuario}",
-                "id_usuario": user.id_usuario,
-                "email": user.email_usuario,
-                "nombres_usuario": user.nombres_usuario,
-                "access_token": str(refresh.access_token),
-                "refresh_token": str(refresh),
-            },
-            status=status.HTTP_200_OK,
-        )
+        return Response({
+            "message": f"Bienvenido {user.nombres_usuario}",
+            "id_usuario": user.id_usuario,
+            "email": user.email_usuario,
+            "nombres_usuario": user.nombres_usuario,
+            "access_token": str(refresh.access_token),
+            "refresh_token": str(refresh),
+        })
 
 
-# VISTA CERRAR SESIÓN
+# ====================================
+# CIERRE DE SESIÓN (LOGOUT SIMBÓLICO)
+# ====================================
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        print("LogoutView llamado")
-        return Response(
-            {"message": "Cierre de sesión exitoso"},
-            status=status.HTTP_200_OK
-        )
+        # Aquí podrías implementar el logout real usando blacklisting de tokens
+        return Response({"message": "Sesión cerrada exitosamente"})
 
 
-# HISTORIAL DE TRANSACCIONES USUARIO REGISTRADO
+# ====================================
+# HISTORIAL DE TRANSACCIONES (VISTA WEB)
+# ====================================
 @login_required
 def historial_transacciones(request):
     usuario = request.user
+    fecha_inicio = parse_date(request.GET.get("fecha_inicio"))
+    fecha_fin = parse_date(request.GET.get("fecha_fin"))
 
-    # Obtener fechas desde la URL
-    fecha_inicio = request.GET.get("fecha_inicio")
-    fecha_fin = request.GET.get("fecha_fin")
-
-    # Base de consultas
-    compras_qs = Transacciones.objects.filter(
-        id_usuario=usuario, id_detalle_transaccion__tipo_transaccion="compra"
+    # Filtrar compras y ventas por usuario
+    compras = Transacciones.objects.filter(
+        id_usuario=usuario,
+        id_detalle_transaccion__tipo_transaccion="compra"
     )
-    ventas_qs = Transacciones.objects.filter(
+    ventas = Transacciones.objects.filter(
         id_detalle_transaccion__id_articulo__id_usuario=usuario,
         id_detalle_transaccion__tipo_transaccion="venta"
     )
 
-    # Aplicar filtros de fecha
+    # Aplicar filtros de fecha si existen
     if fecha_inicio:
-        fecha_inicio = parse_date(fecha_inicio)
-        if fecha_inicio:
-            compras_qs = compras_qs.filter(fecha_transaccion__gte=fecha_inicio)
-            ventas_qs = ventas_qs.filter(fecha_transaccion__gte=fecha_inicio)
-
+        compras = compras.filter(fecha_transaccion__gte=fecha_inicio)
+        ventas = ventas.filter(fecha_transaccion__gte=fecha_inicio)
     if fecha_fin:
-        fecha_fin = parse_date(fecha_fin)
-        if fecha_fin:
-            compras_qs = compras_qs.filter(fecha_transaccion__lte=fecha_fin)
-            ventas_qs = ventas_qs.filter(fecha_transaccion__lte=fecha_fin)
+        compras = compras.filter(fecha_transaccion__lte=fecha_fin)
+        ventas = ventas.filter(fecha_transaccion__lte=fecha_fin)
 
-    # Agrupar por año y mes
-    compras = (
-        compras_qs.annotate(
-            year=TruncYear("fecha_transaccion"),
-            month=TruncMonth("fecha_transaccion"))
-        .values("year", "month")
-        .annotate(total_compras=Count("id_transaccion"))
-        .order_by("-year", "-month")
+    # Agrupar compras y ventas por año y mes
+    compras_grouped = compras.annotate(
+        year=TruncYear("fecha_transaccion"),
+        month=TruncMonth("fecha_transaccion")
+    ).values("year", "month").annotate(total_compras=Count("id_transaccion"))
+
+    ventas_grouped = ventas.annotate(
+        year=TruncYear("fecha_transaccion"),
+        month=TruncMonth("fecha_transaccion")
+    ).values("year", "month").annotate(total_ventas=Count("id_transaccion"))
+
+    return render(request, "historial_transacciones.html", {
+        "compras": compras_grouped,
+        "ventas": ventas_grouped
+    })
+
+# ====================================
+# HISTORIAL DE TRANSACCIONES (API)
+# ====================================
+@api_view(["GET"])
+def historial_transacciones_api(request):
+    id_usuario = request.query_params.get("id_usuario")
+    if not id_usuario:
+        return Response({"error": "Debe proporcionar el ID del usuario"}, status=400)
+
+    fecha_inicio = parse_date(request.query_params.get("fecha_inicio"))
+    fecha_fin = parse_date(request.query_params.get("fecha_fin"))
+
+    compras = Transacciones.objects.filter(
+        id_usuario=id_usuario,
+        id_detalle_transaccion__tipo_transaccion="compra"
+    )
+    ventas = Transacciones.objects.filter(
+        id_detalle_transaccion__id_articulo__id_usuario=id_usuario,
+        id_detalle_transaccion__tipo_transaccion="venta"
     )
 
-    ventas = (
-        ventas_qs.annotate(
-            year=TruncYear("fecha_transaccion"),
-            month=TruncMonth("fecha_transaccion"))
-        .values("year", "month")
-        .annotate(total_ventas=Count("id_transaccion"))
-        .order_by("-year", "-month")
-    )
+    if fecha_inicio:
+        compras = compras.filter(fecha_transaccion__gte=fecha_inicio)
+        ventas = ventas.filter(fecha_transaccion__gte=fecha_inicio)
+    if fecha_fin:
+        compras = compras.filter(fecha_transaccion__lte=fecha_fin)
+        ventas = ventas.filter(fecha_transaccion__lte=fecha_fin)
 
-    return render(
-        request,
-        "historial_transacciones.html",
-        {"compras": compras, "ventas": ventas},
-    )
+    compras_grouped = compras.annotate(
+        year=TruncYear("fecha_transaccion"),
+        month=TruncMonth("fecha_transaccion")
+    ).values("year", "month").annotate(total_compras=Count("id_transaccion"))
+
+    ventas_grouped = ventas.annotate(
+        year=TruncYear("fecha_transaccion"),
+        month=TruncMonth("fecha_transaccion")
+    ).values("year", "month").annotate(total_ventas=Count("id_transaccion"))
+
+    return Response({
+        "compras": list(compras_grouped),
+        "ventas": list(ventas_grouped)
+    })
 
 
-# CRUDS PARA LOS MODELOS
+# ====================================
+# CRUD GENERAL PARA MODELOS DEL SISTEMA
+# ====================================
+# Todos los ViewSets permiten listar, crear, actualizar y eliminar registros
 class UsuariosViewSet(viewsets.ModelViewSet):
     queryset = Usuarios.objects.all()
     serializer_class = UsuariosSerializer
@@ -202,8 +204,7 @@ class ArticulosViewSet(viewsets.ModelViewSet):
 class ArticuloDetailAPIView(RetrieveAPIView):
     queryset = Articulos.objects.all()
     serializer_class = ArticulosSerializer
-    lookup_field = 'id_articulo'  # solicita el id creado
-
+    lookup_field = 'id_articulo'  # Se usa para buscar el artículo por ID
 
 class CategoriasViewSet(viewsets.ModelViewSet):
     queryset = Categorias.objects.all()
@@ -243,50 +244,4 @@ class PagosViewSet(viewsets.ModelViewSet):
 class PqrsViewSet(viewsets.ModelViewSet):
     queryset = Pqrs.objects.all()
     serializer_class = PqrsSerializer
-
-
-@api_view(["GET"])
-def historial_transacciones_api(request):
-    id_usuario = request.query_params.get("id_usuario")
-    fecha_inicio = request.query_params.get("fecha_inicio")
-    fecha_fin = request.query_params.get("fecha_fin")
-
-    if not id_usuario:
-        return Response({"error": "Se requiere id_usuario"}, status=400)
-
-    # Filtros base
-    compras = Transacciones.objects.filter(
-        id_usuario=id_usuario,
-        id_detalle_transaccion__tipo_transaccion="compra"
-    )
-    ventas = Transacciones.objects.filter(
-        id_detalle_transaccion__id_articulo__id_usuario=id_usuario,
-        id_detalle_transaccion__tipo_transaccion="venta"
-    )
-
-    # Filtrar fechas si existen
-    if fecha_inicio:
-        fecha_inicio = parse_date(fecha_inicio)
-        compras = compras.filter(fecha_transaccion__gte=fecha_inicio)
-        ventas = ventas.filter(fecha_transaccion__gte=fecha_inicio)
-
-    if fecha_fin:
-        fecha_fin = parse_date(fecha_fin)
-        compras = compras.filter(fecha_transaccion__lte=fecha_fin)
-        ventas = ventas.filter(fecha_transaccion__lte=fecha_fin)
-
-    # Agrupar por año y mes
-    compras_agrupadas = compras.annotate(
-        year=TruncYear("fecha_transaccion"),
-        month=TruncMonth("fecha_transaccion")
-    ).values("year", "month").annotate(total_compras=Count("id_transaccion"))
-
-    ventas_agrupadas = ventas.annotate(
-        year=TruncYear("fecha_transaccion"),
-        month=TruncMonth("fecha_transaccion")
-    ).values("year", "month").annotate(total_ventas=Count("id_transaccion"))
-
-    return Response({
-        "compras": list(compras_agrupadas),
-        "ventas": list(ventas_agrupadas)
-    })
+    
