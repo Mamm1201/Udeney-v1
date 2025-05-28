@@ -14,15 +14,16 @@ jobs:
         python-version: ["3.10", "3.11"]
 
     steps:
+      # Clona el código del repositorio
       - uses: actions/checkout@v4
 
-      # Configuración del entorno Python según la versión del matrix
+      # Configura la versión de Python según la versión definida en matrix
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
-      # Cache para acelerar la instalación de paquetes pip
+      # Cache de paquetes pip para acelerar la instalación
       - name: Cache pip packages
         uses: actions/cache@v3
         with:
@@ -31,39 +32,55 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      # Instalación de dependencias Python necesarias para tests y formateo
-      - name: Install dependencies
+      # 🔄 Actualiza pip e instala pip-tools (es mejor actualizar pip antes)
+      - name: Upgrade pip and install pip-tools
         run: |
           python -m pip install --upgrade pip
+          pip install pip-tools
+
+      # 🛠️ Compila requirements.txt a partir de requirements.in
+      - name: Compile requirements.txt desde requirements.in
+        run: |
+          pip-compile requirements.in
+
+      # 🧪 Verifica que requirements.txt esté actualizado respecto a requirements.in
+      - name: Verificar que requirements.txt está actualizado
+        run: |
+          pip-compile requirements.in --quiet
+          git diff --exit-code requirements.txt
+
+      # 🧰 Instala dependencias necesarias para test y formateo
+      - name: Install dependencies
+        run: |
           pip install -r requirements.txt
           pip install pytest pytest-django black
 
-      # Verificación de formato de código Python usando Black
+      # 🧹 Verifica el formato del código con Black
       - name: Check code formatting with Black
         run: |
           black --check .
 
       # --- INICIO: Configuración para frontend (carpeta client) ---
 
-      # Instalación de Node.js para ejecutar herramientas de frontend
+      # 🧩 Configura Node.js para usar herramientas del frontend
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: "18"
 
-      # Instalación de dependencias del frontend ubicadas en client/
+      # 📦 Instala dependencias del frontend en la carpeta `client`
       - name: Install frontend dependencies
         run: |
           cd client
           npm ci
 
-      # Ejecución de ESLint para verificar calidad y errores en el código JS/React
+      # 🔍 Ejecuta ESLint para verificar calidad del código JS/React
       - name: Run ESLint
         run: |
           cd client
           npx eslint . --max-warnings=0
 
-      # Verificación del formato con Prettier para archivos JS, JSON, CSS y MD
+      # 🧼 Verifica el formato con Prettier para archivos JS, JSON, CSS y MD
       - name: Check Prettier formatting
         run: |
           cd client
@@ -71,7 +88,7 @@ jobs:
 
       # --- FIN: Configuración para frontend ---
 
-      # Opcional: Subir reporte de cobertura como artifact (si usas pytest-cov)
+      # 📈 Sube el reporte de cobertura (si usas pytest-cov)
       - name: Upload coverage report
         if: always() # Sube el reporte incluso si fallan los tests
         uses: actions/upload-artifact@v4
