@@ -26,18 +26,13 @@
   },
   "overrides": [
     {
-      // Para archivos redux toolkit
       "files": ["src/**/*Slice.js"],
       "rules": { "no-param-reassign": ["error", { "props": false }] }
     },
     {
-      // 👇 Solución para archivos de configuración que usan Node.js
       "files": ["webpack.config.js", "tailwind.config.js", "postcss.config.js"],
       "env": {
         "node": true
-      },
-      "rules": {
-        "no-undef": "off" // opcional, por si ya hay conflictos previos
       }
     }
   ],
