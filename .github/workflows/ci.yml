@@ -16,12 +16,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Configuración del entorno Python según la versión del matrix
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
-      # Cache de pip (optimización)
+      # Cache para acelerar la instalación de paquetes pip
       - name: Cache pip packages
         uses: actions/cache@v3
         with:
@@ -30,22 +31,45 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
+      # Instalación de dependencias Python necesarias para tests y formateo
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pytest pytest-django black
 
-      # Verificación de formato con Black (como ya tenías)
+      # Verificación de formato de código Python usando Black
       - name: Check code formatting with Black
         run: |
           black --check .
 
-      # - name: Run tests with pytest
-      #   env:
-      #     DJANGO_SETTINGS_MODULE: e-commerce.settings.py
-      #   run: |
-      #     pytest udeneyv1/tests/tests.py --verbose
+      # --- INICIO: Configuración para frontend (carpeta client) ---
+
+      # Instalación de Node.js para ejecutar herramientas de frontend
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+
+      # Instalación de dependencias del frontend ubicadas en client/
+      - name: Install frontend dependencies
+        run: |
+          cd client
+          npm ci
+
+      # Ejecución de ESLint para verificar calidad y errores en el código JS/React
+      - name: Run ESLint
+        run: |
+          cd client
+          npx eslint . --max-warnings=0
+
+      # Verificación del formato con Prettier para archivos JS, JSON, CSS y MD
+      - name: Check Prettier formatting
+        run: |
+          cd client
+          npx prettier --check "**/*.{js,jsx,json,css,md}"
+
+      # --- FIN: Configuración para frontend ---
 
       # Opcional: Subir reporte de cobertura como artifact (si usas pytest-cov)
       - name: Upload coverage report
