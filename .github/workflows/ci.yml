@@ -34,7 +34,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pytest  # Si no está en requirements.txt
+          pip install pytest pytest-django black
 
       # Verificación de formato con Black (como ya tenías)
       - name: Check code formatting with Black
@@ -42,6 +42,8 @@ jobs:
           black --check .
 
       - name: Run tests with pytest
+        env:
+          DJANGO_SETTINGS_MODULE: e-commerce.settings.py
         run: |
           pytest udeneyv1/tests/tests.py --verbose
 
