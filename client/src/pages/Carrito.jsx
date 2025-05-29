@@ -20,7 +20,11 @@ import {
   DialogContent,
   DialogActions,
 } from '@mui/material';
-import { AddCircleOutline, RemoveCircleOutline } from '@mui/icons-material';
+import {
+  AddCircleOutline,
+  RemoveCircleOutline,
+  DeleteOutline,
+} from '@mui/icons-material';
 import { useCarrito } from '../context/CarritoContext';
 import api from '../api/axiosConfig';
 import { useNavigate } from 'react-router-dom';
@@ -31,15 +35,14 @@ const Carrito = () => {
   const navigate = useNavigate();
 
   const [total, setTotal] = useState(0);
-  const [tipoEntrega, setTipoEntrega] = useState('domicilio'); // 🚚 Tipo de entrega seleccionado
+  const [tipoEntrega, setTipoEntrega] = useState('domicilio');
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: '',
     type: 'success',
   });
-  const [openConfirmDialog, setOpenConfirmDialog] = useState(false); // 🧾 Modal de confirmación
+  const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
 
-  // ✅ Calcular el total de la compra cada vez que cambie el carrito
   useEffect(() => {
     const totalCalculado = carrito.reduce(
       (acc, item) => acc + item.precio_articulo * item.cantidad,
@@ -48,11 +51,20 @@ const Carrito = () => {
     setTotal(totalCalculado);
   }, [carrito]);
 
-  // ✅ Modal de confirmación
+  const disminuirCantidad = (id_articulo) => {
+    const articulo = carrito.find((item) => item.id_articulo === id_articulo);
+    if (!articulo) return;
+
+    if (articulo.cantidad > 1) {
+      agregarAlCarrito({ ...articulo, cantidad: articulo.cantidad - 1 });
+    } else {
+      eliminarDelCarrito(id_articulo);
+    }
+  };
+
   const handleAbrirConfirmacion = () => setOpenConfirmDialog(true);
   const handleCerrarConfirmacion = () => setOpenConfirmDialog(false);
 
-  // ✅ Procesar la compra al confirmar
   const realizarCompra = async () => {
     const id_usuario = parseInt(localStorage.getItem('id_usuario'));
 
@@ -80,9 +92,9 @@ const Carrito = () => {
         type: 'success',
       });
 
-      vaciarCarrito(); // 🧹 Limpia el carrito
-      setOpenConfirmDialog(false); // ✅ Cierra el modal
-      navigate('/articulos'); // 🔁 Redirige al historial de compras
+      vaciarCarrito();
+      setOpenConfirmDialog(false);
+      navigate('/articulos');
     } catch (error) {
       console.error('Error al realizar la compra:', error);
       setSnackbar({
@@ -131,14 +143,38 @@ const Carrito = () => {
                     >
                       ${articulo.precio_articulo} x {articulo.cantidad}
                     </Typography>
-                    <Box display="flex" justifyContent="space-between" mt={2}>
+
+                    <Box
+                      display="flex"
+                      justifyContent="space-between"
+                      mt={2}
+                      alignItems="center"
+                    >
                       <IconButton
-                        onClick={() => eliminarDelCarrito(articulo.id_articulo)}
+                        onClick={() => disminuirCantidad(articulo.id_articulo)}
+                        aria-label="Disminuir cantidad"
                       >
                         <RemoveCircleOutline />
                       </IconButton>
-                      <IconButton onClick={() => agregarAlCarrito(articulo)}>
+
+                      <IconButton
+                        onClick={() =>
+                          agregarAlCarrito({
+                            ...articulo,
+                            cantidad: articulo.cantidad + 1,
+                          })
+                        }
+                        aria-label="Aumentar cantidad"
+                      >
                         <AddCircleOutline />
+                      </IconButton>
+
+                      <IconButton
+                        onClick={() => eliminarDelCarrito(articulo.id_articulo)}
+                        color="error"
+                        aria-label="Eliminar artículo"
+                      >
+                        <DeleteOutline />
                       </IconButton>
                     </Box>
                   </CardContent>
@@ -147,7 +183,6 @@ const Carrito = () => {
             ))}
           </Grid>
 
-          {/* 🚛 Selección del tipo de entrega */}
           <FormControl fullWidth sx={{ mt: 3 }}>
             <InputLabel id="tipo-entrega-label">Tipo de entrega</InputLabel>
             <Select
@@ -163,7 +198,6 @@ const Carrito = () => {
             </Select>
           </FormControl>
 
-          {/* 📦 Acciones de compra */}
           <Box sx={{ mt: 4, display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Typography variant="h5">Total: ${total}</Typography>
             <Button
@@ -180,7 +214,6 @@ const Carrito = () => {
         </>
       )}
 
-      {/* ✅ Modal de confirmación de compra */}
       <Dialog open={openConfirmDialog} onClose={handleCerrarConfirmacion}>
         <DialogTitle>¿Confirmar compra?</DialogTitle>
         <DialogContent>
@@ -197,7 +230,6 @@ const Carrito = () => {
         </DialogActions>
       </Dialog>
 
-      {/* 🔔 Feedback con Snackbar */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={4000}
