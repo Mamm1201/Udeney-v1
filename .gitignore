@@ -46,6 +46,7 @@ client/dist/
 *.swp
 *.bak
 *.tmp
+
 .idea/
 
 htmlcov/
@@ -58,6 +59,15 @@ htmlcov/
 *.pyc
 *.pyo
 __pycache__/
+
+# =========================
+# Entornos para Producción
+# =========================
+
+*.env
+.env.prod
+.env.prod.db
+
 
 
 
