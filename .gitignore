@@ -64,6 +64,14 @@ Thumbs.db
 *.bak
 *.tmp
 
+# =========================
+# Entornos para Producción
+# =========================
+
+*.env
+.env.prod
+.env.prod.db
+
 
 
 

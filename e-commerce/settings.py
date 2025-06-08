@@ -17,6 +17,7 @@ SECRET_KEY = "django-insecure-y@)ct$if^^&0x4)gg572v)a-^olhv-g9-v&shq_crc_nct9)!%
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+
 ALLOWED_HOSTS = []
 
 # Application definition
@@ -88,6 +89,11 @@ DATABASES = {
         "PASSWORD": os.getenv("DB_PASSWORD"),
         "HOST": os.getenv("DB_HOST"),
         "PORT": os.getenv("DB_PORT"),
+        'OPTIONS': {
+            'charset': 'utf8mb4',  # Soporte para emojis y caracteres especiales
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",  # Mayor validación
+            'connect_timeout': 5,  # Timeout para conexión
+        }
     },
 }
 
@@ -125,6 +131,7 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
@@ -133,5 +140,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # DESDE ACA AUTORIZAMOS QUIEN SE PUEDE CONECTAR
 CORS_ALLOWED_ORIGINS = ["http://localhost:5173"]
 
+
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+
