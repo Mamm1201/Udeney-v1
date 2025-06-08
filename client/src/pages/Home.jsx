@@ -1,8 +1,8 @@
-import React from 'react';
-import Navbar from '../components/Navbar';
-import Boton1 from '../components/Boton1';
-import Boton2 from '../components/Boton2';
-import Pie from '../components/Pie';
+import React from "react";
+import Navbar from "../components/Navbar";
+import Boton1 from "../components/Boton1";
+import Boton2 from "../components/Boton2";
+import Pie from "../components/Pie";
 
 const Home = () => {
   return (
@@ -12,11 +12,6 @@ const Home = () => {
       </div>
       <header className="bg-green-600 text-white py-8">
         <div className="container mx-auto text-center">
-          <img
-            src="/logo.png"
-            alt="EduNey Logo"
-            className="mx-auto mb-4 w-16 h-16"
-          />
           <h1 className="text-4xl font-bold">DALE UNA SEGUNDA OPORTUNIDAD</h1>
           <p className="mt-4">
             En EduNey creemos en darle una nueva vida a las prendas y elementos
