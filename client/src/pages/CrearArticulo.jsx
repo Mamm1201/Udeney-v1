@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import NavbarVender from '../components/NavbarVender';
+import { useState, useEffect } from 'react';
+import NavbarVender from '../components/Navbar';
 import { useNavigate } from 'react-router-dom';
 import {
   TextField,
@@ -11,17 +11,16 @@ import {
   FormControl,
   Snackbar,
   Alert,
+  Paper,
 } from '@mui/material';
 import { getCategorias, crearArticulo } from '../api/articulos.api';
+import fondoVender from '../assets/vender.png'; // Ajusta si tu ruta es distinta
 
 const CrearArticulo = () => {
   const navigate = useNavigate();
-
-  // Obtenemos datos del usuario logueado desde localStorage
   const idUsuario = localStorage.getItem('id_usuario');
   const nombreUsuario = localStorage.getItem('nombres_usuario');
 
-  // Estado para el formulario, con el ID del usuario ya cargado
   const [formData, setFormData] = useState({
     titulo_articulo: '',
     descripcion_articulo: '',
@@ -31,17 +30,15 @@ const CrearArticulo = () => {
     id_usuario: parseInt(idUsuario),
   });
 
-  const [imagen, setImagen] = useState(null); // Imagen seleccionada
-  const [categorias, setCategorias] = useState([]); // Lista de categorías
-  const [articuloCreado, setArticuloCreado] = useState(null); // Artículo creado
-  const [snackbarOpen, setSnackbarOpen] = useState(false); // Estado del snackbar
+  const [imagen, setImagen] = useState(null);
+  const [categorias, setCategorias] = useState([]);
+  const [articuloCreado, setArticuloCreado] = useState(null);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
 
-  // Cargar categorías al montar el componente
   useEffect(() => {
     const fetchCategorias = async () => {
       try {
         const res = await getCategorias();
-        console.log('Categorías recibidas:', res.data); // 👈 Asegúrate que esto muestra un array
         setCategorias(res.data);
       } catch (error) {
         console.error('Error al obtener categorías:', error);
@@ -50,7 +47,6 @@ const CrearArticulo = () => {
     fetchCategorias();
   }, []);
 
-  // Actualizar campos del formulario
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
@@ -59,31 +55,21 @@ const CrearArticulo = () => {
     }));
   };
 
-  // Manejar selección de imagen
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      setImagen(file);
-    }
+    if (file) setImagen(file);
   };
 
-  // Enviar formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const data = new FormData();
-    data.append('titulo_articulo', formData.titulo_articulo);
-    data.append('descripcion_articulo', formData.descripcion_articulo);
-    data.append('institucion_articulo', formData.institucion_articulo);
-    data.append('precio_articulo', formData.precio_articulo);
-    data.append('id_categoria', formData.id_categoria);
-    data.append('id_usuario', formData.id_usuario);
-    if (imagen) {
-      data.append('imagen', imagen); // adjuntamos la imagen
-    }
+    Object.entries(formData).forEach(([key, value]) =>
+      data.append(key, value)
+    );
+    if (imagen) data.append('imagen', imagen);
 
     try {
-      const response = await crearArticulo(data); // debe aceptar FormData
+      const response = await crearArticulo(data);
       if (response.status === 201) {
         setArticuloCreado(response.data);
         setSnackbarOpen(true);
@@ -99,47 +85,47 @@ const CrearArticulo = () => {
       }
     } catch (error) {
       console.error('Error al crear artículo:', error);
-      console.log('Detalles del error:', error.response?.data);
-      alert('Error al crear artículo: ' + error.message);
-      console.log('Detalles:', error.response?.data);
+      alert('Error: ' + error.message);
     }
   };
 
   return (
     <Box
       sx={{
+        minHeight: '100vh',
+        backgroundImage: `url(${fondoVender})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100vh',
-        padding: 0,
-        backgroundColor: '#f4f6f8',
+        px: 2,
       }}
     >
       <NavbarVender />
 
-      <Box
+      <Paper
         component="form"
         onSubmit={handleSubmit}
+        elevation={10}
         sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          width: '100%',
+          mt: 6,
+          mb: 4,
           maxWidth: 500,
-          padding: 3,
-          borderRadius: 2,
-          backgroundColor: 'white',
-          boxShadow: 4,
+          width: '100%',
+          p: 4,
+          borderRadius: 3,
+          backgroundColor: 'rgba(255,255,255,0.9)',
+          backdropFilter: 'blur(4px)',
+          boxShadow: 6,
         }}
       >
-        {/* Subir imagen */}
         <TextField
           fullWidth
           type="file"
           onChange={handleImageChange}
           inputProps={{ accept: 'image/*' }}
-          sx={{ mt: 2 }}
+          sx={{ mb: 2 }}
         />
 
         <TextField
@@ -147,6 +133,7 @@ const CrearArticulo = () => {
           name="titulo_articulo"
           value={formData.titulo_articulo}
           onChange={handleChange}
+          fullWidth
           variant="outlined"
           margin="normal"
         />
@@ -155,6 +142,7 @@ const CrearArticulo = () => {
           name="descripcion_articulo"
           value={formData.descripcion_articulo}
           onChange={handleChange}
+          fullWidth
           variant="outlined"
           margin="normal"
           multiline
@@ -165,21 +153,22 @@ const CrearArticulo = () => {
           name="institucion_articulo"
           value={formData.institucion_articulo}
           onChange={handleChange}
+          fullWidth
           variant="outlined"
           margin="normal"
         />
         <TextField
           label="Precio"
           name="precio_articulo"
+          type="number"
           value={formData.precio_articulo}
           onChange={handleChange}
+          fullWidth
           variant="outlined"
           margin="normal"
-          type="number"
         />
 
-        {/* Select de categorías */}
-        <FormControl variant="outlined" margin="normal" fullWidth>
+        <FormControl fullWidth variant="outlined" margin="normal">
           <InputLabel>Categoría</InputLabel>
           <Select
             name="id_categoria"
@@ -188,43 +177,39 @@ const CrearArticulo = () => {
             label="Categoría"
           >
             {categorias.map((categoria) => (
-              <MenuItem
-                key={categoria.id_categoria}
-                value={categoria.id_categoria}
-              >
+              <MenuItem key={categoria.id_categoria} value={categoria.id_categoria}>
                 {categoria.nombre_categoria}
               </MenuItem>
             ))}
           </Select>
         </FormControl>
 
-        {/* Usuario actual mostrado (solo lectura) */}
         <TextField
           label="Usuario actual"
           value={nombreUsuario}
-          margin="normal"
           fullWidth
-          InputProps={{
-            readOnly: true,
-          }}
+          margin="normal"
+          InputProps={{ readOnly: true }}
         />
 
         <Button
           type="submit"
           variant="contained"
-          color="primary"
           sx={{
-            borderRadius: 4,
-            marginTop: 2,
-            padding: '10px 0',
-            fontSize: '16px',
+            mt: 2,
+            borderRadius: 5,
+            backgroundColor: '#16a34a',
+            color: 'white',
+            fontWeight: 'bold',
+            '&:hover': {
+              backgroundColor: '#15803d',
+            },
           }}
         >
           Subir Artículo
         </Button>
-      </Box>
+      </Paper>
 
-      {/* Snackbar de éxito */}
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={5000}

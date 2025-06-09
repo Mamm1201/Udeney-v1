@@ -1,11 +1,5 @@
-// src/components/Navbar.jsx
-import React, { useState } from 'react';
-import Logo from './Logo';
-import LoginButton from './Loginbutton';
-import LogoutButton from './LogoutButton';
-import PerfilMenu from './PerfilMenu';
-import { useCarrito } from '../context/CarritoContext'; // Hook del contexto del carrito
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   AppBar,
   Toolbar,
@@ -17,11 +11,17 @@ import {
   IconButton,
   useMediaQuery,
   useTheme,
-  Badge, // ✅ Importar Badge para el contador
+  Badge,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import { useNavigate } from 'react-router-dom';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+
+import Logo from './Logo';
+import LoginButton from './Loginbutton';
+import LogoutButton from './LogoutButton';
+import PerfilMenu from './PerfilMenu';
+import { useCarrito } from '../context/CarritoContext';
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -31,13 +31,10 @@ const Navbar = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  // Menú hamburguesa para móviles
   const [mobileMenuAnchor, setMobileMenuAnchor] = useState(null);
-  const handleMobileMenuOpen = (event) =>
-    setMobileMenuAnchor(event.currentTarget);
+  const handleMobileMenuOpen = (event) => setMobileMenuAnchor(event.currentTarget);
   const handleMobileMenuClose = () => setMobileMenuAnchor(null);
 
-  // Menú de acciones: ¿Qué deseas hacer hoy?
   const [anchorEl, setAnchorEl] = useState(null);
   const handleOpenRoles = (event) => setAnchorEl(event.currentTarget);
   const handleCloseRoles = () => setAnchorEl(null);
@@ -49,7 +46,6 @@ const Navbar = () => {
     console.log(`👋 Hasta luego, ${nombre || 'usuario'}!`);
   };
 
-  // Guardar el rol y redirigir
   const seleccionarRol = (rol) => {
     localStorage.setItem('rol_usuario', rol);
     if (rol === 'vendedor') {
@@ -60,32 +56,23 @@ const Navbar = () => {
     handleCloseRoles();
   };
 
-  // Obtenemos el carrito y la cantidad total
   const { carrito } = useCarrito();
-  const cantidadEnCarrito = carrito.reduce(
-    (acc, item) => acc + item.cantidad,
-    0,
-  );
+  const cantidadEnCarrito = carrito.reduce((acc, item) => acc + item.cantidad, 0);
 
   return (
-    <AppBar position="static" color="#86C384">
+    <AppBar position="static" sx={{ backgroundColor: '#86C388' }}>
       <Toolbar
         sx={{
           display: 'flex',
           justifyContent: 'space-between',
-          color: 'inherit',
+          color: '#1E1E1E',
         }}
       >
-        {/* Logo / Título */}
         <Logo />
 
         {isMobile ? (
           <>
-            <IconButton
-              color="inherit"
-              onClick={handleMobileMenuOpen}
-              edge="end"
-            >
+            <IconButton onClick={handleMobileMenuOpen} sx={{ color: '#1E1E1E' }}>
               <MenuIcon />
             </IconButton>
             <Menu
@@ -93,24 +80,28 @@ const Navbar = () => {
               open={Boolean(mobileMenuAnchor)}
               onClose={handleMobileMenuClose}
             >
-              <MenuItem onClick={() => navigate('/nosotros')}>
-                Nosotros
-              </MenuItem>
-              <MenuItem onClick={() => navigate('/contacto')}>
-                Contacto
-              </MenuItem>
+              <MenuItem onClick={() => navigate('/nosotros')}>Nosotros</MenuItem>
+              <MenuItem onClick={() => navigate('/contacto')}>Contacto</MenuItem>
               <MenuItem onClick={handleOpenRoles}>
                 ¿Qué deseas hacer hoy? <ArrowDropDownIcon fontSize="small" />
               </MenuItem>
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleCloseRoles}
+              >
+                <MenuItem onClick={() => seleccionarRol('vendedor')}>
+                  📦 Vender artículos
+                </MenuItem>
+                <MenuItem onClick={() => seleccionarRol('comprador')}>
+                  🛒 Comprar artículos
+                </MenuItem>
+              </Menu>
 
               {!isLoggedIn ? (
                 <>
-                  <MenuItem onClick={() => navigate('/login')}>
-                    Iniciar sesión
-                  </MenuItem>
-                  <MenuItem onClick={() => navigate('/registro')}>
-                    Registrarse
-                  </MenuItem>
+                  <MenuItem onClick={() => navigate('/login')}>Iniciar sesión</MenuItem>
+                  <MenuItem onClick={() => navigate('/registro')}>Registrarse</MenuItem>
                 </>
               ) : (
                 <>
@@ -118,21 +109,26 @@ const Navbar = () => {
                   <MenuItem onClick={handleLogout}>Cerrar sesión</MenuItem>
                 </>
               )}
+              <MenuItem onClick={() => navigate('/carrito')}>
+                <Badge badgeContent={cantidadEnCarrito} color="error">
+                  <ShoppingCartIcon />
+                </Badge>
+              </MenuItem>
             </Menu>
           </>
         ) : (
           <Box display="flex" alignItems="center" gap={2}>
-            <Button onClick={() => navigate('/nosotros')} color="inherit">
+            <Button onClick={() => navigate('/nosotros')} sx={{ color: '#1E1E1E' }}>
               Nosotros
             </Button>
-            <Button onClick={() => navigate('/contacto')} color="inherit">
+            <Button onClick={() => navigate('/contacto')} sx={{ color: '#1E1E1E' }}>
               Contacto
             </Button>
 
             <Button
               onClick={handleOpenRoles}
-              color="inherit"
               endIcon={<ArrowDropDownIcon />}
+              sx={{ color: '#1E1E1E' }}
             >
               ¿Qué deseas hacer hoy?
             </Button>
@@ -154,15 +150,15 @@ const Navbar = () => {
                 <LoginButton />
                 <Button
                   onClick={() => navigate('/registro')}
-                  color="inherit"
                   variant="outlined"
+                  sx={{ color: '#1E1E1E', borderColor: '#1E1E1E' }}
                 >
                   Registrarse
                 </Button>
               </>
             ) : (
               <>
-                <Typography variant="body1">
+                <Typography variant="body1" sx={{ color: '#1E1E1E' }}>
                   ¡Hola, <strong>{nombre}</strong>!
                 </Typography>
                 <PerfilMenu />
@@ -170,8 +166,7 @@ const Navbar = () => {
               </>
             )}
 
-            {/* ✅ Ícono de carrito con contador */}
-            <IconButton onClick={() => navigate('/carrito')} color="inherit">
+            <IconButton onClick={() => navigate('/carrito')} sx={{ color: '#1E1E1E' }}>
               <Badge badgeContent={cantidadEnCarrito} color="error">
                 <ShoppingCartIcon />
               </Badge>

@@ -1,5 +1,5 @@
 // src/components/PerfilMenu.jsx
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   IconButton,
   Menu,
@@ -7,7 +7,7 @@ import {
   Typography,
   Divider,
   Box,
-  Avatar,
+  // Avatar,
 } from '@mui/material';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import LogoutButton from './LogoutButton'; // ya lo creamos antes
