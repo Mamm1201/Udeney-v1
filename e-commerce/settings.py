@@ -89,11 +89,11 @@ DATABASES = {
         "PASSWORD": os.getenv("DB_PASSWORD"),
         "HOST": os.getenv("DB_HOST"),
         "PORT": os.getenv("DB_PORT"),
-        'OPTIONS': {
-            'charset': 'utf8mb4',  # Soporte para emojis y caracteres especiales
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",  # Mayor validación
-            'connect_timeout': 5,  # Timeout para conexión
-        }
+        "OPTIONS": {
+            "charset": "utf8mb4",  # Soporte para emojis y caracteres especiales
+            "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",  # Mayor validación
+            "connect_timeout": 5,  # Timeout para conexión
+        },
     },
 }
 
@@ -143,5 +143,3 @@ CORS_ALLOWED_ORIGINS = ["http://localhost:5173"]
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
-
-
