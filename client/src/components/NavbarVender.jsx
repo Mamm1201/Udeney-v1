@@ -85,6 +85,7 @@ const Navbar = () => {
               open={Boolean(mobileMenuAnchor)}
               onClose={handleMobileMenuClose}
             >
+              {/* <MenuItem onClick={() => navigate("/home")}>Inicio</MenuItem> */}
               <MenuItem onClick={() => navigate("/nosotros")}>
                 Nosotros
               </MenuItem>
@@ -114,6 +115,9 @@ const Navbar = () => {
           </>
         ) : (
           <Box display="flex" alignItems="center" gap={2}>
+            <Button onClick={() => navigate("/")} color="inherit">
+              Inicio
+            </Button>
             <Button onClick={() => navigate("/nosotros")} color="inherit">
               Nosotros
             </Button>

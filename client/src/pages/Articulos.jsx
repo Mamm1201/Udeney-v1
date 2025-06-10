@@ -17,12 +17,16 @@ import {
   Snackbar,
   Alert,
   CircularProgress,
+  ToggleButton,
+  ToggleButtonGroup,
 } from "@mui/material";
 
 const Articulos = () => {
   const [articulos, setArticulos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [snackbar, setSnackbar] = useState({ open: false, message: "" });
+  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState("todos");
+
   const { agregarAlCarrito } = useCarrito();
 
   useEffect(() => {
@@ -46,7 +50,21 @@ const Articulos = () => {
     setSnackbar({ open: true, message: "✅ Artículo agregado al carrito" });
   };
 
-  // Imagen de respaldo local
+  // Filtro por categoría
+  const normalizar = (texto) =>
+    texto
+      ?.toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+
+  const articulosFiltrados =
+    categoriaSeleccionada === "todos"
+      ? articulos
+      : articulos.filter((articulo) => {
+          const categoria = normalizar(articulo.nombre_categoria);
+          return categoria === categoriaSeleccionada;
+        });
+
   const fallbackImage = "/images/placeholder-articulo.jpg";
 
   return (
@@ -80,6 +98,21 @@ const Articulos = () => {
           LISTA DE ARTÍCULOS
         </Typography>
 
+        {/* Botones para seleccionar categoría */}
+        <ToggleButtonGroup
+          value={categoriaSeleccionada}
+          exclusive
+          onChange={(e, nueva) => nueva && setCategoriaSeleccionada(nueva)}
+          sx={{ mb: 4, flexWrap: "wrap", justifyContent: "center" }}
+        >
+          <ToggleButton value="todos">Todos</ToggleButton>
+          <ToggleButton value="utiles">Útiles</ToggleButton>
+          <ToggleButton value="herramientas">Herramientas</ToggleButton>
+          <ToggleButton value="tecnologias">Tecnologías</ToggleButton>
+          <ToggleButton value="prendas">Prendas</ToggleButton>
+          <ToggleButton value="libros">Libros</ToggleButton>
+        </ToggleButtonGroup>
+
         {loading ? (
           <Box display="flex" justifyContent="center" my={4}>
             <CircularProgress />
@@ -95,8 +128,8 @@ const Articulos = () => {
             }}
           >
             <Grid container spacing={3}>
-              {articulos.length > 0 ? (
-                articulos.map((articulo) => (
+              {articulosFiltrados.length > 0 ? (
+                articulosFiltrados.map((articulo) => (
                   <Grid item xs={12} sm={6} md={4} key={articulo.id_articulo}>
                     <Card
                       sx={{
@@ -197,6 +230,7 @@ const Articulos = () => {
           </Box>
         )}
       </Container>
+
       <Pie />
 
       <Snackbar

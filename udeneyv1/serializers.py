@@ -86,6 +86,7 @@ class CategoriasSerializer(serializers.ModelSerializer):
 # SERIALIZADOR DE ARTICULOS
 class ArticulosSerializer(serializers.ModelSerializer):
     imagen = serializers.ImageField(use_url=True)
+    id_categoria = serializers.StringRelatedField()
 
     class Meta:
         model = Articulos
