@@ -13,6 +13,12 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.generics import RetrieveAPIView
+
+from rest_framework import viewsets, filters
+from django_filters.rest_framework import DjangoFilterBackend
+from .models import Articulos
+from .serializers import ArticulosSerializer
+
 from rest_framework.decorators import api_view
 
 # Importación de modelos del sistema
@@ -89,19 +95,19 @@ class LoginView(APIView):
 
         try:
             user = Usuarios.objects.get(email_usuario=email)
-        except Usuarios.DoesNotExist:
-            return Response({"error": "Correo o contraseña incorrectos"}, status=401)
-            # user = get_object_or_404(Usuarios, email_usuario=email)
-            user = Usuarios.objects.get(email_usuario=email)
-        except Usuarios.DoesNotExist:  # Exception as e:
+        except Usuarios.DoesNotExist as e:
+            
+            # Si no existe el usuario, responde con mensaje y error detallado
             return Response(
                 {"error": f"Usuario no encontrado: {str(e)}"},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
+        # Verifica si el usuario está inactivo
         if not user.is_active:
             return Response(
-                {"error": "Cuenta desactivada. Contacta al administrador."}, status=403
+                {"error": "Cuenta desactivada. Contacta al administrador."},
+                status=403
             )
 
         if not user.check_password(password):
@@ -236,9 +242,15 @@ class UsuariosViewSet(viewsets.ModelViewSet):
     serializer_class = UsuariosSerializer
 
 
+# class ArticulosViewSet(viewsets.ModelViewSet):
+#     queryset = Articulos.objects.all()
+#     serializer_class = ArticulosSerializer
+
 class ArticulosViewSet(viewsets.ModelViewSet):
     queryset = Articulos.objects.all()
     serializer_class = ArticulosSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ['id_categoria']  # Esto habilita el filtrado por categoría
 
 
 class ArticuloDetailAPIView(RetrieveAPIView):

@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import axios from "axios";
-import ArticuloCard from "../components/Articulos/ArticuloCard";
+import ArticuloCard from "../components/articulos/ArticuloCard";
 import Navbar from "../components/Navbar";
 import Pie from "../components/Pie";
 import { Box, Button } from "@mui/material";
