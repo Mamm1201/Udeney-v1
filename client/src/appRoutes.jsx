@@ -1,6 +1,9 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Articulos from "./pages/Articulos";
+import PoliticaCookies from "./pages/PoliticaCookies";
+import AvisoLegal from "./pages/AvisoLegal";
+import PoliticaPrivacidad from "./pages/PoliticaPrivacidad";
 import ArticuloDetail from "./pages/ArticuloDetail";
 import Login from "./pages/Login";
 import Rol from "./pages/Rol";
@@ -22,21 +25,23 @@ const AppRoutes = () => {
   return (
     <Router>
       <Routes>
-        {/* Páginas Navegación */}
+        {/* Páginas de navegación */}
         <Route path="/" element={<Home />} />
         <Route path="/nosotros" element={<Nosotros />} />
         <Route path="/contacto" element={<Contacto />} />
+        <Route path="/avisolegal" element={<AvisoLegal />} />
+        <Route path="/politica-privacidad" element={<PoliticaPrivacidad />} />
+        <Route path="/politica-cookies" element={<PoliticaCookies />} />
+
+
+
         {/* Páginas de artículos */}
         <Route path="/articulos" element={<Articulos />} />
         <Route path="/articulos/:id" element={<ArticuloDetail />} />
         <Route path="/crear-articulo" element={<CrearArticulo />} />
         <Route path="/mis-articulos" element={<MisArticulos />} />
         <Route path="/carrito" element={<Carrito />} />
-
-        <Route
-          path="/editar-articulo/:id_articulo"
-          element={<EditarArticulo />}
-        />
+        <Route path="/editar-articulo/:id_articulo" element={<EditarArticulo />} />
 
         {/* Páginas de usuario */}
         <Route path="/registro" element={<Registro />} />
@@ -44,12 +49,10 @@ const AppRoutes = () => {
         <Route path="/actualizar-datos" element={<ActualizarDatos />} />
         <Route path="/user" element={<UserProfile />} />
         <Route path="/rol" element={<Rol />} />
-        <Route
-          path="/historial-transacciones"
-          element={<HistorialTransacciones />}
-        />
-
+        <Route path="/historial-transacciones" element={<HistorialTransacciones />} />
+        
         <Route path="/comprar" element={<Comprar />} />
+
         {/* Componente Principal */}
         <Route path="/app" element={<App />} />
       </Routes>

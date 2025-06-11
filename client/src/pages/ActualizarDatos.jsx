@@ -9,13 +9,12 @@ import {
   CircularProgress,
   Snackbar,
   Alert,
+  Avatar,
 } from "@mui/material";
 import axios from "axios";
 
 const ActualizarDatos = () => {
-  console.log("👉 API URL:", import.meta.env.VITE_API_URL);
-
-  const navigate = useNavigate(); // 🔄 Hook de navegación (¡debe ir aquí!)
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     nombres_usuario: "",
@@ -25,16 +24,19 @@ const ActualizarDatos = () => {
     direccion_usuario: "",
   });
 
-  const [loading, setLoading] = useState(false); // 🔄 Indicador de carga
+  const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
     severity: "info",
   });
 
+  const [imagePreview, setImagePreview] = useState(
+    localStorage.getItem("fotoPerfil") || ""
+  );
+
   const id_usuario = localStorage.getItem("id_usuario");
 
-  // 🔽 Cargar los datos del usuario al montar el componente
   useEffect(() => {
     const fetchDatos = async () => {
       try {
@@ -54,12 +56,10 @@ const ActualizarDatos = () => {
     fetchDatos();
   }, [id_usuario]);
 
-  // 🔄 Manejador de cambio de los inputs
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // ✅ Envío del formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -76,15 +76,10 @@ const ActualizarDatos = () => {
         severity: "success",
       });
 
-      // 🔁 Redirigir después de 2 segundos
       setTimeout(() => {
         navigate("/");
       }, 2000);
     } catch (error) {
-      console.error(
-        "Error al actualizar:",
-        error.response?.data || error.message
-      );
       setSnackbar({
         open: true,
         message: "Error al actualizar datos",
@@ -93,6 +88,18 @@ const ActualizarDatos = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result);
+      localStorage.setItem("fotoPerfil", reader.result); // Guardar temporalmente
+    };
+    reader.readAsDataURL(file);
   };
 
   return (
@@ -107,6 +114,17 @@ const ActualizarDatos = () => {
         <Typography variant="h5" gutterBottom>
           Actualizar mis datos
         </Typography>
+
+        <Box display="flex" flexDirection="column" alignItems="center" mt={2}>
+          <Avatar
+            src={imagePreview}
+            sx={{ width: 100, height: 100, mb: 2 }}
+          />
+          <Button variant="contained" component="label">
+            Subir Imagen
+            <input type="file" hidden accept="image/*" onChange={handleImageChange} />
+          </Button>
+        </Box>
 
         <Box component="form" onSubmit={handleSubmit}>
           <TextField
@@ -169,7 +187,6 @@ const ActualizarDatos = () => {
         </Box>
       </Paper>
 
-      {/* Snackbar para mensajes de éxito o error */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={4000}

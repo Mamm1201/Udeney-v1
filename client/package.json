@@ -35,7 +35,7 @@
     "@eslint/js": "^9.21.0",
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
-    "@vitejs/plugin-react": "^4.2.1",
+    "@vitejs/plugin-react": "^4.5.1",
     "autoprefixer": "^10.4.20",
     "babel-loader": "^10.0.0",
     "clean-webpack-plugin": "^4.0.0",

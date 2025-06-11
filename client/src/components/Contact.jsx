@@ -1,5 +1,13 @@
 import React, { useState } from "react";
-import { Box, TextField, Button, Typography, Grid } from "@mui/material";
+import {
+  Box,
+  TextField,
+  Button,
+  Typography,
+  Grid,
+  Snackbar,
+  Alert,
+} from "@mui/material";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -7,6 +15,8 @@ const Contact = () => {
     email: "",
     subject: "",
   });
+
+  const [openSnackbar, setOpenSnackbar] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -16,9 +26,12 @@ const Contact = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log("Datos del formulario:", formData);
-    // Aquí puedes enviar los datos al backend o manejarlos según tu lógica
-    alert("¡Gracias por contactarnos!");
+    setOpenSnackbar(true);
     setFormData({ fullName: "", email: "", subject: "" });
+  };
+
+  const handleCloseSnackbar = () => {
+    setOpenSnackbar(false);
   };
 
   return (
@@ -37,6 +50,7 @@ const Contact = () => {
       <Typography variant="h4" sx={{ mb: 3, textAlign: "center" }}>
         Contáctanos
       </Typography>
+
       <Grid container spacing={2}>
         <Grid item xs={12}>
           <TextField
@@ -75,6 +89,7 @@ const Contact = () => {
           />
         </Grid>
       </Grid>
+
       <Box sx={{ mt: 3, textAlign: "center" }}>
         <Button
           type="submit"
@@ -85,6 +100,33 @@ const Contact = () => {
           Enviar
         </Button>
       </Box>
+
+      {/* Snackbar personalizado con logo en cuadro */}
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={4000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity="success"
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 2,
+            fontSize: "1rem",
+          }}
+        >
+          <Box
+            component="img"
+            src="/logo.png"
+            alt="Logo Eduney"
+            sx={{ width: 32, height: 32, borderRadius: 1 }}
+          />
+          Gracias por contactarnos,juntos haremos un planeta mas sostenible
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
