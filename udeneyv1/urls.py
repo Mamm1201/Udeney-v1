@@ -50,7 +50,7 @@ urlpatterns = [
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     # Para obtener token
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
-    # Para refrescar token
+    # Para obtener historial
     path("historial/", historial_transacciones_api, name="historial_api"),
     # Solicitar historial transacciones
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

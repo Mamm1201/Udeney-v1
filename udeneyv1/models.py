@@ -179,23 +179,47 @@ class Calificaciones(models.Model):
         managed = False  # Django no intentará crear esta tabla
 
 
+# # MODELO TABLA PAGOS
+# class Pagos(models.Model):
+#     id_pago = models.AutoField(
+#         primary_key=True
+#     )  # Este campo se autoincrementará automáticamente
+#     id_detalle_transaccion = models.ForeignKey(
+#         Transacciones, on_delete=models.CASCADE, db_column="id_detalle_transaccion"
+#     )  # Nombre exacto de la columna en la base de datos
+#     fecha_pago = models.DateTimeField(auto_now_add=True)
+#     valor_pago = models.DecimalField(max_digits=10, decimal_places=2)
+#     estado_pago = models.CharField(
+#         max_length=20, choices=[("aprobado", "Aprobado"), ("pendiente", "Pendiente")]
+#     )
+
+#     class Meta:
+#         db_table = "pagos"  # Nombre correcto de la tabla en la base de datos
+#         managed = False  # Django no intentará crear esta tabla
+        
 # MODELO TABLA PAGOS
 class Pagos(models.Model):
-    id_pago = models.AutoField(
-        primary_key=True
-    )  # Este campo se autoincrementará automáticamente
+    id_pago = models.AutoField(primary_key=True)
+    
     id_detalle_transaccion = models.ForeignKey(
-        Transacciones, on_delete=models.CASCADE, db_column="id_detalle_transaccion"
-    )  # Nombre exacto de la columna en la base de datos
+        DetalleTransaccion,  # ✅ Modelo correcto
+        on_delete=models.CASCADE,
+        db_column="id_detalle_transaccion"
+    )
+    
     fecha_pago = models.DateTimeField(auto_now_add=True)
+    
     valor_pago = models.DecimalField(max_digits=10, decimal_places=2)
+    
     estado_pago = models.CharField(
-        max_length=20, choices=[("aprobado", "Aprobado"), ("pendiente", "Pendiente")]
+        max_length=20,
+        choices=[("aprobado", "Aprobado"), ("pendiente", "Pendiente")]
     )
 
     class Meta:
-        db_table = "pagos"  # Nombre correcto de la tabla en la base de datos
-        managed = False  # Django no intentará crear esta tabla
+        db_table = "pagos"
+        managed = False
+
 
 
 # MODELO TABLA PQRS

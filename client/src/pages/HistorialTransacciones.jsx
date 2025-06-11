@@ -13,6 +13,9 @@ import {
   Stack,
 } from "@mui/material";
 
+// Importamos el componente que muestra el detalle de cada transacción
+import DetalleTransaccionUsuario from "./DetalleTransaccionUsuario";
+
 const HistorialTransacciones = () => {
   const [compras, setCompras] = useState([]);
   const [ventas, setVentas] = useState([]);
@@ -130,15 +133,16 @@ const HistorialTransacciones = () => {
               🛒 Compras
             </Typography>
             <Divider sx={{ mb: 2 }} />
+
             {compras.length > 0 ? (
-              <Stack spacing={1}>
-                {compras.map((c, i) => (
-                  <Typography key={i}>
-                    <strong>
-                      {c.year} - {c.month}
-                    </strong>
-                    : {c.total_compras} compras
-                  </Typography>
+              <Stack spacing={2}>
+                {/* Aquí renderizamos cada detalle de compra usando el componente nuevo */}
+                {compras.map((c) => (
+                  <Box key={c.id_transaccion}>
+                    <DetalleTransaccionUsuario
+                      idTransaccion={c.id_transaccion}
+                    />
+                  </Box>
                 ))}
               </Stack>
             ) : (
@@ -154,15 +158,16 @@ const HistorialTransacciones = () => {
               💼 Ventas
             </Typography>
             <Divider sx={{ mb: 2 }} />
+
             {ventas.length > 0 ? (
-              <Stack spacing={1}>
-                {ventas.map((v, i) => (
-                  <Typography key={i}>
-                    <strong>
-                      {v.year} - {v.month}
-                    </strong>
-                    : {v.total_ventas} ventas
-                  </Typography>
+              <Stack spacing={2}>
+                {/* También renderizamos cada venta con su detalle */}
+                {ventas.map((v) => (
+                  <Box key={v.id_transaccion}>
+                    <DetalleTransaccionUsuario
+                      idTransaccion={v.id_transaccion}
+                    />
+                  </Box>
                 ))}
               </Stack>
             ) : (

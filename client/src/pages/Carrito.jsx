@@ -1,3 +1,5 @@
+// src/pages/Carrito.jsx
+
 import React, { useEffect, useState } from "react";
 import {
   Button,
@@ -42,9 +44,9 @@ const Carrito = () => {
   });
   const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
 
-  // Imagen de respaldo local (debe existir en tu directorio public/images)
-  const fallbackImage = "/images/articulo-placeholder.jpg";
+  const fallbackImage = "/estudiantes.jpg";
 
+  // Calcula el total automáticamente cada vez que cambia el carrito
   useEffect(() => {
     const totalCalculado = carrito.reduce(
       (acc, item) => acc + item.precio_articulo * item.cantidad,
@@ -53,10 +55,10 @@ const Carrito = () => {
     setTotal(totalCalculado);
   }, [carrito]);
 
+  // Disminuye la cantidad o elimina el artículo del carrito
   const disminuirCantidad = (id_articulo) => {
     const articulo = carrito.find((item) => item.id_articulo === id_articulo);
     if (!articulo) return;
-
     if (articulo.cantidad > 1) {
       agregarAlCarrito({ ...articulo, cantidad: articulo.cantidad - 1 });
     } else {
@@ -67,36 +69,50 @@ const Carrito = () => {
   const handleAbrirConfirmacion = () => setOpenConfirmDialog(true);
   const handleCerrarConfirmacion = () => setOpenConfirmDialog(false);
 
+  // Realiza la compra: crea detalle y transacción, luego redirige
   const realizarCompra = async () => {
     const id_usuario = parseInt(localStorage.getItem("id_usuario"));
 
     try {
       for (const item of carrito) {
-        const detalle = await api.post("/detalle_transaccion/", {
+        // 1️⃣ Crear detalle de transacción
+        const detalleResponse = await api.post("/detalle_transaccion/", {
           tipo_transaccion: "venta",
           tipo_entrega: tipoEntrega,
           cantidad_articulos: item.cantidad,
           id_articulo: item.id_articulo,
         });
 
-        const id_detalle_transaccion = detalle.data.id_detalle_transaccion;
+        const detalleData = detalleResponse.data;
+        const id_detalle_transaccion = detalleData?.id_detalle_transaccion;
 
-        await api.post("/transacciones/", {
+        if (
+          !id_detalle_transaccion ||
+          typeof id_detalle_transaccion !== "number"
+        ) {
+          throw new Error("ID de detalle no válido o no creado correctamente");
+        }
+
+        // 2️⃣ Crear transacción asociada
+        const transaccionResponse = await api.post("/transacciones/", {
           id_usuario,
           id_detalle_transaccion,
           fecha_transaccion: new Date().toISOString(),
         });
+
+        const id_transaccion = transaccionResponse.data.id_transaccion;
+
+        // 3️⃣ Vaciar carrito y redirigir
+        vaciarCarrito();
+        setSnackbar({
+          open: true,
+          message: "✅ ¡Compra realizada con éxito!",
+          type: "success",
+        });
+        setOpenConfirmDialog(false);
+        navigate(`/resumen/${id_transaccion}`);
+        return;
       }
-
-      setSnackbar({
-        open: true,
-        message: "✅ ¡Compra realizada con éxito!",
-        type: "success",
-      });
-
-      vaciarCarrito();
-      setOpenConfirmDialog(false);
-      navigate("/articulos");
     } catch (error) {
       console.error("Error al realizar la compra:", error);
       setSnackbar({
@@ -128,12 +144,11 @@ const Carrito = () => {
                     flexDirection: "column",
                   }}
                 >
-                  {/* Contenedor de imagen optimizado */}
                   <Box
                     sx={{
                       position: "relative",
                       height: 160,
-                      backgroundColor: "#f5f5f5", // Fondo consistente
+                      backgroundColor: "#f5f5f5",
                     }}
                   >
                     <CardMedia
@@ -149,7 +164,7 @@ const Carrito = () => {
                         objectFit: "cover",
                         width: "100%",
                         height: "100%",
-                        transition: "opacity 0.3s ease",
+                        transition: "opacity 0.3s",
                         opacity: articulo.imagen ? 1 : 0.8,
                       }}
                     />
@@ -198,11 +213,9 @@ const Carrito = () => {
                     >
                       <IconButton
                         onClick={() => disminuirCantidad(articulo.id_articulo)}
-                        aria-label="Disminuir cantidad"
                       >
                         <RemoveCircleOutline />
                       </IconButton>
-
                       <IconButton
                         onClick={() =>
                           agregarAlCarrito({
@@ -210,15 +223,12 @@ const Carrito = () => {
                             cantidad: articulo.cantidad + 1,
                           })
                         }
-                        aria-label="Aumentar cantidad"
                       >
                         <AddCircleOutline />
                       </IconButton>
-
                       <IconButton
                         onClick={() => eliminarDelCarrito(articulo.id_articulo)}
                         color="error"
-                        aria-label="Eliminar artículo"
                       >
                         <DeleteOutline />
                       </IconButton>
@@ -264,7 +274,7 @@ const Carrito = () => {
         <DialogTitle>¿Confirmar compra?</DialogTitle>
         <DialogContent>
           <Typography>
-            ¿Estás seguro de que deseas continuar con la compra por{" "}
+            ¿Seguro quieres continuar con la compra por{" "}
             <strong>${total}</strong>?
           </Typography>
         </DialogContent>

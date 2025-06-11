@@ -102,9 +102,12 @@ class DetalleTransaccionSerializer(serializers.ModelSerializer):
 
 # SERIALIZADOR TRANSACCIONES
 class TransaccionesSerializer(serializers.ModelSerializer):
+    id_detalle_transaccion = serializers.PrimaryKeyRelatedField(read_only=True)
+
     class Meta:
         model = Transacciones
         fields = "__all__"
+
 
 
 # SERIALIZADOR CALIFICACIONES

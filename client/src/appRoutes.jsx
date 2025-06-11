@@ -1,5 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+
+// Importaciones de páginas
 import Articulos from "./pages/Articulos";
 import ArticuloDetail from "./pages/ArticuloDetail";
 import Login from "./pages/Login";
@@ -24,38 +26,54 @@ const AppRoutes = () => {
   return (
     <Router>
       <Routes>
-        {/* Páginas Navegación */}
+        {/* --- Rutas Públicas --- */}
+        {/* Página de inicio y contenido estático */}
         <Route path="/" element={<Home />} />
         <Route path="/nosotros" element={<Nosotros />} />
         <Route path="/contacto" element={<Contacto />} />
-        {/* Páginas de artículos */}
+
+        {/* Autenticación */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/registro" element={<Registro />} />
+
+        {/* Catálogo de artículos (acceso público) */}
         <Route path="/articulos" element={<Articulos />} />
         <Route path="/articulos/:id" element={<ArticuloDetail />} />
-        <Route path="/crear-articulo" element={<CrearArticulo />} />
-        <Route path="/mis-articulos" element={<MisArticulos />} />
-        <Route path="/carrito" element={<Carrito />} />
-        <Route path="/resumen-compra/:id" element={<ResumenCompra />} />
-        <Route path="/detalle-transaccion" element={<DetalleTransaccion />} />
 
+        {/* Proceso de compra */}
+        <Route path="/carrito" element={<Carrito />} />
+        <Route path="/comprar" element={<Comprar />} />
+        <Route path="/resumen/:id" element={<ResumenCompra />} />
+
+        {/* --- Rutas Protegidas (requieren autenticación) --- */}
+        {/* Gestión de artículos del usuario */}
+        <Route path="/mis-articulos" element={<MisArticulos />} />
+        <Route path="/crear-articulo" element={<CrearArticulo />} />
         <Route
           path="/editar-articulo/:id_articulo"
           element={<EditarArticulo />}
         />
 
-        {/* Páginas de usuario */}
-        <Route path="/registro" element={<Registro />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/actualizar-datos" element={<ActualizarDatos />} />
+        {/* Perfil de usuario */}
         <Route path="/user" element={<UserProfile />} />
-        <Route path="/rol" element={<Rol />} />
+        <Route path="/actualizar-datos" element={<ActualizarDatos />} />
         <Route
           path="/historial-transacciones"
           element={<HistorialTransacciones />}
         />
+        <Route
+          path="/detalle-transaccion/:id"
+          element={<DetalleTransaccion />}
+        />
 
-        <Route path="/comprar" element={<Comprar />} />
-        {/* Componente Principal */}
+        {/* Administración */}
+        <Route path="/rol" element={<Rol />} />
+
+        {/* Ruta de aplicación principal (¿quizá redirija a dashboard?) */}
         <Route path="/app" element={<App />} />
+
+        {/* Ruta para manejar páginas no encontradas (opcional) */}
+        <Route path="*" element={<Home />} />
       </Routes>
     </Router>
   );

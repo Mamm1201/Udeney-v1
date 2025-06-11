@@ -38,17 +38,14 @@ import { getAllArticulos, getCategorias } from "../api/articulos.api";
 import { useCarrito } from "../context/CarritoContext";
 
 const Articulos = () => {
-  // Estados para almacenar artículos, categorías y otras funcionalidades
   const [articulos, setArticulos] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState("Todas");
   const [loading, setLoading] = useState(true);
   const [snackbar, setSnackbar] = useState({ open: false, message: "" });
 
-  // Función del contexto para agregar artículos al carrito
   const { agregarAlCarrito } = useCarrito();
 
-  // 🔁 Función para cargar las categorías desde la API
   const fetchCategorias = async () => {
     try {
       const res = await getCategorias();
@@ -58,7 +55,6 @@ const Articulos = () => {
     }
   };
 
-  // 🔁 Función para cargar los artículos (filtrados por categoría si aplica)
   const fetchArticulos = async (categoriaId = null) => {
     try {
       const params = categoriaId ? { id_categoria: categoriaId } : {};
@@ -69,7 +65,6 @@ const Articulos = () => {
     }
   };
 
-  // 🚀 useEffect que se ejecuta una vez al montar el componente
   useEffect(() => {
     const cargarDatos = async () => {
       await fetchCategorias();
@@ -79,7 +74,6 @@ const Articulos = () => {
     cargarDatos();
   }, []);
 
-  // 📦 Maneja el cambio de categoría del filtro
   const handleCategoriaChange = async (e) => {
     const value = e.target.value;
     setCategoriaSeleccionada(value);
@@ -94,13 +88,11 @@ const Articulos = () => {
     setLoading(false);
   };
 
-  // 🛒 Agrega un artículo al carrito y muestra un mensaje
   const handleAgregar = (articulo) => {
     agregarAlCarrito(articulo);
     setSnackbar({ open: true, message: "✅ Artículo agregado al carrito" });
   };
 
-  // 🔄 Muestra un spinner de carga mientras se están cargando los datos
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" mt={5}>
@@ -157,9 +149,8 @@ const Articulos = () => {
                   <CardMedia
                     component="img"
                     height="180"
-                    image={
-                      articulo.imagen || "https://via.placeholder.com/300x180"
-                    }
+                    // 📷 Usa imagen del artículo o una local por defecto desde /public/img/
+                    image={articulo.imagen || "/img/placeholder.jpg"}
                     alt={articulo.titulo_articulo}
                   />
                   <CardContent>
@@ -167,6 +158,7 @@ const Articulos = () => {
                       {articulo.titulo_articulo}
                     </Typography>
                     <Typography variant="body2" color="text.secondary" noWrap>
+                      {/* 📌 Usa noWrap para evitar desbordes, pero puedes quitarlo si deseas mostrar todo el texto */}
                       {articulo.descripcion_articulo}
                     </Typography>
                     {articulo.institucion_articulo && (
@@ -180,7 +172,11 @@ const Articulos = () => {
                       color="primary"
                       mt={1}
                     >
-                      ${articulo.precio_articulo}
+                      {/* 💰 Formatea el precio como moneda local (COP) */}
+                      {new Intl.NumberFormat("es-CO", {
+                        style: "currency",
+                        currency: "COP",
+                      }).format(articulo.precio_articulo)}
                     </Typography>
 
                     {/* 🧾 Botones de acción: Ver detalles y Añadir */}

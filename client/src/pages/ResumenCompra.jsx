@@ -1,8 +1,11 @@
-import React, { useEffect, useState } from "react";
+// src/pages/ResumenCompra.jsx
+
+import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   Box,
-  Typography,
   Paper,
+  Typography,
   Divider,
   List,
   ListItem,
@@ -10,7 +13,6 @@ import {
   CircularProgress,
   Button,
 } from "@mui/material";
-import { useParams, useNavigate } from "react-router-dom";
 import {
   getTransaccionById,
   getDetalleTransaccionById,
@@ -26,30 +28,35 @@ const ResumenCompra = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchDatos = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
 
-        const resTransaccion = await getTransaccionById(id);
-        const transaccionData = resTransaccion.data;
-        setTransaccion(transaccionData);
+        // 1️⃣ Obtener transacción
+        const resT = await getTransaccionById(id);
+        console.log("Transacción recibida:", resT.data);
+        setTransaccion(resT.data);
 
-        const idDetalle = transaccionData.id_detalle_transaccion;
-        if (!idDetalle)
-          throw new Error("No se encontró detalle para la transacción.");
+        // 2️⃣ Intentar obtener el detalle si existe
+        const idDetalle = resT.data.id_detalle_transaccion;
 
-        const resDetalle = await getDetalleTransaccionById(idDetalle);
-        setDetalle(resDetalle.data);
+        if (idDetalle && typeof idDetalle === "number") {
+          const resD = await getDetalleTransaccionById(idDetalle);
+          setDetalle(resD.data);
+        } else {
+          console.warn("Esta transacción no tiene detalle asociado.");
+          setDetalle(null);
+        }
 
         setLoading(false);
       } catch (err) {
-        console.error("Error al cargar resumen de compra:", err);
-        setError("Error al cargar el resumen de compra.");
+        console.error(err);
+        setError("No se pudo cargar el resumen de compra.");
         setLoading(false);
       }
     };
 
-    fetchDatos();
+    fetchData();
   }, [id]);
 
   const calcularSubtotal = (precio, cantidad) => precio * cantidad;
@@ -64,9 +71,12 @@ const ResumenCompra = () => {
 
   if (error) {
     return (
-      <Box sx={{ mt: 8, textAlign: "center" }}>
+      <Box sx={{ textAlign: "center", mt: 8 }}>
         <Typography color="error">{error}</Typography>
-        <Button variant="contained" onClick={() => navigate("/historial")}>
+        <Button
+          variant="contained"
+          onClick={() => navigate("/historial-transacciones")}
+        >
           Volver al Historial
         </Button>
       </Box>
@@ -74,52 +84,63 @@ const ResumenCompra = () => {
   }
 
   return (
-    <Box sx={{ maxWidth: 700, mx: "auto", p: 3 }}>
+    <Box sx={{ maxWidth: 800, mx: "auto", p: 3 }}>
       <Paper elevation={3} sx={{ p: 4 }}>
         <Typography variant="h4" gutterBottom>
           🧾 Resumen de Compra
         </Typography>
-
         <Divider sx={{ mb: 3 }} />
 
-        <Typography variant="subtitle1" gutterBottom>
-          <strong>ID Transacción:</strong> {transaccion.id_transaccion || id}
+        <Typography variant="subtitle1">
+          <strong>ID Transacción:</strong> {transaccion.id_transaccion}
         </Typography>
-        <Typography variant="subtitle1" gutterBottom>
+        <Typography variant="subtitle1">
           <strong>Fecha:</strong>{" "}
           {new Date(transaccion.fecha_transaccion).toLocaleString()}
         </Typography>
-        <Typography variant="subtitle1" gutterBottom>
-          <strong>Tipo de entrega:</strong>{" "}
-          {detalle.tipo_entrega === "domicilio"
-            ? "🚚 Domicilio"
-            : "🏬 Retiro en punto físico"}
-        </Typography>
 
-        <Divider sx={{ my: 3 }} />
+        {detalle ? (
+          <>
+            <Typography variant="subtitle1">
+              <strong>Entrega:</strong>{" "}
+              {detalle.tipo_entrega === "domicilio"
+                ? "🚚 Domicilio"
+                : "🏬 Retiro"}
+            </Typography>
 
-        <Typography variant="h6" gutterBottom>
-          Artículos comprados
-        </Typography>
-        <List>
-          {detalle.articulos?.map((item, index) => (
-            <ListItem key={index} divider>
-              <ListItemText
-                primary={`${item.titulo_articulo} x ${item.cantidad_articulos}`}
-                secondary={`$${item.precio_articulo} c/u — Subtotal: $${calcularSubtotal(item.precio_articulo, item.cantidad_articulos)}`}
-              />
-            </ListItem>
-          ))}
-        </List>
+            <Divider sx={{ my: 3 }} />
 
-        <Divider sx={{ my: 3 }} />
+            <List>
+              {detalle.articulos.map((item, i) => (
+                <ListItem key={i} divider>
+                  <ListItemText
+                    primary={`${item.titulo_articulo} × ${item.cantidad_articulos}`}
+                    secondary={`$${item.precio_articulo} c/u — Subtotal: $${calcularSubtotal(
+                      item.precio_articulo,
+                      item.cantidad_articulos
+                    )}`}
+                  />
+                </ListItem>
+              ))}
+            </List>
 
-        <Typography variant="h6" textAlign="right">
-          Total: <strong>${detalle.total || 0}</strong>
-        </Typography>
+            <Divider sx={{ my: 3 }} />
 
-        <Box sx={{ mt: 4, display: "flex", justifyContent: "center" }}>
-          <Button variant="contained" onClick={() => navigate("/historial")}>
+            <Typography variant="h6" textAlign="right">
+              Total: <strong>${detalle.total}</strong>
+            </Typography>
+          </>
+        ) : (
+          <Typography variant="body1" color="text.secondary" sx={{ mt: 2 }}>
+            Esta transacción no contiene un detalle asociado.
+          </Typography>
+        )}
+
+        <Box sx={{ mt: 3, textAlign: "center" }}>
+          <Button
+            variant="contained"
+            onClick={() => navigate("/historial-transacciones")}
+          >
             Ver Historial de Compras
           </Button>
         </Box>
