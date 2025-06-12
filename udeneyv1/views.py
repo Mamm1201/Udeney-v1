@@ -1,56 +1,50 @@
-# Importaciones necesarias de Django
+# ====================================
+# IMPORTACIONES NECESARIAS
+# ====================================
+
+# Django
 from django.shortcuts import render
 from django.utils.dateparse import parse_date
-from django.contrib.auth import get_user_model
-from django.contrib.auth.decorators import login_required
-from django.db.models import Count
-from django.db.models.functions import TruncMonth, TruncYear
 
-# Importaciones de DRF (Django Rest Framework)
-from rest_framework import viewsets, status
+# Django Rest Framework
+from rest_framework import viewsets, status, filters
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.generics import RetrieveAPIView
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, action
+from datetime import datetime
+from django.utils import timezone
 
-# Importación de modelos del sistema
+
+# Filtros
+from django_filters.rest_framework import DjangoFilterBackend
+
+# ORM y funciones de agrupación
+from django.db.models import Count
+from django.db.models.functions import TruncMonth, TruncYear
+
+# Modelos del sistema
 from .models import (
-    Usuarios,
-    Articulos,
-    Categorias,
-    Roles,
-    UsuarioRol,
-    DetalleTransaccion,
-    Transacciones,
-    Calificaciones,
-    Pagos,
-    Pqrs,
+    Usuarios, Articulos, Categorias, Roles, UsuarioRol,
+    DetalleTransaccion, Transacciones, Calificaciones, Pagos, Pqrs, ArticuloDetalleTransaccion
 )
 
-# Importación de serializadores
+# Serializadores del sistema
 from .serializers import (
-    UsuariosSerializer,
-    ArticulosSerializer,
-    CategoriasSerializer,
-    RolesSerializer,
-    UsuarioRolSerializer,
-    DetalleTransaccionSerializer,
-    TransaccionesSerializer,
-    CalificacionesSerializer,
-    PagosSerializer,
-    PqrsSerializer,
+    UsuariosSerializer, ArticulosSerializer, CategoriasSerializer,
+    RolesSerializer, UsuarioRolSerializer, DetalleTransaccionSerializer,
+    TransaccionesSerializer, CalificacionesSerializer, PagosSerializer, PqrsSerializer, ArticuloDetalleTransaccionSerializer
 )
 
-User = get_user_model()
-
+# JWT
+from rest_framework_simplejwt.tokens import RefreshToken
 
 # ====================================
 # REGISTRO DE USUARIO
 # ====================================
 class RegistroUsuarioView(APIView):
-    permission_classes = [AllowAny]  # Permite el acceso sin autenticación
+    permission_classes = [AllowAny]
 
     def post(self, request):
         serializer = UsuariosSerializer(data=request.data)
@@ -75,7 +69,7 @@ class RegistroUsuarioView(APIView):
 
 
 # ====================================
-# INICIO DE SESIÓN (LOGIN)
+# LOGIN DE USUARIO
 # ====================================
 class LoginView(APIView):
     permission_classes = [AllowAny]
@@ -89,20 +83,11 @@ class LoginView(APIView):
 
         try:
             user = Usuarios.objects.get(email_usuario=email)
-        except Usuarios.DoesNotExist:
-            return Response({"error": "Correo o contraseña incorrectos"}, status=401)
-            # user = get_object_or_404(Usuarios, email_usuario=email)
-            user = Usuarios.objects.get(email_usuario=email)
-        except Usuarios.DoesNotExist:  # Exception as e:
-            return Response(
-                {"error": f"Usuario no encontrado: {str(e)}"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+        except Usuarios.DoesNotExist as e:
+            return Response({"error": f"Usuario no encontrado: {str(e)}"}, status=404)
 
         if not user.is_active:
-            return Response(
-                {"error": "Cuenta desactivada. Contacta al administrador."}, status=403
-            )
+            return Response({"error": "Cuenta desactivada. Contacta al administrador."}, status=403)
 
         if not user.check_password(password):
             return Response({"error": "Correo o contraseña incorrectos"}, status=401)
@@ -121,68 +106,17 @@ class LoginView(APIView):
 
 
 # ====================================
-# CIERRE DE SESIÓN (LOGOUT SIMBÓLICO)
+# LOGOUT (SIMBÓLICO)
 # ====================================
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        # Aquí podrías implementar el logout real usando blacklisting de tokens
         return Response({"message": "Sesión cerrada exitosamente"})
 
 
 # ====================================
-# HISTORIAL DE TRANSACCIONES (VISTA WEB)
-# ====================================
-@login_required
-def historial_transacciones(request):
-    usuario = request.user
-    fecha_inicio = parse_date(request.GET.get("fecha_inicio"))
-    fecha_fin = parse_date(request.GET.get("fecha_fin"))
-
-    # Filtrar compras y ventas por usuario
-    compras = Transacciones.objects.filter(
-        id_usuario=usuario, id_detalle_transaccion__tipo_transaccion="compra"
-    )
-    ventas = Transacciones.objects.filter(
-        id_detalle_transaccion__id_articulo__id_usuario=usuario,
-        id_detalle_transaccion__tipo_transaccion="venta",
-    )
-
-    # Aplicar filtros de fecha si existen
-    if fecha_inicio:
-        compras = compras.filter(fecha_transaccion__gte=fecha_inicio)
-        ventas = ventas.filter(fecha_transaccion__gte=fecha_inicio)
-    if fecha_fin:
-        compras = compras.filter(fecha_transaccion__lte=fecha_fin)
-        ventas = ventas.filter(fecha_transaccion__lte=fecha_fin)
-
-    # Agrupar compras y ventas por año y mes
-    compras_grouped = (
-        compras.annotate(
-            year=TruncYear("fecha_transaccion"), month=TruncMonth("fecha_transaccion")
-        )
-        .values("year", "month")
-        .annotate(total_compras=Count("id_transaccion"))
-    )
-
-    ventas_grouped = (
-        ventas.annotate(
-            year=TruncYear("fecha_transaccion"), month=TruncMonth("fecha_transaccion")
-        )
-        .values("year", "month")
-        .annotate(total_ventas=Count("id_transaccion"))
-    )
-
-    return render(
-        request,
-        "historial_transacciones.html",
-        {"compras": compras_grouped, "ventas": ventas_grouped},
-    )
-
-
-# ====================================
-# HISTORIAL DE TRANSACCIONES (API)
+# HISTORIAL DE TRANSACCIONES - API
 # ====================================
 @api_view(["GET"])
 def historial_transacciones_api(request):
@@ -190,61 +124,94 @@ def historial_transacciones_api(request):
     if not id_usuario:
         return Response({"error": "Debe proporcionar el ID del usuario"}, status=400)
 
-    fecha_inicio = parse_date(request.query_params.get("fecha_inicio"))
-    fecha_fin = parse_date(request.query_params.get("fecha_fin"))
+    # Se obtienen los parámetros de fecha como cadenas
+    fecha_inicio_str = request.query_params.get("fecha_inicio")
+    fecha_fin_str = request.query_params.get("fecha_fin")
 
-    compras = Transacciones.objects.filter(
-        id_usuario=id_usuario, id_detalle_transaccion__tipo_transaccion="compra"
-    )
-    ventas = Transacciones.objects.filter(
-        id_detalle_transaccion__id_articulo__id_usuario=id_usuario,
-        id_detalle_transaccion__tipo_transaccion="venta",
-    )
+    # Se convierten en fechas si están en formato válido, sino quedan como None
+    fecha_inicio = parse_date(fecha_inicio_str) if isinstance(fecha_inicio_str, str) else None
+    fecha_fin = parse_date(fecha_fin_str) if isinstance(fecha_fin_str, str) else None
 
-    if fecha_inicio:
-        compras = compras.filter(fecha_transaccion__gte=fecha_inicio)
-        ventas = ventas.filter(fecha_transaccion__gte=fecha_inicio)
-    if fecha_fin:
-        compras = compras.filter(fecha_transaccion__lte=fecha_fin)
-        ventas = ventas.filter(fecha_transaccion__lte=fecha_fin)
-
-    compras_grouped = (
-        compras.annotate(
-            year=TruncYear("fecha_transaccion"), month=TruncMonth("fecha_transaccion")
+    try:
+        # ============================
+        # COMPRAS (el usuario compra)
+        # ============================
+        compras = Transacciones.objects.filter(
+            id_usuario=id_usuario,
+            id_detalle_transaccion__tipo_transaccion="compra"
         )
-        .values("year", "month")
-        .annotate(total_compras=Count("id_transaccion"))
-    )
 
-    ventas_grouped = (
-        ventas.annotate(
-            year=TruncYear("fecha_transaccion"), month=TruncMonth("fecha_transaccion")
+        # ============================
+        # VENTAS (el usuario vende)
+        # ============================
+        ventas = Transacciones.objects.filter(
+            id_detalle_transaccion__id_articulo__id_usuario=id_usuario,
+            id_detalle_transaccion__tipo_transaccion="venta"
         )
-        .values("year", "month")
-        .annotate(total_ventas=Count("id_transaccion"))
-    )
 
-    return Response({"compras": list(compras_grouped), "ventas": list(ventas_grouped)})
+        # Filtro por fechas si se proporcionaron
+        if fecha_inicio:
+            compras = compras.filter(fecha_transaccion__gte=fecha_inicio)
+            ventas = ventas.filter(fecha_transaccion__gte=fecha_inicio)
+        if fecha_fin:
+            compras = compras.filter(fecha_transaccion__lte=fecha_fin)
+            ventas = ventas.filter(fecha_transaccion__lte=fecha_fin)
 
+        # Agrupar por mes y año - compras
+        compras_grouped = (
+            compras.annotate(
+                year=TruncYear("fecha_transaccion"),
+                month=TruncMonth("fecha_transaccion")
+            )
+            .values("year", "month")
+            .annotate(total_compras=Count("id_transaccion"))
+            .order_by("year", "month")
+        )
+
+        # Agrupar por mes y año - ventas
+        ventas_grouped = (
+            ventas.annotate(
+                year=TruncYear("fecha_transaccion"),
+                month=TruncMonth("fecha_transaccion")
+            )
+            .values("year", "month")
+            .annotate(total_ventas=Count("id_transaccion"))
+            .order_by("year", "month")
+        )
+
+        # Retornar la respuesta en JSON
+        return Response({
+            "compras": list(compras_grouped),
+            "ventas": list(ventas_grouped)
+        })
+
+    except Exception as e:
+        # Captura errores generales del proceso
+        return Response({"error": str(e)}, status=500)
+    
 
 # ====================================
 # CRUD GENERAL PARA MODELOS DEL SISTEMA
 # ====================================
-# Todos los ViewSets permiten listar, crear, actualizar y eliminar registros
+
 class UsuariosViewSet(viewsets.ModelViewSet):
     queryset = Usuarios.objects.all()
     serializer_class = UsuariosSerializer
 
 
+
+
 class ArticulosViewSet(viewsets.ModelViewSet):
     queryset = Articulos.objects.all()
     serializer_class = ArticulosSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ['id_categoria']
 
 
 class ArticuloDetailAPIView(RetrieveAPIView):
     queryset = Articulos.objects.all()
     serializer_class = ArticulosSerializer
-    lookup_field = "id_articulo"  # Se usa para buscar el artículo por ID
+    lookup_field = "id_articulo"
 
 
 class CategoriasViewSet(viewsets.ModelViewSet):
@@ -265,23 +232,129 @@ class UsuarioRolViewSet(viewsets.ModelViewSet):
 class DetalleTransaccionViewSet(viewsets.ModelViewSet):
     queryset = DetalleTransaccion.objects.all()
     serializer_class = DetalleTransaccionSerializer
-
-
+    
+# ====================================
+# TRANSACCIONES - CREATE VALIDADO
+# ====================================
 class TransaccionesViewSet(viewsets.ModelViewSet):
     queryset = Transacciones.objects.all()
     serializer_class = TransaccionesSerializer
+
+    # Vista personalizada para crear una transacción con varios artículos
+@api_view(["POST"])
+def crear_con_detalles(request):
+    print(">>> ✅ LLEGÓ A LA VISTA crear_con_detalles CON MÉTODO:", request.method)
+    
+    try:
+        print(">>> MÉTODO:", request.method)
+        print(">>> request.data en crear_con_detalles:", request.data)
+
+        id_usuario = request.data.get("id_usuario")
+        tipo_transaccion = request.data.get("tipo_transaccion")
+        tipo_entrega = request.data.get("tipo_entrega")
+        articulos = request.data.get("articulos", [])
+
+        # Crear la transacción principal
+        transaccion = Transacciones.objects.create(
+            id_usuario_id=id_usuario,
+            fecha_transaccion=timezone.now(),
+        )
+
+        # Crear el detalle de la transacción (uno solo en este diseño)
+        detalle = DetalleTransaccion.objects.create(
+            id_transaccion=transaccion,
+            tipo_transaccion=tipo_transaccion,
+            tipo_entrega=tipo_entrega,
+        )
+
+        # Ahora insertamos cada artículo con su cantidad al modelo intermedio
+        for art in articulos:
+            try:
+                articulo = Articulos.objects.get(id_articulo=art["id_articulo"])
+            except Articulos.DoesNotExist:
+                return Response(
+                    {"error": f"Artículo con id {art['id_articulo']} no existe."},
+                    status=400
+                )
+
+            ArticuloDetalleTransaccion.objects.create(
+                id_detalle_transaccion=detalle,
+                id_articulo=articulo,
+                cantidad=art["cantidad"]
+            )
+
+        return Response({
+            "message": "Transacción creada exitosamente",
+            "id_transaccion": transaccion.id_transaccion
+        }, status=201)
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()  # 👈 Imprime error completo en consola
+        return Response({"error": str(e)}, status=500)
+
 
 
 class CalificacionesViewSet(viewsets.ModelViewSet):
     queryset = Calificaciones.objects.all()
     serializer_class = CalificacionesSerializer
-
-
+   
+# CORRECCIÓN PRINCIPAL AQUÍ: validar 'id_detalle_transaccion' en creación de Pagos
 class PagosViewSet(viewsets.ModelViewSet):
     queryset = Pagos.objects.all()
     serializer_class = PagosSerializer
 
+    def create(self, request, *args, **kwargs):
+        data = request.data
+
+        # Validar que 'id_detalle_transaccion' esté presente y no sea nulo
+        if not data.get("id_detalle_transaccion"):
+            return Response(
+                {"error": "El campo 'id_detalle_transaccion' es obligatorio."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)    
+    
+# ====================================
+# DETALLE TRANSACCION CON ARTICULO
+# ====================================   
 
 class PqrsViewSet(viewsets.ModelViewSet):
     queryset = Pqrs.objects.all()
     serializer_class = PqrsSerializer
+    
+@api_view(['GET'])
+def detalle_transaccion_con_articulo(request, id_detalle_transaccion):
+    try:
+        detalle = DetalleTransaccion.objects.get(pk=id_detalle_transaccion)
+        articulo = Articulos.objects.get(pk=detalle.id_articulo.id_articulo)
+
+        total = articulo.precio * detalle.cantidad_articulos
+
+        data = {
+            "tipo_transaccion": detalle.tipo_transaccion,
+            "tipo_entrega": detalle.tipo_entrega,
+            "total": total,
+            "articulos": [
+                {
+                    "titulo_articulo": articulo.titulo_articulo,
+                    "cantidad_articulos": detalle.cantidad_articulos,
+                    "precio_articulo": articulo.precio,
+                    "imagen_articulo": articulo.imagen_articulo.url if articulo.imagen_articulo else None
+                }
+            ]
+        }
+
+        return Response(data)
+
+    except DetalleTransaccion.DoesNotExist:
+        return Response({"error": "Detalle de transacción no encontrado."}, status=404)
+    except Articulos.DoesNotExist:
+        return Response({"error": "Artículo relacionado no encontrado."}, status=404)
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
