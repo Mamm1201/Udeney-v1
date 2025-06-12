@@ -1,6 +1,6 @@
 // src/pages/Carrito.jsx
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Button,
   Box,
@@ -35,18 +35,18 @@ const Carrito = () => {
     useCarrito();
   const navigate = useNavigate();
 
-  const [total, setTotal] = useState(0);
-  const [tipoEntrega, setTipoEntrega] = useState("domicilio");
+  const [total, setTotal] = useState(0); // Total de la compra
+  const [tipoEntrega, setTipoEntrega] = useState("domicilio"); // Tipo de entrega seleccionado
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
     type: "success",
   });
-  const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
+  const [openConfirmDialog, setOpenConfirmDialog] = useState(false); // Diálogo de confirmación
 
-  const fallbackImage = "/estudiantes.jpg";
+  const fallbackImage = "/estudiantes.jpg"; // Imagen por defecto si falla la original
 
-  // Calcula el total automáticamente cada vez que cambia el carrito
+  // Recalcula el total cada vez que cambia el carrito
   useEffect(() => {
     const totalCalculado = carrito.reduce(
       (acc, item) => acc + item.precio_articulo * item.cantidad,
@@ -55,10 +55,11 @@ const Carrito = () => {
     setTotal(totalCalculado);
   }, [carrito]);
 
-  // Disminuye la cantidad o elimina el artículo del carrito
+  // Disminuye la cantidad o elimina el artículo
   const disminuirCantidad = (id_articulo) => {
     const articulo = carrito.find((item) => item.id_articulo === id_articulo);
     if (!articulo) return;
+
     if (articulo.cantidad > 1) {
       agregarAlCarrito({ ...articulo, cantidad: articulo.cantidad - 1 });
     } else {
@@ -69,55 +70,53 @@ const Carrito = () => {
   const handleAbrirConfirmacion = () => setOpenConfirmDialog(true);
   const handleCerrarConfirmacion = () => setOpenConfirmDialog(false);
 
-  // Realiza la compra: crea detalle y transacción, luego redirige
+  // Realiza la compra y redirige al resumen
   const realizarCompra = async () => {
+    console.log("🛒 Enviando compra...");
     const id_usuario = parseInt(localStorage.getItem("id_usuario"));
 
     try {
-      for (const item of carrito) {
-        // 1️⃣ Crear detalle de transacción
-        const detalleResponse = await api.post("/detalle_transaccion/", {
-          tipo_transaccion: "venta",
-          tipo_entrega: tipoEntrega,
-          cantidad_articulos: item.cantidad,
-          id_articulo: item.id_articulo,
-        });
+      const articulos = carrito.map((item) => ({
+        id_articulo: item.id_articulo,
+        cantidad: item.cantidad,
+      }));
 
-        const detalleData = detalleResponse.data;
-        const id_detalle_transaccion = detalleData?.id_detalle_transaccion;
+      const datos = {
+        id_usuario,
+        tipo_transaccion: "venta",
+        tipo_entrega: tipoEntrega,
+        articulos,
+      };
 
-        if (
-          !id_detalle_transaccion ||
-          typeof id_detalle_transaccion !== "number"
-        ) {
-          throw new Error("ID de detalle no válido o no creado correctamente");
-        }
+      console.log("📦 Datos a enviar:", datos);
 
-        // 2️⃣ Crear transacción asociada
-        const transaccionResponse = await api.post("/transacciones/", {
-          id_usuario,
-          id_detalle_transaccion,
-          fecha_transaccion: new Date().toISOString(),
-        });
+      const response = await api.post("/crear-transaccion/", datos);
 
-        const id_transaccion = transaccionResponse.data.id_transaccion;
+      console.log("✅ Transacción creada con éxito:", response.data);
 
-        // 3️⃣ Vaciar carrito y redirigir
-        vaciarCarrito();
-        setSnackbar({
-          open: true,
-          message: "✅ ¡Compra realizada con éxito!",
-          type: "success",
-        });
-        setOpenConfirmDialog(false);
-        navigate(`/resumen/${id_transaccion}`);
-        return;
+      const id_transaccion = response?.data?.id_transaccion;
+
+      if (!id_transaccion) {
+        throw new Error("No se pudo crear la transacción correctamente.");
       }
-    } catch (error) {
-      console.error("Error al realizar la compra:", error);
+
+      vaciarCarrito();
       setSnackbar({
         open: true,
-        message: "Ocurrió un error al procesar la compra.",
+        message: "✅ ¡Compra realizada con éxito!",
+        type: "success",
+      });
+      setOpenConfirmDialog(false);
+
+      // Redirige al resumen de la transacción
+      navigate(`/resumen/${id_transaccion}`);
+      console.log("➡️ Redirigiendo a resumen:", `/resumen/${id_transaccion}`);
+    } catch (error) {
+      console.error("❌ Error al realizar la compra:", error);
+      setSnackbar({
+        open: true,
+        message:
+          "❌ No se pudo completar la compra. Intenta nuevamente más tarde.",
         type: "error",
       });
       setOpenConfirmDialog(false);
@@ -239,6 +238,7 @@ const Carrito = () => {
             ))}
           </Grid>
 
+          {/* Selector de tipo de entrega */}
           <FormControl fullWidth sx={{ mt: 3 }}>
             <InputLabel id="tipo-entrega-label">Tipo de entrega</InputLabel>
             <Select
@@ -254,6 +254,7 @@ const Carrito = () => {
             </Select>
           </FormControl>
 
+          {/* Total y acciones */}
           <Box sx={{ mt: 4, display: "flex", flexDirection: "column", gap: 2 }}>
             <Typography variant="h5">Total: ${total}</Typography>
             <Button
@@ -270,6 +271,7 @@ const Carrito = () => {
         </>
       )}
 
+      {/* Diálogo de confirmación */}
       <Dialog open={openConfirmDialog} onClose={handleCerrarConfirmacion}>
         <DialogTitle>¿Confirmar compra?</DialogTitle>
         <DialogContent>
@@ -286,6 +288,7 @@ const Carrito = () => {
         </DialogActions>
       </Dialog>
 
+      {/* Notificación (snackbar) */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={4000}

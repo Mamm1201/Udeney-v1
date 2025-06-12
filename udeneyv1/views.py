@@ -12,7 +12,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.generics import RetrieveAPIView
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, action
+from datetime import datetime
+from django.utils import timezone
+
 
 # Filtros
 from django_filters.rest_framework import DjangoFilterBackend
@@ -24,14 +27,14 @@ from django.db.models.functions import TruncMonth, TruncYear
 # Modelos del sistema
 from .models import (
     Usuarios, Articulos, Categorias, Roles, UsuarioRol,
-    DetalleTransaccion, Transacciones, Calificaciones, Pagos, Pqrs
+    DetalleTransaccion, Transacciones, Calificaciones, Pagos, Pqrs, ArticuloDetalleTransaccion
 )
 
 # Serializadores del sistema
 from .serializers import (
     UsuariosSerializer, ArticulosSerializer, CategoriasSerializer,
     RolesSerializer, UsuarioRolSerializer, DetalleTransaccionSerializer,
-    TransaccionesSerializer, CalificacionesSerializer, PagosSerializer, PqrsSerializer
+    TransaccionesSerializer, CalificacionesSerializer, PagosSerializer, PqrsSerializer, ArticuloDetalleTransaccionSerializer
 )
 
 # JWT
@@ -135,7 +138,6 @@ def historial_transacciones_api(request):
         # ============================
         compras = Transacciones.objects.filter(
             id_usuario=id_usuario,
-            id_detalle_transaccion__isnull=False,  # Asegura que no esté en None
             id_detalle_transaccion__tipo_transaccion="compra"
         )
 
@@ -143,7 +145,6 @@ def historial_transacciones_api(request):
         # VENTAS (el usuario vende)
         # ============================
         ventas = Transacciones.objects.filter(
-            id_detalle_transaccion__isnull=False,  # Asegura que no esté en None
             id_detalle_transaccion__id_articulo__id_usuario=id_usuario,
             id_detalle_transaccion__tipo_transaccion="venta"
         )
@@ -231,11 +232,6 @@ class UsuarioRolViewSet(viewsets.ModelViewSet):
 class DetalleTransaccionViewSet(viewsets.ModelViewSet):
     queryset = DetalleTransaccion.objects.all()
     serializer_class = DetalleTransaccionSerializer
-
-
-# class TransaccionesViewSet(viewsets.ModelViewSet):
-#     queryset = Transacciones.objects.all()
-#     serializer_class = TransaccionesSerializer
     
 # ====================================
 # TRANSACCIONES - CREATE VALIDADO
@@ -244,26 +240,58 @@ class TransaccionesViewSet(viewsets.ModelViewSet):
     queryset = Transacciones.objects.all()
     serializer_class = TransaccionesSerializer
 
-    # Sobrescribimos el método create para manejar errores y validar campos requeridos
-    def create(self, request, *args, **kwargs):
-        data = request.data
+    # Vista personalizada para crear una transacción con varios artículos
+@api_view(["POST"])
+def crear_con_detalles(request):
+    print(">>> ✅ LLEGÓ A LA VISTA crear_con_detalles CON MÉTODO:", request.method)
+    
+    try:
+        print(">>> MÉTODO:", request.method)
+        print(">>> request.data en crear_con_detalles:", request.data)
 
-        # Validar que se está enviando id_detalle_transaccion
-        if not data.get("id_detalle_transaccion"):
-            return Response(
-                {"error": "El campo 'id_detalle_transaccion' es obligatorio."},
-                status=status.HTTP_400_BAD_REQUEST
+        id_usuario = request.data.get("id_usuario")
+        tipo_transaccion = request.data.get("tipo_transaccion")
+        tipo_entrega = request.data.get("tipo_entrega")
+        articulos = request.data.get("articulos", [])
+
+        # Crear la transacción principal
+        transaccion = Transacciones.objects.create(
+            id_usuario_id=id_usuario,
+            fecha_transaccion=timezone.now(),
+        )
+
+        # Crear el detalle de la transacción (uno solo en este diseño)
+        detalle = DetalleTransaccion.objects.create(
+            id_transaccion=transaccion,
+            tipo_transaccion=tipo_transaccion,
+            tipo_entrega=tipo_entrega,
+        )
+
+        # Ahora insertamos cada artículo con su cantidad al modelo intermedio
+        for art in articulos:
+            try:
+                articulo = Articulos.objects.get(id_articulo=art["id_articulo"])
+            except Articulos.DoesNotExist:
+                return Response(
+                    {"error": f"Artículo con id {art['id_articulo']} no existe."},
+                    status=400
+                )
+
+            ArticuloDetalleTransaccion.objects.create(
+                id_detalle_transaccion=detalle,
+                id_articulo=articulo,
+                cantidad=art["cantidad"]
             )
 
-        # Serializamos y validamos los datos
-        serializer = self.get_serializer(data=data)
-        serializer.is_valid(raise_exception=True)
+        return Response({
+            "message": "Transacción creada exitosamente",
+            "id_transaccion": transaccion.id_transaccion
+        }, status=201)
 
-        # Guardamos la instancia de transacción
-        self.perform_create(serializer)
-
-        # Retornamos respuesta con los datos creados
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()  # 👈 Imprime error completo en consola
+        return Response({"error": str(e)}, status=500)
 
 
 
@@ -291,8 +319,42 @@ class PagosViewSet(viewsets.ModelViewSet):
         self.perform_create(serializer)
         return Response(serializer.data, status=status.HTTP_201_CREATED)    
     
-
+# ====================================
+# DETALLE TRANSACCION CON ARTICULO
+# ====================================   
 
 class PqrsViewSet(viewsets.ModelViewSet):
     queryset = Pqrs.objects.all()
     serializer_class = PqrsSerializer
+    
+@api_view(['GET'])
+def detalle_transaccion_con_articulo(request, id_detalle_transaccion):
+    try:
+        detalle = DetalleTransaccion.objects.get(pk=id_detalle_transaccion)
+        articulo = Articulos.objects.get(pk=detalle.id_articulo.id_articulo)
+
+        total = articulo.precio * detalle.cantidad_articulos
+
+        data = {
+            "tipo_transaccion": detalle.tipo_transaccion,
+            "tipo_entrega": detalle.tipo_entrega,
+            "total": total,
+            "articulos": [
+                {
+                    "titulo_articulo": articulo.titulo_articulo,
+                    "cantidad_articulos": detalle.cantidad_articulos,
+                    "precio_articulo": articulo.precio,
+                    "imagen_articulo": articulo.imagen_articulo.url if articulo.imagen_articulo else None
+                }
+            ]
+        }
+
+        return Response(data)
+
+    except DetalleTransaccion.DoesNotExist:
+        return Response({"error": "Detalle de transacción no encontrado."}, status=404)
+    except Articulos.DoesNotExist:
+        return Response({"error": "Artículo relacionado no encontrado."}, status=404)
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+

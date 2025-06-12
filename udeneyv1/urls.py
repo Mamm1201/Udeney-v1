@@ -21,6 +21,8 @@ from .views import (
     LoginView,
     RegistroUsuarioView,
     historial_transacciones_api,
+    detalle_transaccion_con_articulo,
+    crear_con_detalles,  # ⬅️ import necesario
 )
 
 # Configura el router para las rutas generadas automáticamente
@@ -36,21 +38,24 @@ router.register(r"calificaciones", CalificacionesViewSet)
 router.register(r"pagos", PagosViewSet)
 router.register(r"pqrs", PqrsViewSet)
 
-
 urlpatterns = [
-    # Incluir las rutas generadas automáticamente por el router
+    # Rutas del router
     path("", include(router.urls)),
+
+    # Rutas personalizadas
     path("register/", RegistroUsuarioView.as_view(), name="register"),
     path("login/", LoginView.as_view(), name="login"),
-    path(
-        "articulos/<int:id_articulo>/",
-        ArticuloDetailAPIView.as_view(),
-        name="detalle-articulo",
-    ),
+
+    path("articulos/<int:id_articulo>/", ArticuloDetailAPIView.as_view(), name="detalle-articulo"),
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
-    # Para obtener token
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
-    # Para obtener historial
+
     path("historial/", historial_transacciones_api, name="historial_api"),
-    # Solicitar historial transacciones
+    path("detalle-transaccion/<int:id_detalle_transaccion>/", detalle_transaccion_con_articulo),
+
+    # ✅ Ruta definitiva y sin conflicto para POST
+    # path("api/v1/crear-transaccion/", crear_con_detalles, name="crear_con_detalles"),
+    path("crear-transaccion/", crear_con_detalles, name="crear_transaccion"),
+    
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+

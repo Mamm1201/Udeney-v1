@@ -10,3 +10,8 @@ export const getTransaccionById = async (id) => {
 export const getDetalleTransaccionById = async (id) => {
   return await api.get(`/detalle_transaccion/${id}/`);
 };
+
+// Crear transacción con detalles
+export const crearTransaccionConDetalles = async (datos) => {
+  return await api.post(`/transacciones/crear-con-detalles/`, datos);
+};
