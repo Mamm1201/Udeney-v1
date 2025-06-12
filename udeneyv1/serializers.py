@@ -84,13 +84,24 @@ class CategoriasSerializer(serializers.ModelSerializer):
 
 
 # SERIALIZADOR DE ARTICULOS
+# class ArticulosSerializer(serializers.ModelSerializer):
+#     imagen = serializers.ImageField(use_url=True)
+#     id_categoria = serializers.StringRelatedField()
+
+#     class Meta:
+#         model = Articulos
+#         fields = "__all__"
+        
 class ArticulosSerializer(serializers.ModelSerializer):
-    imagen = serializers.ImageField(use_url=True)
-    id_categoria = serializers.StringRelatedField()
+    imagen = serializers.ImageField(use_url=True, required=False)
+
+    id_usuario = serializers.PrimaryKeyRelatedField(queryset=Usuarios.objects.all())
+    id_categoria = serializers.PrimaryKeyRelatedField(queryset=Categorias.objects.all())
 
     class Meta:
         model = Articulos
         fields = "__all__"
+
 
 
 # SERIALIZADOR DETALLE_TRANSACCION
