@@ -18,16 +18,9 @@ import {
 import { LockOutlined, Visibility, VisibilityOff } from "@mui/icons-material";
 
 const Login = () => {
-  // Estado para almacenar email y contraseña
   const [form, setForm] = useState({ email: "", password: "" });
-
-  // Estado para indicar si se está procesando la petición
   const [loading, setLoading] = useState(false);
-
-  // Estado para mostrar u ocultar la contraseña
   const [showPassword, setShowPassword] = useState(false);
-
-  // Estado del Snackbar (mensaje informativo/éxito/error)
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -36,17 +29,14 @@ const Login = () => {
 
   const navigate = useNavigate();
 
-  // Manejar cambios en los campos del formulario
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // Alternar visibilidad de la contraseña
   const handleTogglePassword = () => {
     setShowPassword(!showPassword);
   };
 
-  // Manejar el envío del formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -58,7 +48,6 @@ const Login = () => {
         password: form.password,
       });
 
-      // Extraer datos del backend
       const {
         access_token,
         refresh_token,
@@ -68,21 +57,18 @@ const Login = () => {
         nombres_usuario,
       } = response.data;
 
-      // Guardar en localStorage para persistencia de sesión
       localStorage.setItem("access_token", access_token);
       localStorage.setItem("refresh_token", refresh_token);
       localStorage.setItem("email_usuario", email);
       localStorage.setItem("id_usuario", id_usuario);
       localStorage.setItem("nombres_usuario", nombres_usuario);
 
-      // Mostrar mensaje de éxito
       setSnackbar({
         open: true,
         message: message || "Inicio de sesión exitoso",
         severity: "success",
       });
 
-      // Redirigir a la página principal tras 2 segundos
       setTimeout(() => {
         navigate("/");
       }, 2000);
@@ -108,7 +94,6 @@ const Login = () => {
             Iniciar Sesión
           </Typography>
 
-          {/* Mensaje informativo adicional */}
           <Typography
             variant="body2"
             color="text.secondary"
@@ -118,7 +103,6 @@ const Login = () => {
             Ingresa tus credenciales para continuar
           </Typography>
 
-          {/* Formulario de login */}
           <Box
             component="form"
             onSubmit={handleSubmit}
@@ -158,7 +142,6 @@ const Login = () => {
               }}
             />
 
-            {/* Botón de ingreso */}
             <Button
               type="submit"
               fullWidth
@@ -177,10 +160,22 @@ const Login = () => {
               {loading ? <CircularProgress size={24} /> : "Ingresar"}
             </Button>
           </Box>
+
+          {/* Botón de redirección a registro */}
+          <Typography variant="body2" sx={{ mt: 2 }}>
+            ¿No tienes una cuenta?{" "}
+            <Button
+              variant="text"
+              size="small"
+              onClick={() => navigate("/registro")}
+              sx={{ textTransform: "none", padding: 0, minWidth: 0 }}
+            >
+              Regístrate
+            </Button>
+          </Typography>
         </Box>
       </Paper>
 
-      {/* Snackbar para mostrar mensajes de estado */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={4000}

@@ -1,52 +1,67 @@
-import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
-// Importaciones de páginas
-import Articulos from "./pages/Articulos";
-import ArticuloDetail from "./pages/ArticuloDetail";
-import Login from "./pages/Login";
-import Rol from "./pages/Rol";
-import CrearArticulo from "./pages/CrearArticulo";
-import Registro from "./pages/Registro";
-import Comprar from "./pages/Comprar";
-import App from "./pages/App";
+// Páginas públicas
 import Home from "./pages/Home";
 import Nosotros from "./pages/Nosotros";
 import Contacto from "./pages/Contacto";
+import PoliticaCookies from "./pages/PoliticaCookies";
+import PoliticaPrivacidad from "./pages/PoliticaPrivacidad";
+import AvisoLegal from "./pages/AvisoLegal";
+
+// Autenticación
+import Login from "./pages/Login";
+import Registro from "./pages/Registro";
+
+// Artículos
+import Articulos from "./pages/Articulos";
+import ArticuloDetail from "./pages/ArticuloDetail";
+import CrearArticulo from "./pages/CrearArticulo";
+import EditarArticulo from "./pages/EditarArticulo";
+import MisArticulos from "./pages/MisArticulos";
+
+// Compra
+import Carrito from "./pages/Carrito";
+import Comprar from "./pages/Comprar";
+import ResumenCompra from "./pages/ResumenCompra";
+import DetalleTransaccion from "./pages/DetalleTransaccion";
+
+// Perfil de usuario
 import UserProfile from "./pages/UserProfile";
 import ActualizarDatos from "./pages/ActualizarDatos";
 import HistorialTransacciones from "./pages/HistorialTransacciones";
-import MisArticulos from "./pages/MisArticulos";
-import EditarArticulo from "./pages/EditarArticulo";
-import Carrito from "./pages/Carrito";
-import ResumenCompra from "./pages/ResumenCompra";
-import DetalleTransaccion from "./pages/DetalleTransaccion";
+
+// Administración
+import Rol from "./pages/Rol";
+
+// Página base o futura app interna
+import App from "./pages/App";
 
 const AppRoutes = () => {
   return (
     <Router>
       <Routes>
-        {/* --- Rutas Públicas --- */}
-        {/* Página de inicio y contenido estático */}
+        {/* --- Páginas públicas --- */}
         <Route path="/" element={<Home />} />
         <Route path="/nosotros" element={<Nosotros />} />
         <Route path="/contacto" element={<Contacto />} />
+        <Route path="/politica-cookies" element={<PoliticaCookies />} />
+        <Route path="/politica-privacidad" element={<PoliticaPrivacidad />} />
+        <Route path="/aviso-legal" element={<AvisoLegal />} />
 
-        {/* Autenticación */}
+        {/* --- Autenticación --- */}
         <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Registro />} />
 
-        {/* Catálogo de artículos (acceso público) */}
+        {/* --- Catálogo de artículos --- */}
         <Route path="/articulos" element={<Articulos />} />
         <Route path="/articulos/:id" element={<ArticuloDetail />} />
 
-        {/* Proceso de compra */}
+        {/* --- Proceso de compra --- */}
         <Route path="/carrito" element={<Carrito />} />
         <Route path="/comprar" element={<Comprar />} />
         <Route path="/resumen/:id" element={<ResumenCompra />} />
 
-        {/* --- Rutas Protegidas (requieren autenticación) --- */}
-        {/* Gestión de artículos del usuario */}
+        {/* --- Gestión de artículos del usuario --- */}
         <Route path="/mis-articulos" element={<MisArticulos />} />
         <Route path="/crear-articulo" element={<CrearArticulo />} />
         <Route
@@ -54,7 +69,7 @@ const AppRoutes = () => {
           element={<EditarArticulo />}
         />
 
-        {/* Perfil de usuario */}
+        {/* --- Perfil de usuario --- */}
         <Route path="/user" element={<UserProfile />} />
         <Route path="/actualizar-datos" element={<ActualizarDatos />} />
         <Route
@@ -66,13 +81,13 @@ const AppRoutes = () => {
           element={<DetalleTransaccion />}
         />
 
-        {/* Administración */}
+        {/* --- Administración --- */}
         <Route path="/rol" element={<Rol />} />
 
-        {/* Ruta de aplicación principal (¿quizá redirija a dashboard?) */}
+        {/* --- Ruta auxiliar o futura app/dashboard --- */}
         <Route path="/app" element={<App />} />
 
-        {/* Ruta para manejar páginas no encontradas (opcional) */}
+        {/* --- Ruta comodín para manejar errores 404 --- */}
         <Route path="*" element={<Home />} />
       </Routes>
     </Router>

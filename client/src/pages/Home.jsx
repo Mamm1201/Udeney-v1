@@ -19,28 +19,28 @@ const categorias = [
     imagen: "/colores.jpg",
     descripcion:
       "Artículos escolares en excelente estado: cuadernos, lápices, colores y más.",
-    ruta: "/categoria/utiles",
+    ruta: "/articulos",
   },
   {
     nombre: "Herramientas",
     imagen: "/calculate.jpg",
     descripcion:
       "Herramientas tecnológicas y de aprendizaje para diferentes niveles educativos.",
-    ruta: "/categoria/herramientas",
+    ruta: "/articulos",
   },
   {
     nombre: "Libros",
     imagen: "/libro.jpg",
     descripcion:
       "Libros de texto, literatura y consulta para todas las edades.",
-    ruta: "/categoria/libros",
+    ruta: "/articulos",
   },
   {
     nombre: "Prendas",
     imagen: "/prenda.jpg",
     descripcion:
       "Uniformes y prendas escolares listas para reutilizar con amor.",
-    ruta: "/categoria/prendas",
+    ruta: "/articulos",
   },
 ];
 
@@ -75,7 +75,7 @@ const Home = () => {
             left: 0,
             height: "100%",
             width: "100%",
-            bgcolor: "rgba(0, 0, 0, 0.3)", // Oscurece la imagen
+            bgcolor: "rgba(0, 0, 0, 0.35)", // Oscurece la imagen
             zIndex: 1,
           }}
         />

@@ -1,10 +1,10 @@
-// src/components/Navbar.jsx
-// import React, { useState } from "react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Logo from "./Logo";
 import LoginButton from "./Loginbutton";
 import LogoutButton from "./LogoutButton";
-import PerfilMenu from "./PerfilMenuVendedor"; // Componente de perfil (que se abre cuando el usuario hace clic en su avatar)
+import PerfilMenu from "./PerfilMenuVendedor";
+
 import {
   AppBar,
   Toolbar,
@@ -17,67 +17,67 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
+
 import MenuIcon from "@mui/icons-material/Menu";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-import { useNavigate } from "react-router-dom";
 
 const Navbar = () => {
-  const navigate = useNavigate(); // Hook para navegar entre rutas
-  const nombre = localStorage.getItem("nombres_usuario"); // Obtener nombre del usuario desde localStorage
-  const isLoggedIn = !!localStorage.getItem("access_token"); // Obtener nombre del usuario desde localStorage
+  const navigate = useNavigate();
+  const nombre = localStorage.getItem("nombres_usuario");
+  const isLoggedIn = !!localStorage.getItem("access_token");
 
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // Verificar si es una vista móvil
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // Detectar vista móvil
 
-  // Menú hamburguesa para móviles
-  const [mobileMenuAnchor, setMobileMenuAnchor] = useState(null); // Abre el menú móvil
-  const handleMobileMenuOpen = (event) =>
-    setMobileMenuAnchor(event.currentTarget);
-  const handleMobileMenuClose = () => setMobileMenuAnchor(null); // Cierra el menú móvil
+  // Menú móvil (hamburguesa)
+  const [mobileMenuAnchor, setMobileMenuAnchor] = useState(null);
+  const handleMobileMenuOpen = (e) => setMobileMenuAnchor(e.currentTarget);
+  const handleMobileMenuClose = () => setMobileMenuAnchor(null);
 
-  // Menú de acciones: ¿Qué deseas hacer hoy?
+  // Menú para seleccionar el rol
   const [anchorEl, setAnchorEl] = useState(null);
-  const handleOpenRoles = (event) => setAnchorEl(event.currentTarget); // Abre el menú para seleccionar el rol
-  const handleCloseRoles = () => setAnchorEl(null); // Cierra el menú de roles
+  const handleOpenRoles = (e) => setAnchorEl(e.currentTarget);
+  const handleCloseRoles = () => setAnchorEl(null);
 
   const handleLogout = () => {
     const nombre = localStorage.getItem("nombres_usuario");
-    localStorage.clear(); // Limpiar datos del usuario en localStorage
-    navigate("/login"); // Redirigir a la página de login
-    console.log(`👋 Hasta luego, ${nombre || "usuario"}!`); // Imprimir mensaje de despedida en la consola
+    localStorage.clear();
+    navigate("/login");
+    console.log(`👋 Hasta luego, ${nombre || "usuario"}!`);
   };
 
-  // ⚡ Guardar el rol y navegar según la acción seleccionada
   const seleccionarRol = (rol) => {
-    localStorage.setItem("rol_usuario", rol); // Guardar el rol seleccionado en localStorage
+    localStorage.setItem("rol_usuario", rol);
     if (rol === "vendedor") {
-      navigate("/crear-articulo"); // Redirigir al formulario de crear artículo si es vendedor
+      navigate("/crear-articulo");
     } else {
-      navigate("/articulos"); // Redirigir a la lista de artículos si es comprador
+      navigate("/articulos");
     }
-    handleCloseRoles(); // Cerrar el menú de roles
+    handleCloseRoles();
+    handleMobileMenuClose(); // Cierra también el menú móvil si está abierto
   };
 
   return (
-    <AppBar position="static" color="#86C384">
+    <AppBar
+      position="static"
+      sx={{
+        backgroundColor: "#86C384",
+      }}
+    >
       <Toolbar
         sx={{
           display: "flex",
           justifyContent: "space-between",
-          color: "inherit",
+          color: "black",
         }}
       >
-        {/* Logo / Título */}
+        {/* Logo a la izquierda */}
         <Logo />
 
-        {/* Navegación */}
+        {/* Contenido para móvil (menú hamburguesa) */}
         {isMobile ? (
           <>
-            <IconButton
-              color="inherit"
-              onClick={handleMobileMenuOpen}
-              edge="end"
-            >
+            <IconButton color="black" onClick={handleMobileMenuOpen} edge="end">
               <MenuIcon />
             </IconButton>
             <Menu
@@ -85,7 +85,7 @@ const Navbar = () => {
               open={Boolean(mobileMenuAnchor)}
               onClose={handleMobileMenuClose}
             >
-              {/* <MenuItem onClick={() => navigate("/home")}>Inicio</MenuItem> */}
+              <MenuItem onClick={() => navigate("/")}>Inicio</MenuItem>
               <MenuItem onClick={() => navigate("/nosotros")}>
                 Nosotros
               </MenuItem>
@@ -95,6 +95,18 @@ const Navbar = () => {
               <MenuItem onClick={handleOpenRoles}>
                 ¿Qué deseas hacer hoy? <ArrowDropDownIcon fontSize="small" />
               </MenuItem>
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleCloseRoles}
+              >
+                <MenuItem onClick={() => seleccionarRol("vendedor")}>
+                  📦 Vender artículos
+                </MenuItem>
+                <MenuItem onClick={() => seleccionarRol("comprador")}>
+                  🛒 Comprar artículos
+                </MenuItem>
+              </Menu>
 
               {!isLoggedIn ? (
                 <>
@@ -114,6 +126,7 @@ const Navbar = () => {
             </Menu>
           </>
         ) : (
+          // Contenido para escritorio
           <Box display="flex" alignItems="center" gap={2}>
             <Button onClick={() => navigate("/")} color="inherit">
               Inicio
