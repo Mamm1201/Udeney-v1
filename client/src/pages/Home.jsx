@@ -1,77 +1,183 @@
-import React from 'react';
-import Navbar from '../components/Navbar';
-import Boton1 from '../components/Boton1';
-import Boton2 from '../components/Boton2';
-import Pie from '../components/Pie';
+import React from "react";
+import {
+  Box,
+  Typography,
+  Grid,
+  Card,
+  CardContent,
+  CardMedia,
+  Button,
+} from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import Navbar from "../components/Navbar";
+import Pie from "../components/Pie";
+
+// Lista de categorías para mostrar en tarjetas
+const categorias = [
+  {
+    nombre: "Útiles",
+    imagen: "/colores.jpg",
+    descripcion:
+      "Artículos escolares en excelente estado: cuadernos, lápices, colores y más.",
+    ruta: "/articulos",
+  },
+  {
+    nombre: "Herramientas",
+    imagen: "/calculate.jpg",
+    descripcion:
+      "Herramientas tecnológicas y de aprendizaje para diferentes niveles educativos.",
+    ruta: "/articulos",
+  },
+  {
+    nombre: "Libros",
+    imagen: "/libro.jpg",
+    descripcion:
+      "Libros de texto, literatura y consulta para todas las edades.",
+    ruta: "/articulos",
+  },
+  {
+    nombre: "Prendas",
+    imagen: "/prenda.jpg",
+    descripcion:
+      "Uniformes y prendas escolares listas para reutilizar con amor.",
+    ruta: "/articulos",
+  },
+];
 
 const Home = () => {
+  const navigate = useNavigate();
+
   return (
-    <div className="bg-green-100 min-h-screen">
-      <div>
-        <Navbar />
-      </div>
-      <header className="bg-green-600 text-white py-8">
-        <div className="container mx-auto text-center">
-          <img
-            src="/logo.png"
-            alt="EduNey Logo"
-            className="mx-auto mb-4 w-16 h-16"
-          />
-          <h1 className="text-4xl font-bold">DALE UNA SEGUNDA OPORTUNIDAD</h1>
-          <p className="mt-4">
+    <Box sx={{ minHeight: "100vh", bgcolor: "white" }}>
+      <Navbar />
+
+      {/* Hero section con imagen de fondo responsive */}
+      <Box
+        sx={{
+          position: "relative",
+          height: { xs: "70vh", md: "90vh" },
+          width: "100%",
+          backgroundImage: "url(/school.jpg)", // Asegúrate de que la imagen esté en /public
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          textAlign: "center",
+        }}
+      >
+        {/* Overlay oscuro para mejor contraste */}
+        <Box
+          sx={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            height: "100%",
+            width: "100%",
+            bgcolor: "rgba(0, 0, 0, 0.35)", // Oscurece la imagen
+            zIndex: 1,
+          }}
+        />
+
+        {/* Contenido del encabezado sobre la imagen */}
+        <Box sx={{ position: "relative", zIndex: 2, px: 2 }}>
+          <Typography
+            variant="h3"
+            sx={{
+              color: "white",
+              fontWeight: "bold",
+              fontSize: { xs: "1.8rem", md: "3rem" },
+              mb: 2,
+            }}
+          >
+            DALE UNA SEGUNDA OPORTUNIDAD
+          </Typography>
+          <Typography
+            variant="body1"
+            sx={{
+              color: "white",
+              maxWidth: "800px",
+              mx: "auto",
+              fontSize: { xs: "1rem", md: "1.2rem" },
+            }}
+          >
             En EduNey creemos en darle una nueva vida a las prendas y elementos
-            institucionales. Somos una empresa apasionada por la sostenibilidad
-            y reutilización. Nuestro objetivo es ofrecer artículos educativos de
-            calidad a precios asequibles mientras reducimos el impacto
-            ambiental.
-          </p>
-        </div>
-      </header>
+            institucionales. Ofrecemos artículos educativos de calidad a precios
+            asequibles mientras cuidamos el medio ambiente.
+          </Typography>
+        </Box>
+      </Box>
 
-      <main className="container mx-auto py-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-white rounded-lg shadow-md text-center p-6">
-            <div>
-              <Boton1 />
-            </div>
-            <img
-              src="./public/logo.png"
-              alt=""
-              className="w-full h-40 object-cover rounded-md mb-4"
-            />
-          </div>
+      {/* Sección de categorías */}
+      <Box sx={{ p: 4 }}>
+        <Grid container spacing={4}>
+          {categorias.map((cat, index) => (
+            <Grid item xs={12} sm={6} md={3} key={index}>
+              <Card
+                sx={{
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                  borderRadius: 3,
+                  boxShadow: 4,
+                  transition: "transform 0.3s",
+                  "&:hover": {
+                    transform: "scale(1.03)",
+                  },
+                }}
+              >
+                <CardMedia
+                  component="img"
+                  height="160"
+                  image={cat.imagen}
+                  alt={`Imagen de ${cat.nombre}`}
+                />
+                <CardContent sx={{ flexGrow: 1 }}>
+                  <Typography variant="h6" gutterBottom>
+                    {cat.nombre}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {cat.descripcion}
+                  </Typography>
+                </CardContent>
+                <Box textAlign="center" pb={2}>
+                  <Box textAlign="center" pb={2}>
+                    <Button
+                      variant="contained"
+                      onClick={() => navigate(cat.ruta)}
+                      sx={{
+                        backgroundColor: "#8B8C69",
+                        "&:hover": {
+                          backgroundColor: "#BBBF4E", // Un poco más oscuro para el hover
+                        },
+                      }}
+                    >
+                      Ver {cat.nombre}
+                    </Button>
+                  </Box>
+                </Box>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      </Box>
 
-          <div className="bg-white rounded-lg shadow-md text-center p-6">
-            <div>
-              <Boton2 />
-            </div>
-            <img
-              src="./public/logo.png"
-              alt=""
-              className="w-full h-40 object-cover rounded-md mb-4"
-            />
-          </div>
-        </div>
+      {/* Sección final de llamado a la acción */}
+      <Box textAlign="center" px={2} py={6} bgcolor="#BBBF4E">
+        <Typography variant="h5" fontWeight="bold" mb={2}>
+          ¿Estás listo para contribuir con la educación?
+        </Typography>
+        <Typography variant="body1" maxWidth={600} mx="auto">
+          Cada donación hace una gran diferencia. Con tu ayuda, podemos
+          garantizar que todos los estudiantes tengan acceso a los recursos que
+          necesitan para triunfar.
+        </Typography>
+      </Box>
 
-        <div className="mt-10 text-center">
-          <h2 className="text-2xl font-bold mb-4">
-            ¿Estás listo para contribuir con la educación donando útiles,
-            artículos, uniformes, etc.?
-          </h2>
-          <p className="text-gray-700">
-            La educación es la clave para un futuro brillante. Con tu ayuda
-            podemos asegurarnos de que cada estudiante tenga acceso a los
-            recursos que necesita para triunfar. Cada bolígrafo, cada regla,
-            cada mochila donada es una inversión en el futuro de nuestra
-            comunidad.
-          </p>
-        </div>
-      </main>
-
-      <div>
-        <Pie />
-      </div>
-    </div>
+      <Pie />
+    </Box>
   );
 };
 

@@ -9,7 +9,7 @@ from .models import (
     Transacciones,
     Calificaciones,
     Pagos,
-    Pqrs,
+    Pqrs, ArticuloDetalleTransaccion,
 )
 
 
@@ -84,12 +84,24 @@ class CategoriasSerializer(serializers.ModelSerializer):
 
 
 # SERIALIZADOR DE ARTICULOS
+# class ArticulosSerializer(serializers.ModelSerializer):
+#     imagen = serializers.ImageField(use_url=True)
+#     id_categoria = serializers.StringRelatedField()
+
+#     class Meta:
+#         model = Articulos
+#         fields = "__all__"
+        
 class ArticulosSerializer(serializers.ModelSerializer):
-    imagen = serializers.ImageField(use_url=True)
+    imagen = serializers.ImageField(use_url=True, required=False)
+
+    id_usuario = serializers.PrimaryKeyRelatedField(queryset=Usuarios.objects.all())
+    id_categoria = serializers.PrimaryKeyRelatedField(queryset=Categorias.objects.all())
 
     class Meta:
         model = Articulos
         fields = "__all__"
+
 
 
 # SERIALIZADOR DETALLE_TRANSACCION
@@ -98,12 +110,36 @@ class DetalleTransaccionSerializer(serializers.ModelSerializer):
         model = DetalleTransaccion
         fields = "__all__"
 
+class ArticuloDetalleTransaccionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ArticuloDetalleTransaccion
+        fields = '__all__'
+
+
 
 # SERIALIZADOR TRANSACCIONES
+# class TransaccionesSerializer(serializers.ModelSerializer):
+#     id_detalle_transaccion = serializers.PrimaryKeyRelatedField(read_only=True)
+
+#     class Meta:
+#         model = Transacciones
+#         fields = "__all__"
+        
 class TransaccionesSerializer(serializers.ModelSerializer):
+    id_detalle_transaccion = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    # Este campo es solo de lectura, para mostrar el objeto completo del detalle
+    detalle_transaccion_data = DetalleTransaccionSerializer(source='id_detalle_transaccion', read_only=True)
+
     class Meta:
         model = Transacciones
-        fields = "__all__"
+        fields = "__all__"  # incluye todos los campos del modelo
+        depth = 0           # no anida automáticamente relaciones
+
+        # Añade explícitamente el campo extra si no aparece
+        extra_fields = ['detalle_transaccion_data']
+
+
 
 
 # SERIALIZADOR CALIFICACIONES
