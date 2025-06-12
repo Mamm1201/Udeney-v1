@@ -1,6 +1,0 @@
-Django>=4.2
-djangorestframework
-pytest
-pytest-django
-flake8
-black

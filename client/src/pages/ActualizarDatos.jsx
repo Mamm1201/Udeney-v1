@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   TextField,
@@ -9,44 +9,72 @@ import {
   CircularProgress,
   Snackbar,
   Alert,
-} from '@mui/material';
-import axios from 'axios';
+} from "@mui/material";
+import axios from "axios";
 
 const ActualizarDatos = () => {
-  console.log('👉 API URL:', import.meta.env.VITE_API_URL);
+  // Hook para navegación entre rutas
+  const navigate = useNavigate();
 
-  const navigate = useNavigate(); // 🔄 Hook de navegación (¡debe ir aquí!)
-
+  // Estado para almacenar los datos del formulario
   const [formData, setFormData] = useState({
-    nombres_usuario: '',
-    apellidos_usuario: '',
-    email_usuario: '',
-    telefono_usuario: '',
-    direccion_usuario: '',
+    nombres_usuario: "",
+    apellidos_usuario: "",
+    email_usuario: "",
+    telefono_usuario: "",
+    direccion_usuario: "",
   });
 
-  const [loading, setLoading] = useState(false); // 🔄 Indicador de carga
+  // Estado para indicar si está cargando datos o enviando actualización
+  const [loading, setLoading] = useState(false);
+
+  // Estado para manejar mensajes de éxito o error con Snackbar
   const [snackbar, setSnackbar] = useState({
     open: false,
-    message: '',
-    severity: 'info',
+    message: "",
+    severity: "info", // puede ser 'success', 'error', 'warning', 'info'
   });
 
-  const id_usuario = localStorage.getItem('id_usuario');
+  // Obtener el id del usuario desde el localStorage
+  const id_usuario = localStorage.getItem("id_usuario");
 
-  // 🔽 Cargar los datos del usuario al montar el componente
+  // Función para unir correctamente la URL base con el endpoint,
+  // evitando errores con '/' repetidas o faltantes
+  const joinUrl = (base, path) => {
+    if (!base.endsWith("/")) base += "/";
+    if (path.startsWith("/")) path = path.substring(1);
+    return base + path;
+  };
+
+  // useEffect para cargar datos del usuario al montar el componente
   useEffect(() => {
+    if (!id_usuario) {
+      // Mostrar error si no hay id de usuario
+      setSnackbar({
+        open: true,
+        message: "No se encontró el ID del usuario",
+        severity: "error",
+      });
+      return;
+    }
+
     const fetchDatos = async () => {
       try {
-        const res = await axios.get(
-          `${import.meta.env.VITE_API_URL}usuarios/${id_usuario}/`,
-        );
+        // Construir la URL correcta usando la función joinUrl
+        const apiUrl = import.meta.env.VITE_API_URL;
+        const url = joinUrl(apiUrl, `usuarios/${id_usuario}/`);
+
+        // Petición GET para obtener datos del usuario
+        const res = await axios.get(url);
+
+        // Guardar datos recibidos en el estado del formulario
         setFormData(res.data);
       } catch (error) {
+        // Mostrar mensaje de error si falla la carga
         setSnackbar({
           open: true,
-          message: 'Error al cargar datos',
-          severity: 'error',
+          message: "Error al cargar los datos del usuario",
+          severity: "error",
         });
       }
     };
@@ -54,41 +82,46 @@ const ActualizarDatos = () => {
     fetchDatos();
   }, [id_usuario]);
 
-  // 🔄 Manejador de cambio de los inputs
+  // Manejador para actualizar el estado cuando el usuario cambia un campo
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // ✅ Envío del formulario
+  // Función que se ejecuta al enviar el formulario para actualizar datos
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      await axios.put(
-        `${import.meta.env.VITE_API_URL}usuarios/${id_usuario}/`,
-        formData,
-      );
+      // Construir URL de actualización con joinUrl para evitar problemas
+      const apiUrl = import.meta.env.VITE_API_URL;
+      const url = joinUrl(apiUrl, `usuarios/${id_usuario}/`);
 
+      // Petición PUT para actualizar datos en backend
+      await axios.put(url, formData);
+
+      // Mostrar mensaje de éxito en Snackbar
       setSnackbar({
         open: true,
-        message: 'Datos actualizados correctamente',
-        severity: 'success',
+        message: "Datos actualizados correctamente",
+        severity: "success",
       });
 
-      // 🔁 Redirigir después de 2 segundos
+      // Redirigir a la página principal después de 2 segundos
       setTimeout(() => {
-        navigate('/');
+        navigate("/");
       }, 2000);
     } catch (error) {
       console.error(
-        'Error al actualizar:',
-        error.response?.data || error.message,
+        "Error al actualizar:",
+        error.response?.data || error.message
       );
+
+      // Mostrar mensaje de error en Snackbar si la actualización falla
       setSnackbar({
         open: true,
-        message: 'Error al actualizar datos',
-        severity: 'error',
+        message: "Error al actualizar datos",
+        severity: "error",
       });
     } finally {
       setLoading(false);
@@ -103,7 +136,7 @@ const ActualizarDatos = () => {
       minHeight="100vh"
       bgcolor="#f4f6f8"
     >
-      <Paper sx={{ p: 4, width: '100%', maxWidth: 500 }}>
+      <Paper sx={{ p: 4, width: "100%", maxWidth: 500 }}>
         <Typography variant="h5" gutterBottom>
           Actualizar mis datos
         </Typography>
@@ -164,22 +197,22 @@ const ActualizarDatos = () => {
             sx={{ mt: 2 }}
             disabled={loading}
           >
-            {loading ? <CircularProgress size={24} /> : 'Actualizar'}
+            {loading ? <CircularProgress size={24} /> : "Actualizar"}
           </Button>
         </Box>
       </Paper>
 
-      {/* Snackbar para mensajes de éxito o error */}
+      {/* Snackbar para mostrar mensajes */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={4000}
         onClose={() => setSnackbar({ ...snackbar, open: false })}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
         <Alert
           severity={snackbar.severity}
           onClose={() => setSnackbar({ ...snackbar, open: false })}
-          sx={{ width: '100%' }}
+          sx={{ width: "100%" }}
         >
           {snackbar.message}
         </Alert>

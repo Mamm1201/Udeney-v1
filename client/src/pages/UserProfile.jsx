@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 
 function UserProfile() {
-  const [user, setUser] = useState(' ');
+  const [user, setUser] = useState(" ");
   const [counter, setCounter] = useState(0);
 
   useEffect(() => {
-    console.log('render');
+    console.log("render");
   }, [counter]);
 
   return (
@@ -14,7 +14,7 @@ function UserProfile() {
       <hr />
       <button
         onClick={() => {
-          alert('Nuevo usuario ' + user);
+          alert("Nuevo usuario " + user);
         }}
       >
         Save
