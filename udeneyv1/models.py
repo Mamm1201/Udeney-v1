@@ -165,6 +165,11 @@ class Transacciones(models.Model):
     )  # Nombre exacto de la columna en la base de datos
     fecha_transaccion = models.DateTimeField()
 
+    # # 👇 NUEVO campo para asociar el detalle
+    # id_detalle_transaccion = models.OneToOneField(
+    #     DetalleTransaccion, on_delete=models.SET_NULL, null=True, blank=True
+    # )
+
     class Meta:
         db_table = "transacciones"  # Asegúrate de usar el nombre correcto de la tabla
         managed = False  # Django no intentará crear esta tabla

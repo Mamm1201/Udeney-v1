@@ -7,6 +7,8 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from django.conf import settings
 from django.conf.urls.static import static
 
+from .views import ResumenCompraAPIView
+
 from .views import (
     UsuariosViewSet,
     ArticulosViewSet,
@@ -21,8 +23,7 @@ from .views import (
     LoginView,
     RegistroUsuarioView,
     historial_transacciones_api,
-    detalle_transaccion_con_articulo,
-    crear_con_detalles,  # ⬅️ import necesario
+    crear_con_detalles,  ResumenCompraAPIView,
 )
 
 # Configura el router para las rutas generadas automáticamente
@@ -51,7 +52,8 @@ urlpatterns = [
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
 
     path("historial/", historial_transacciones_api, name="historial_api"),
-    path("detalle-transaccion/<int:id_detalle_transaccion>/", detalle_transaccion_con_articulo),
+    # path("api/v1/resumen-compra/<int:id_transaccion>/", ResumenCompraAPIView.as_view(), name="resumen-compra"),
+    path("resumen-compra/<int:id_transaccion>/", ResumenCompraAPIView.as_view(), name="resumen-compra"),
 
     # ✅ Ruta definitiva y sin conflicto para POST
     # path("api/v1/crear-transaccion/", crear_con_detalles, name="crear_con_detalles"),

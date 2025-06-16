@@ -148,11 +148,17 @@ const Articulos = () => {
                 >
                   <CardMedia
                     component="img"
-                    height="180"
-                    // 📷 Usa imagen del artículo o una local por defecto desde /public/img/
+                    height="300"
                     image={articulo.imagen || "/img/placeholder.jpg"}
                     alt={articulo.titulo_articulo}
+                    sx={{
+                      width: "100%",
+                      objectFit: "cover", // Asegura que la imagen se recorte proporcionalmente y no se distorsione
+                      borderTopLeftRadius: "16px", // Coincide con el borderRadius del <Card />
+                      borderTopRightRadius: "16px",
+                    }}
                   />
+
                   <CardContent>
                     <Typography variant="h6" fontWeight="bold" noWrap>
                       {articulo.titulo_articulo}
@@ -183,7 +189,7 @@ const Articulos = () => {
                     <Box mt={2} display="flex" flexDirection="column" gap={1}>
                       <Button
                         variant="contained"
-                        color="primary"
+                        color="primary" //color del boton ver detalle
                         component={Link}
                         to={`/articulos/${articulo.id_articulo}`}
                         fullWidth

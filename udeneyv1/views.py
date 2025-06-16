@@ -5,6 +5,7 @@
 # Django
 from django.shortcuts import render
 from django.utils.dateparse import parse_date
+from django.utils import timezone
 
 # Django Rest Framework
 from rest_framework import viewsets, status, filters
@@ -12,37 +13,35 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.generics import RetrieveAPIView
-from rest_framework.decorators import api_view, action
-from datetime import datetime
-from django.utils import timezone
-
-
-# Filtros
-from django_filters.rest_framework import DjangoFilterBackend
-
-# ORM y funciones de agrupación
-from django.db.models import Count
-from django.db.models.functions import TruncMonth, TruncYear
-
-# Modelos del sistema
-from .models import (
-    Usuarios, Articulos, Categorias, Roles, UsuarioRol,
-    DetalleTransaccion, Transacciones, Calificaciones, Pagos, Pqrs, ArticuloDetalleTransaccion
-)
-
-# Serializadores del sistema
-from .serializers import (
-    UsuariosSerializer, ArticulosSerializer, CategoriasSerializer,
-    RolesSerializer, UsuarioRolSerializer, DetalleTransaccionSerializer,
-    TransaccionesSerializer, CalificacionesSerializer, PagosSerializer, PqrsSerializer, ArticuloDetalleTransaccionSerializer
-)
+from rest_framework.decorators import api_view
 
 # JWT
 from rest_framework_simplejwt.tokens import RefreshToken
 
+# Filtros y funciones ORM
+from django_filters.rest_framework import DjangoFilterBackend
+from django.db.models import Count
+from django.db.models.functions import TruncMonth, TruncYear
+
+# Modelos
+from .models import (
+    Usuarios, Articulos, Categorias, Roles, UsuarioRol,
+    DetalleTransaccion, Transacciones, Calificaciones, Pagos, Pqrs,
+    ArticuloDetalleTransaccion
+)
+
+# Serializadores
+from .serializers import (
+    UsuariosSerializer, ArticulosSerializer, CategoriasSerializer,
+    RolesSerializer, UsuarioRolSerializer, DetalleTransaccionSerializer,
+    TransaccionesSerializer, CalificacionesSerializer, PagosSerializer,
+    PqrsSerializer, DetalleTransaccionAnidadoSerializer
+)
+
 # ====================================
-# REGISTRO DE USUARIO
+# AUTENTICACIÓN
 # ====================================
+
 class RegistroUsuarioView(APIView):
     permission_classes = [AllowAny]
 
@@ -51,26 +50,20 @@ class RegistroUsuarioView(APIView):
         if serializer.is_valid():
             user = serializer.save()
             refresh = RefreshToken.for_user(user)
-            return Response(
-                {
-                    "message": "Usuario registrado exitosamente",
-                    "user": {
-                        "id_usuario": user.id_usuario,
-                        "email_usuario": user.email_usuario,
-                        "nombres_usuario": user.nombres_usuario,
-                        "apellidos_usuario": user.apellidos_usuario,
-                    },
-                    "access_token": str(refresh.access_token),
-                    "refresh_token": str(refresh),
+            return Response({
+                "message": "Usuario registrado exitosamente",
+                "user": {
+                    "id_usuario": user.id_usuario,
+                    "email_usuario": user.email_usuario,
+                    "nombres_usuario": user.nombres_usuario,
+                    "apellidos_usuario": user.apellidos_usuario,
                 },
-                status=status.HTTP_201_CREATED,
-            )
+                "access_token": str(refresh.access_token),
+                "refresh_token": str(refresh),
+            }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# ====================================
-# LOGIN DE USUARIO
-# ====================================
 class LoginView(APIView):
     permission_classes = [AllowAny]
 
@@ -93,21 +86,16 @@ class LoginView(APIView):
             return Response({"error": "Correo o contraseña incorrectos"}, status=401)
 
         refresh = RefreshToken.for_user(user)
-        return Response(
-            {
-                "message": f"Bienvenido {user.nombres_usuario}",
-                "id_usuario": user.id_usuario,
-                "email": user.email_usuario,
-                "nombres_usuario": user.nombres_usuario,
-                "access_token": str(refresh.access_token),
-                "refresh_token": str(refresh),
-            }
-        )
+        return Response({
+            "message": f"Bienvenido {user.nombres_usuario}",
+            "id_usuario": user.id_usuario,
+            "email": user.email_usuario,
+            "nombres_usuario": user.nombres_usuario,
+            "access_token": str(refresh.access_token),
+            "refresh_token": str(refresh),
+        })
 
 
-# ====================================
-# LOGOUT (SIMBÓLICO)
-# ====================================
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -116,40 +104,28 @@ class LogoutView(APIView):
 
 
 # ====================================
-# HISTORIAL DE TRANSACCIONES - API
+# HISTORIAL DE TRANSACCIONES
 # ====================================
+
 @api_view(["GET"])
 def historial_transacciones_api(request):
     id_usuario = request.query_params.get("id_usuario")
     if not id_usuario:
         return Response({"error": "Debe proporcionar el ID del usuario"}, status=400)
 
-    # Se obtienen los parámetros de fecha como cadenas
-    fecha_inicio_str = request.query_params.get("fecha_inicio")
-    fecha_fin_str = request.query_params.get("fecha_fin")
-
-    # Se convierten en fechas si están en formato válido, sino quedan como None
-    fecha_inicio = parse_date(fecha_inicio_str) if isinstance(fecha_inicio_str, str) else None
-    fecha_fin = parse_date(fecha_fin_str) if isinstance(fecha_fin_str, str) else None
+    fecha_inicio = parse_date(request.query_params.get("fecha_inicio", None))
+    fecha_fin = parse_date(request.query_params.get("fecha_fin", None))
 
     try:
-        # ============================
-        # COMPRAS (el usuario compra)
-        # ============================
         compras = Transacciones.objects.filter(
             id_usuario=id_usuario,
             id_detalle_transaccion__tipo_transaccion="compra"
         )
-
-        # ============================
-        # VENTAS (el usuario vende)
-        # ============================
         ventas = Transacciones.objects.filter(
             id_detalle_transaccion__id_articulo__id_usuario=id_usuario,
             id_detalle_transaccion__tipo_transaccion="venta"
         )
 
-        # Filtro por fechas si se proporcionaron
         if fecha_inicio:
             compras = compras.filter(fecha_transaccion__gte=fecha_inicio)
             ventas = ventas.filter(fecha_transaccion__gte=fecha_inicio)
@@ -157,48 +133,36 @@ def historial_transacciones_api(request):
             compras = compras.filter(fecha_transaccion__lte=fecha_fin)
             ventas = ventas.filter(fecha_transaccion__lte=fecha_fin)
 
-        # Agrupar por mes y año - compras
-        compras_grouped = (
-            compras.annotate(
-                year=TruncYear("fecha_transaccion"),
-                month=TruncMonth("fecha_transaccion")
-            )
-            .values("year", "month")
-            .annotate(total_compras=Count("id_transaccion"))
-            .order_by("year", "month")
-        )
+        compras_grouped = compras.annotate(
+            year=TruncYear("fecha_transaccion"),
+            month=TruncMonth("fecha_transaccion")
+        ).values("year", "month").annotate(
+            total_compras=Count("id_transaccion")
+        ).order_by("year", "month")
 
-        # Agrupar por mes y año - ventas
-        ventas_grouped = (
-            ventas.annotate(
-                year=TruncYear("fecha_transaccion"),
-                month=TruncMonth("fecha_transaccion")
-            )
-            .values("year", "month")
-            .annotate(total_ventas=Count("id_transaccion"))
-            .order_by("year", "month")
-        )
+        ventas_grouped = ventas.annotate(
+            year=TruncYear("fecha_transaccion"),
+            month=TruncMonth("fecha_transaccion")
+        ).values("year", "month").annotate(
+            total_ventas=Count("id_transaccion")
+        ).order_by("year", "month")
 
-        # Retornar la respuesta en JSON
         return Response({
             "compras": list(compras_grouped),
             "ventas": list(ventas_grouped)
         })
 
     except Exception as e:
-        # Captura errores generales del proceso
         return Response({"error": str(e)}, status=500)
-    
+
 
 # ====================================
-# CRUD GENERAL PARA MODELOS DEL SISTEMA
+# CRUD GENERAL
 # ====================================
 
 class UsuariosViewSet(viewsets.ModelViewSet):
     queryset = Usuarios.objects.all()
     serializer_class = UsuariosSerializer
-
-
 
 
 class ArticulosViewSet(viewsets.ModelViewSet):
@@ -232,42 +196,40 @@ class UsuarioRolViewSet(viewsets.ModelViewSet):
 class DetalleTransaccionViewSet(viewsets.ModelViewSet):
     queryset = DetalleTransaccion.objects.all()
     serializer_class = DetalleTransaccionSerializer
-    
-# ====================================
-# TRANSACCIONES - CREATE VALIDADO
-# ====================================
+
+
 class TransaccionesViewSet(viewsets.ModelViewSet):
     queryset = Transacciones.objects.all()
-    serializer_class = TransaccionesSerializer
 
-    # Vista personalizada para crear una transacción con varios artículos
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            from .serializers import TransaccionConDetalleSerializer
+            return TransaccionConDetalleSerializer
+        return TransaccionesSerializer
+
+
 @api_view(["POST"])
 def crear_con_detalles(request):
-    print(">>> ✅ LLEGÓ A LA VISTA crear_con_detalles CON MÉTODO:", request.method)
-    
+    """
+    Crea una transacción con su detalle y artículos.
+    """
     try:
-        print(">>> MÉTODO:", request.method)
-        print(">>> request.data en crear_con_detalles:", request.data)
-
         id_usuario = request.data.get("id_usuario")
         tipo_transaccion = request.data.get("tipo_transaccion")
         tipo_entrega = request.data.get("tipo_entrega")
         articulos = request.data.get("articulos", [])
 
-        # Crear la transacción principal
         transaccion = Transacciones.objects.create(
             id_usuario_id=id_usuario,
-            fecha_transaccion=timezone.now(),
+            fecha_transaccion=timezone.now()
         )
 
-        # Crear el detalle de la transacción (uno solo en este diseño)
         detalle = DetalleTransaccion.objects.create(
             id_transaccion=transaccion,
             tipo_transaccion=tipo_transaccion,
-            tipo_entrega=tipo_entrega,
+            tipo_entrega=tipo_entrega
         )
 
-        # Ahora insertamos cada artículo con su cantidad al modelo intermedio
         for art in articulos:
             try:
                 articulo = Articulos.objects.get(id_articulo=art["id_articulo"])
@@ -290,24 +252,21 @@ def crear_con_detalles(request):
 
     except Exception as e:
         import traceback
-        traceback.print_exc()  # 👈 Imprime error completo en consola
+        traceback.print_exc()
         return Response({"error": str(e)}, status=500)
-
 
 
 class CalificacionesViewSet(viewsets.ModelViewSet):
     queryset = Calificaciones.objects.all()
     serializer_class = CalificacionesSerializer
-   
-# CORRECCIÓN PRINCIPAL AQUÍ: validar 'id_detalle_transaccion' en creación de Pagos
+
+
 class PagosViewSet(viewsets.ModelViewSet):
     queryset = Pagos.objects.all()
     serializer_class = PagosSerializer
 
     def create(self, request, *args, **kwargs):
         data = request.data
-
-        # Validar que 'id_detalle_transaccion' esté presente y no sea nulo
         if not data.get("id_detalle_transaccion"):
             return Response(
                 {"error": "El campo 'id_detalle_transaccion' es obligatorio."},
@@ -317,44 +276,32 @@ class PagosViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)    
-    
-# ====================================
-# DETALLE TRANSACCION CON ARTICULO
-# ====================================   
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 
 class PqrsViewSet(viewsets.ModelViewSet):
     queryset = Pqrs.objects.all()
     serializer_class = PqrsSerializer
-    
-@api_view(['GET'])
-def detalle_transaccion_con_articulo(request, id_detalle_transaccion):
-    try:
-        detalle = DetalleTransaccion.objects.get(pk=id_detalle_transaccion)
-        articulo = Articulos.objects.get(pk=detalle.id_articulo.id_articulo)
 
-        total = articulo.precio * detalle.cantidad_articulos
 
-        data = {
-            "tipo_transaccion": detalle.tipo_transaccion,
-            "tipo_entrega": detalle.tipo_entrega,
-            "total": total,
-            "articulos": [
-                {
-                    "titulo_articulo": articulo.titulo_articulo,
-                    "cantidad_articulos": detalle.cantidad_articulos,
-                    "precio_articulo": articulo.precio,
-                    "imagen_articulo": articulo.imagen_articulo.url if articulo.imagen_articulo else None
-                }
-            ]
-        }
+# ====================================
+# RESUMEN DE COMPRA (ARTÍCULOS + DETALLE)
+# ====================================
 
-        return Response(data)
+class ResumenCompraAPIView(APIView):
+    """
+    Devuelve el resumen de una compra específica por ID de transacción,
+    incluyendo detalle de transacción y artículos asociados.
+    """
+    def get(self, request, id_transaccion):
+        try:
+            detalle = DetalleTransaccion.objects.get(id_transaccion_id=id_transaccion)
+            serializer = DetalleTransaccionAnidadoSerializer(detalle)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except DetalleTransaccion.DoesNotExist:
+            return Response({"error": "Detalle de transacción no encontrado."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    except DetalleTransaccion.DoesNotExist:
-        return Response({"error": "Detalle de transacción no encontrado."}, status=404)
-    except Articulos.DoesNotExist:
-        return Response({"error": "Artículo relacionado no encontrado."}, status=404)
-    except Exception as e:
-        return Response({"error": str(e)}, status=500)
+
 

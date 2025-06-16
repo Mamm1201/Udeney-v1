@@ -55,9 +55,9 @@ const Home = () => {
       <Box
         sx={{
           position: "relative",
-          height: { xs: "70vh", md: "90vh" },
+          height: { xs: "70vh", md: "70vh" },
           width: "100%",
-          backgroundImage: "url(/school.jpg)", // Asegúrate de que la imagen esté en /public
+          backgroundImage: "url(/nosotros.png)", // Asegúrate de que la imagen esté en /public
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
@@ -75,7 +75,7 @@ const Home = () => {
             left: 0,
             height: "100%",
             width: "100%",
-            bgcolor: "rgba(0, 0, 0, 0.35)", // Oscurece la imagen
+            bgcolor: "rgba(0, 0, 0, 0.65)", // Oscurece la imagen
             zIndex: 1,
           }}
         />

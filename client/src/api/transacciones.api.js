@@ -15,3 +15,8 @@ export const getDetalleTransaccionById = async (id) => {
 export const crearTransaccionConDetalles = async (datos) => {
   return await api.post(`/transacciones/crear-con-detalles/`, datos);
 };
+
+// Obtener resumen de la compra completo
+export const getResumenCompraByTransaccionId = async (id) => {
+  return await api.get(`/resumen-compra/${id}/`);
+};

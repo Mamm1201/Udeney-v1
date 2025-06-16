@@ -15,55 +15,39 @@ import {
   Avatar,
   Grid,
 } from "@mui/material";
-import { getTransaccionById } from "../api/transacciones.api";
-import axios from "axios";
+import { getResumenCompraByTransaccionId } from "../api/transacciones.api";
 
 const ResumenCompra = () => {
-  const { id } = useParams(); // esta linea se cambio
+  const { id } = useParams();
   const navigate = useNavigate();
 
-  const [transaccion, setTransaccion] = useState(null);
-  const [detalle, setDetalle] = useState(null);
+  const [resumen, setResumen] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Función para obtener el resumen de compra desde el backend
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchResumen = async () => {
       try {
         setLoading(true);
-
-        // ✅ Obtener transacción
-        const resT = await getTransaccionById(id);
-        setTransaccion(resT.data);
-        console.log("🧾 Transacción recibida:", resT.data);
-
-        const idDetalle = resT.data.id_detalle_transaccion;
-
-        // ✅ Si existe, obtener detalle completo
-        if (idDetalle && typeof idDetalle === "number") {
-          const resD = await axios.get(
-            `http://localhost:8000/detalle-transaccion/${idDetalle}/`
-          );
-          console.log("📦 Detalle recibido:", resD.data);
-          setDetalle(resD.data);
-        } else {
-          setDetalle(null); // No tiene detalle asociado
-        }
-
-        setLoading(false);
+        const response = await getResumenCompraByTransaccionId(id);
+        console.log("🧾 Resumen recibido:", response.data);
+        setResumen(response.data);
       } catch (err) {
         console.error(err);
         setError("No se pudo cargar el resumen de compra.");
+      } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
+    fetchResumen();
   }, [id]);
 
+  // Calcula el subtotal de un artículo
   const calcularSubtotal = (precio, cantidad) => precio * cantidad;
 
-  // ⏳ Estado de carga
+  // Mostrar spinner mientras se carga el resumen
   if (loading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
@@ -72,13 +56,16 @@ const ResumenCompra = () => {
     );
   }
 
-  // ❌ Error al cargar
-  if (error) {
+  // Mostrar mensaje de error si hubo un problema
+  if (error || !resumen) {
     return (
       <Box sx={{ textAlign: "center", mt: 8 }}>
-        <Typography color="error">{error}</Typography>
+        <Typography color="error" variant="h6">
+          {error}
+        </Typography>
         <Button
           variant="contained"
+          sx={{ mt: 2 }}
           onClick={() => navigate("/historial-transacciones")}
         >
           Volver al Historial
@@ -89,119 +76,129 @@ const ResumenCompra = () => {
 
   return (
     <Box sx={{ maxWidth: 900, mx: "auto", p: 3 }}>
-      <Paper elevation={3} sx={{ p: 4 }}>
+      <Paper elevation={3} sx={{ p: 4, borderRadius: 4 }}>
+        {/* Título */}
         <Typography variant="h4" gutterBottom>
           🧾 Resumen de Compra
         </Typography>
 
         <Divider sx={{ mb: 3 }} />
 
-        {/* 🧾 Datos de la transacción */}
-        <Typography variant="subtitle1">
-          <strong>ID Transacción:</strong> {transaccion.id_transaccion}
+        {/* Información general de la transacción */}
+        <Typography variant="subtitle1" sx={{ mb: 1 }}>
+          <strong>ID Transacción:</strong> {resumen.id_transaccion}
         </Typography>
-        <Typography variant="subtitle1">
+        <Typography variant="subtitle1" sx={{ mb: 1 }}>
           <strong>Fecha:</strong>{" "}
-          {new Date(transaccion.fecha_transaccion).toLocaleString()}
+          {new Date(resumen.fecha_transaccion).toLocaleString()}
+        </Typography>
+        <Typography variant="subtitle1" sx={{ mt: 2 }}>
+          <strong>Entrega:</strong>{" "}
+          {resumen.tipo_entrega === "domicilio"
+            ? "🚚 Domicilio a tu dirección"
+            : "🏬 Retiro en punto de entrega"}
         </Typography>
 
-        {/* 📦 Si hay detalle asociado */}
-        {detalle ? (
-          <>
-            <Typography variant="subtitle1" sx={{ mt: 2 }}>
-              <strong>Entrega:</strong>{" "}
-              {detalle.tipo_entrega === "domicilio"
-                ? "🚚 Domicilio a tu dirección"
-                : "🏬 Retiro en punto de entrega"}
-            </Typography>
+        <Divider sx={{ my: 3 }} />
 
-            <Divider sx={{ my: 3 }} />
+        {/* Lista de artículos comprados */}
+        <List>
+          {resumen.articulos.map((item, index) => (
+            <ListItem key={index} divider alignItems="flex-start">
+              <Grid container spacing={2} alignItems="center">
+                {/* Imagen del artículo */}
+                <Grid item>
+                  {item.imagen_articulo ? (
+                    <Avatar
+                      variant="rounded"
+                      src={item.imagen_articulo}
+                      alt={item.titulo_articulo}
+                      sx={{ width: 64, height: 64 }}
+                    />
+                  ) : (
+                    <Avatar
+                      variant="rounded"
+                      sx={{
+                        width: 64,
+                        height: 64,
+                        bgcolor: "grey.300",
+                        fontSize: 12,
+                      }}
+                    >
+                      Sin imagen
+                    </Avatar>
+                  )}
+                </Grid>
 
-            {/* 🛒 Lista de artículos */}
-            <List>
-              {detalle.articulos.map((item, i) => (
-                <ListItem key={i} divider alignItems="flex-start">
-                  <Grid container spacing={2} alignItems="center">
-                    <Grid item>
-                      {item.imagen_articulo ? (
-                        <Avatar
-                          variant="rounded"
-                          src={item.imagen_articulo}
-                          alt={item.titulo_articulo}
-                          sx={{ width: 64, height: 64 }}
-                        />
-                      ) : (
-                        <Avatar
-                          variant="rounded"
-                          sx={{
-                            width: 64,
-                            height: 64,
-                            bgcolor: "grey.300",
-                            fontSize: 12,
-                          }}
+                {/* Información del artículo */}
+                <Grid item xs>
+                  <ListItemText
+                    primary={
+                      <Typography
+                        variant="subtitle1"
+                        fontWeight="bold"
+                        component="span"
+                      >
+                        {item.titulo_articulo} × {item.cantidad}
+                      </Typography>
+                    }
+                    secondary={
+                      <>
+                        <Typography
+                          component="span"
+                          variant="body2"
+                          color="text.secondary"
+                          display="block"
                         >
-                          Sin imagen
-                        </Avatar>
-                      )}
-                    </Grid>
-                    <Grid item xs>
-                      <ListItemText
-                        primary={
-                          <Typography variant="subtitle1" fontWeight="bold">
-                            {item.titulo_articulo} × {item.cantidad_articulos}
-                          </Typography>
-                        }
-                        secondary={
-                          <>
-                            <Typography variant="body2" color="text.secondary">
-                              Precio unitario: ${item.precio_articulo}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              Subtotal: $
-                              {calcularSubtotal(
-                                item.precio_articulo,
-                                item.cantidad_articulos
-                              )}
-                            </Typography>
-                          </>
-                        }
-                      />
-                    </Grid>
-                  </Grid>
-                </ListItem>
-              ))}
-            </List>
+                          Precio unitario: ${item.precio_articulo}
+                        </Typography>
+                        <Typography
+                          component="span"
+                          variant="body2"
+                          color="text.secondary"
+                          display="block"
+                        >
+                          Subtotal: $
+                          {calcularSubtotal(
+                            item.precio_articulo,
+                            item.cantidad
+                          )}
+                        </Typography>
+                      </>
+                    }
+                  />
+                </Grid>
+              </Grid>
+            </ListItem>
+          ))}
+        </List>
 
-            <Divider sx={{ my: 3 }} />
+        <Divider sx={{ my: 3 }} />
 
-            {/* 💰 Total */}
-            <Typography variant="h6" textAlign="right">
-              Total: <strong>${detalle.total}</strong>
-            </Typography>
+        {/* Total de la compra */}
+        <Typography variant="h6" textAlign="right">
+          Total:{" "}
+          <strong>
+            $
+            {resumen.articulos.reduce(
+              (acc, item) =>
+                acc + calcularSubtotal(item.precio_articulo, item.cantidad),
+              0
+            )}
+          </strong>
+        </Typography>
 
-            {/* 📦 Estado */}
-            <Typography
-              variant="body2"
-              textAlign="center"
-              color="text.secondary"
-              sx={{ mt: 2 }}
-            >
-              📦 Tu compra está siendo procesada y pronto recibirás novedades.
-            </Typography>
-          </>
-        ) : (
-          <>
-            <Typography variant="body1" color="text.secondary" sx={{ mt: 2 }}>
-              Esta transacción no contiene un detalle asociado.
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              Es posible que aún no se haya finalizado la compra o hubo un
-              error.
-            </Typography>
-          </>
-        )}
+        {/* Mensaje final */}
+        <Typography
+          variant="body2"
+          textAlign="center"
+          color="text.secondary"
+          sx={{ mt: 2 }}
+        >
+          📦 Tu compra está siendo procesada y pronto recibirás novedades.
+        </Typography>
 
-        {/* 🔙 Volver */}
+        {/* Botón para volver al historial */}
         <Box sx={{ mt: 4, textAlign: "center" }}>
           <Button
             variant="contained"
