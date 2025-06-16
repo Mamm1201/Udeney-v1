@@ -96,7 +96,7 @@ const ResumenCompra = () => {
           <strong>Entrega:</strong>{" "}
           {resumen.tipo_entrega === "domicilio"
             ? "🚚 Domicilio a tu dirección"
-            : "🏬 Retiro en punto de entrega"}
+            : "🏬 Retiro en punto físico"}
         </Typography>
 
         <Divider sx={{ my: 3 }} />
@@ -195,7 +195,7 @@ const ResumenCompra = () => {
           color="text.secondary"
           sx={{ mt: 2 }}
         >
-          📦 Tu compra está siendo procesada y pronto recibirás novedades.
+          📦 Tu compra está en tramite.
         </Typography>
 
         {/* Botón para volver al historial */}
@@ -204,7 +204,7 @@ const ResumenCompra = () => {
             variant="contained"
             onClick={() => navigate("/historial-transacciones")}
           >
-            Ver Historial de Compras
+            Mis Transacciones
           </Button>
         </Box>
       </Paper>

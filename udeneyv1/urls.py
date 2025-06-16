@@ -51,12 +51,11 @@ urlpatterns = [
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
 
+    # path("historial/", historial_transacciones_api, name="historial_api"),
     path("historial/", historial_transacciones_api, name="historial_api"),
     # path("api/v1/resumen-compra/<int:id_transaccion>/", ResumenCompraAPIView.as_view(), name="resumen-compra"),
     path("resumen-compra/<int:id_transaccion>/", ResumenCompraAPIView.as_view(), name="resumen-compra"),
 
-    # ✅ Ruta definitiva y sin conflicto para POST
-    # path("api/v1/crear-transaccion/", crear_con_detalles, name="crear_con_detalles"),
     path("crear-transaccion/", crear_con_detalles, name="crear_transaccion"),
     
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,6 +1,11 @@
 // src/api/transacciones.js
 import api from "./axiosConfig";
 
+// Obtener todas las transacciones
+export const getTransacciones = async () => {
+  return await api.get("/transacciones/");
+};
+
 // Obtener una transacción por ID
 export const getTransaccionById = async (id) => {
   return await api.get(`/transacciones/${id}/`);

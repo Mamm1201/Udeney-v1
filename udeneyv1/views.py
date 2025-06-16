@@ -111,49 +111,36 @@ class LogoutView(APIView):
 def historial_transacciones_api(request):
     id_usuario = request.query_params.get("id_usuario")
     if not id_usuario:
-        return Response({"error": "Debe proporcionar el ID del usuario"}, status=400)
-
-    fecha_inicio = parse_date(request.query_params.get("fecha_inicio", None))
-    fecha_fin = parse_date(request.query_params.get("fecha_fin", None))
-
+        return Response({"error": "ID de usuario obligatorio"}, status=400)
     try:
-        compras = Transacciones.objects.filter(
-            id_usuario=id_usuario,
-            id_detalle_transaccion__tipo_transaccion="compra"
-        )
-        ventas = Transacciones.objects.filter(
-            id_detalle_transaccion__id_articulo__id_usuario=id_usuario,
-            id_detalle_transaccion__tipo_transaccion="venta"
-        )
+        id_usuario = int(id_usuario)
+    except ValueError:
+        return Response({"error": "ID de usuario inválido"}, status=400)
 
-        if fecha_inicio:
-            compras = compras.filter(fecha_transaccion__gte=fecha_inicio)
-            ventas = ventas.filter(fecha_transaccion__gte=fecha_inicio)
-        if fecha_fin:
-            compras = compras.filter(fecha_transaccion__lte=fecha_fin)
-            ventas = ventas.filter(fecha_transaccion__lte=fecha_fin)
+    fecha_inicio = parse_date(request.query_params.get("fecha_inicio")) if request.query_params.get("fecha_inicio") else None
+    fecha_fin = parse_date(request.query_params.get("fecha_fin")) if request.query_params.get("fecha_fin") else None
 
-        compras_grouped = compras.annotate(
-            year=TruncYear("fecha_transaccion"),
-            month=TruncMonth("fecha_transaccion")
-        ).values("year", "month").annotate(
-            total_compras=Count("id_transaccion")
-        ).order_by("year", "month")
+    compras = Transacciones.objects.filter(
+        id_usuario=id_usuario,
+        detalletransaccion__tipo_transaccion="compra"
+    )
+    ventas = Transacciones.objects.filter(
+        detalletransaccion__id_articulo__id_usuario=id_usuario,
+        detalletransaccion__tipo_transaccion="venta"
+    )
 
-        ventas_grouped = ventas.annotate(
-            year=TruncYear("fecha_transaccion"),
-            month=TruncMonth("fecha_transaccion")
-        ).values("year", "month").annotate(
-            total_ventas=Count("id_transaccion")
-        ).order_by("year", "month")
+    if fecha_inicio:
+        compras = compras.filter(fecha_transaccion__gte=fecha_inicio)
+        ventas = ventas.filter(fecha_transaccion__gte=fecha_inicio)
+    if fecha_fin:
+        compras = compras.filter(fecha_transaccion__lte=fecha_fin)
+        ventas = ventas.filter(fecha_transaccion__lte=fecha_fin)
 
-        return Response({
-            "compras": list(compras_grouped),
-            "ventas": list(ventas_grouped)
-        })
+    compras_data = list(compras.values("id_transaccion", "fecha_transaccion"))
+    ventas_data = list(ventas.values("id_transaccion", "fecha_transaccion"))
 
-    except Exception as e:
-        return Response({"error": str(e)}, status=500)
+    return Response({"compras": compras_data, "ventas": ventas_data})
+
 
 
 # ====================================
@@ -199,13 +186,17 @@ class DetalleTransaccionViewSet(viewsets.ModelViewSet):
 
 
 class TransaccionesViewSet(viewsets.ModelViewSet):
+    class Meta:  # se añadio esto
+        model = Transacciones   # se añadio esto
+        fields = '__all__'    # se añadio esto
     queryset = Transacciones.objects.all()
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
             from .serializers import TransaccionConDetalleSerializer
             return TransaccionConDetalleSerializer
-        return TransaccionesSerializer
+        return TransaccionesSerializer    
+
 
 
 @api_view(["POST"])
