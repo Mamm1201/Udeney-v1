@@ -202,7 +202,7 @@ const ResumenCompra = () => {
         <Box sx={{ mt: 4, textAlign: "center" }}>
           <Button
             variant="contained"
-            onClick={() => navigate("/historial-transacciones")}
+            onClick={() => navigate("/mis-transacciones")}
           >
             Mis Transacciones
           </Button>

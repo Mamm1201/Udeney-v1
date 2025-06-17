@@ -293,6 +293,49 @@ class ResumenCompraAPIView(APIView):
             return Response({"error": "Detalle de transacción no encontrado."}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        
+# ====================================
+# MIS TRANSACCIONES (Autenticado)
+# ====================================
+
+class MisTransaccionesAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        tipo = request.query_params.get("tipo")
+        fecha_inicio = request.query_params.get("fecha_inicio")
+        fecha_fin = request.query_params.get("fecha_fin")
+
+        compras = Transacciones.objects.filter(
+            id_usuario=user,
+            detalletransaccion__tipo_transaccion="compra"
+        )
+
+        ventas = Transacciones.objects.filter(
+            detalletransaccion__id_articulo__id_usuario=user,
+            detalletransaccion__tipo_transaccion="venta"
+        )
+
+        if fecha_inicio:
+            compras = compras.filter(fecha_transaccion__gte=fecha_inicio)
+            ventas = ventas.filter(fecha_transaccion__gte=fecha_inicio)
+        if fecha_fin:
+            compras = compras.filter(fecha_transaccion__lte=fecha_fin)
+            ventas = ventas.filter(fecha_transaccion__lte=fecha_fin)
+
+        if tipo == "compra":
+            transacciones = compras
+        elif tipo == "venta":
+            transacciones = ventas
+        else:
+            transacciones = compras.union(ventas).distinct().order_by("-fecha_transaccion")
+
+        data = transacciones.values("id_transaccion", "fecha_transaccion")
+
+        return Response(data, status=200)
+
 
 
 

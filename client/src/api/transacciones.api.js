@@ -25,3 +25,8 @@ export const crearTransaccionConDetalles = async (datos) => {
 export const getResumenCompraByTransaccionId = async (id) => {
   return await api.get(`/resumen-compra/${id}/`);
 };
+
+// Obtener transacciones del usuario autenticado con filtros
+export const getMisTransacciones = async (params) => {
+  return await api.get("/mis-transacciones/", { params });
+};

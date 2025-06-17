@@ -23,7 +23,7 @@ from .views import (
     LoginView,
     RegistroUsuarioView,
     historial_transacciones_api,
-    crear_con_detalles,  ResumenCompraAPIView,
+    crear_con_detalles,  ResumenCompraAPIView, MisTransaccionesAPIView,
 )
 
 # Configura el router para las rutas generadas automáticamente
@@ -57,6 +57,7 @@ urlpatterns = [
     path("resumen-compra/<int:id_transaccion>/", ResumenCompraAPIView.as_view(), name="resumen-compra"),
 
     path("crear-transaccion/", crear_con_detalles, name="crear_transaccion"),
+    path("mis-transacciones/", MisTransaccionesAPIView.as_view(), name="mis-transacciones"),
     
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

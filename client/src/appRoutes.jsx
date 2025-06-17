@@ -29,6 +29,7 @@ import DetalleTransaccion from "./pages/DetalleTransaccion";
 import UserProfile from "./pages/UserProfile";
 import ActualizarDatos from "./pages/ActualizarDatos";
 import HistorialTransacciones from "./pages/HistorialTransacciones";
+import MisTransacciones from "./pages/MisTransacciones";
 
 // Administración
 import Rol from "./pages/Rol";
@@ -68,6 +69,7 @@ const AppRoutes = () => {
           path="/editar-articulo/:id_articulo"
           element={<EditarArticulo />}
         />
+        <Route path="/mis-transacciones" element={<MisTransacciones />} />
 
         {/* --- Perfil de usuario --- */}
         <Route path="/user" element={<UserProfile />} />
