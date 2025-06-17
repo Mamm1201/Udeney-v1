@@ -139,6 +139,7 @@ class DetalleTransaccion(models.Model):
         db_table = "detalle_transaccion"
         managed = False
 
+
         
 class ArticuloDetalleTransaccion(models.Model):
     id = models.AutoField(primary_key=True)
@@ -163,7 +164,7 @@ class Transacciones(models.Model):
     id_usuario = models.ForeignKey(
         Usuarios, on_delete=models.CASCADE, db_column="id_usuario"
     )  # Nombre exacto de la columna en la base de datos
-    fecha_transaccion = models.DateTimeField()
+    fecha_transaccion = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = "transacciones"  # Asegúrate de usar el nombre correcto de la tabla
