@@ -205,26 +205,26 @@ const Carrito = () => {
                     </Typography>
 
                     <Box
+                      mt={2}
                       display="flex"
                       justifyContent="space-between"
-                      mt={2}
                       alignItems="center"
                     >
-                      <IconButton
-                        onClick={() => disminuirCantidad(articulo.id_articulo)}
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontWeight: "bold",
+                          color:
+                            articulo.estado === "Bueno"
+                              ? "#2E7D32"
+                              : articulo.estado === "Regular"
+                                ? "#F9A825"
+                                : "#D32F2F",
+                        }}
                       >
-                        <RemoveCircleOutline />
-                      </IconButton>
-                      <IconButton
-                        onClick={() =>
-                          agregarAlCarrito({
-                            ...articulo,
-                            cantidad: articulo.cantidad + 1,
-                          })
-                        }
-                      >
-                        <AddCircleOutline />
-                      </IconButton>
+                        Estado: {articulo.estado || "Bueno"}
+                      </Typography>
+
                       <IconButton
                         onClick={() => eliminarDelCarrito(articulo.id_articulo)}
                         color="error"

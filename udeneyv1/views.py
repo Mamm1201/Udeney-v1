@@ -297,77 +297,61 @@ def historial_transacciones_api(request):
 
 
 # ====================================
-# RESUMEN Y MIS TRANSACCIONES
+#         RESUMEN COMPRA
 # ====================================
 
 class ResumenCompraAPIView(APIView):
     """Devuelve el detalle completo de una transacción por su ID"""
+
     def get(self, request, id_transaccion):
         try:
+            # Obtener el detalle de la transacción
             detalle = DetalleTransaccion.objects.get(id_transaccion_id=id_transaccion)
-            serializer = DetalleTransaccionAnidadoSerializer(detalle)
-            return Response(serializer.data, status=200)
+            transaccion = detalle.id_transaccion  # acceso directo a la transacción
+
+            # Obtener todos los artículos asociados
+            articulos_relacionados = ArticuloDetalleTransaccion.objects.filter(id_detalle_transaccion=detalle)
+
+            articulos_data = []
+            total = 0
+
+            for item in articulos_relacionados:
+                articulo = item.id_articulo
+                cantidad = item.cantidad
+                subtotal = articulo.precio_articulo * cantidad
+                total += subtotal
+
+                articulos_data.append({
+                    "id_articulo": articulo.id_articulo,
+                    "titulo_articulo": articulo.titulo_articulo,
+                    "precio_unitario": articulo.precio_articulo,
+                    "cantidad": cantidad,
+                    "subtotal": subtotal,
+                    "imagen": articulo.imagen.url if articulo.imagen else None
+                })
+
+            # Construir la respuesta completa
+            resumen = {
+                "id_transaccion": transaccion.id_transaccion,
+                "fecha_transaccion": transaccion.fecha_transaccion,
+                "tipo_transaccion": detalle.tipo_transaccion,
+                "tipo_entrega": detalle.tipo_entrega,
+                "cantidad_articulos": detalle.cantidad_articulos,
+                "articulos": articulos_data,
+                "total": total
+            }
+
+            return Response(resumen, status=status.HTTP_200_OK)
+
         except DetalleTransaccion.DoesNotExist:
             return Response({"error": "Detalle no encontrado."}, status=404)
         except Exception as e:
             return Response({"error": str(e)}, status=500)
 
-
-
-
+        
 # ====================================
-# API VIEW PARA CONSULTAR TRANSACCIONES DEL USUARIO AUTENTICADO
-# ====================================
-
-# class MisTransaccionesAPIView(APIView):
-#     permission_classes = [IsAuthenticated]
-
-#     def get(self, request):
-#         usuario = request.user
-#         resumen = []
-
-#         transacciones = Transacciones.objects.filter(id_usuario=request.user)
-
-
-#         for transaccion in transacciones:
-#             try:
-#                 detalle = DetalleTransaccion.objects.get(id_transaccion=transaccion)
-#                 articulos_detalle = ArticuloDetalleTransaccion.objects.filter(id_detalle_transaccion=detalle)
-
-#                 articulos_data = []
-#                 total = 0
-
-#                 for item in articulos_detalle:
-#                     articulo = item.id_articulo
-#                     cantidad = item.cantidad
-#                     subtotal = articulo.precio_articulo * cantidad
-#                     total += subtotal
-
-#                     articulos_data.append({
-#                         "titulo_articulo": articulo.titulo_articulo,
-#                         "precio_unitario": articulo.precio_articulo,
-#                         "cantidad": cantidad,
-#                         "subtotal": subtotal,
-#                         "imagen": articulo.imagen.url if articulo.imagen else None,
-#                     })
-
-#                 resumen.append({
-#                     "id_transaccion": transaccion.id_transaccion,
-#                     "fecha_transaccion": transaccion.fecha_transaccion,
-#                     "tipo_transaccion": detalle.tipo_transaccion,
-#                     "tipo_entrega": detalle.tipo_entrega,
-#                     "cantidad_articulos": detalle.cantidad_articulos or sum(item["cantidad"] for item in articulos_data),
-#                     "articulos": articulos_data,
-#                     "total": total,
-#                 })
-
-#             except DetalleTransaccion.DoesNotExist:
-#                 continue
-
-#         serializer = ResumenCompraSerializer(resumen, many=True)
-#         return Response(serializer.data, status=status.HTTP_200_OK)
-
-
+#          MIS TRANSACCIONES
+# ====================================        
 class MisTransaccionesAPIView(APIView):
     permission_classes = [IsAuthenticated]
 

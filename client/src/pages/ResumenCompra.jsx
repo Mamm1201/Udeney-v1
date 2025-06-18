@@ -18,14 +18,15 @@ import {
 import { getResumenCompraByTransaccionId } from "../api/transacciones.api";
 
 const ResumenCompra = () => {
-  const { id } = useParams();
+  const { id } = useParams(); // ID de la transacción desde la URL
   const navigate = useNavigate();
 
-  const [resumen, setResumen] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [resumen, setResumen] = useState(null); // Datos de la transacción
+  const [loading, setLoading] = useState(true); // Cargando resumen
+  const [error, setError] = useState(null); // Errores
+  const fallbackImage = "/estudiantes.jpg"; // Imagen por defecto
 
-  // Función para obtener el resumen de compra desde el backend
+  // Cargar resumen desde el backend
   useEffect(() => {
     const fetchResumen = async () => {
       try {
@@ -44,10 +45,7 @@ const ResumenCompra = () => {
     fetchResumen();
   }, [id]);
 
-  // Calcula el subtotal de un artículo
-  const calcularSubtotal = (precio, cantidad) => precio * cantidad;
-
-  // Mostrar spinner mientras se carga el resumen
+  // Mostrar loader
   if (loading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
@@ -56,7 +54,7 @@ const ResumenCompra = () => {
     );
   }
 
-  // Mostrar mensaje de error si hubo un problema
+  // Mostrar error
   if (error || !resumen) {
     return (
       <Box sx={{ textAlign: "center", mt: 8 }}>
@@ -75,23 +73,48 @@ const ResumenCompra = () => {
   }
 
   return (
-    <Box sx={{ maxWidth: 900, mx: "auto", p: 3 }}>
-      <Paper elevation={3} sx={{ p: 4, borderRadius: 4 }}>
+    <Box
+      sx={{
+        maxWidth: 1000,
+        mx: "auto",
+        p: 3,
+        backgroundColor: "#e3f2fd", // Fondo azul claro
+        minHeight: "100vh",
+      }}
+    >
+      <Paper
+        elevation={4}
+        sx={{
+          p: 4,
+          borderRadius: 4,
+          backgroundColor: "#ffffff", // Tarjeta blanca sobre fondo azul
+        }}
+      >
         {/* Título */}
-        <Typography variant="h4" gutterBottom>
+        <Typography variant="h4" gutterBottom color="primary">
           🧾 Resumen de Compra
         </Typography>
 
         <Divider sx={{ mb: 3 }} />
 
-        {/* Información general de la transacción */}
-        <Typography variant="subtitle1" sx={{ mb: 1 }}>
-          <strong>ID Transacción:</strong> {resumen.id_transaccion}
-        </Typography>
-        <Typography variant="subtitle1" sx={{ mb: 1 }}>
-          <strong>Fecha:</strong>{" "}
-          {new Date(resumen.fecha_transaccion).toLocaleString()}
-        </Typography>
+        {/* Información general */}
+        {resumen.id_transaccion && (
+          <Typography variant="subtitle1" sx={{ mb: 1 }}>
+            <strong>ID Transacción:</strong> {resumen.id_transaccion}
+          </Typography>
+        )}
+
+        {resumen.fecha_transaccion ? (
+          <Typography variant="subtitle1" sx={{ mb: 1 }}>
+            <strong>Fecha:</strong>{" "}
+            {new Date(resumen.fecha_transaccion).toLocaleString()}
+          </Typography>
+        ) : (
+          <Typography variant="subtitle1" color="error">
+            <strong>Fecha:</strong> No disponible
+          </Typography>
+        )}
+
         <Typography variant="subtitle1" sx={{ mt: 2 }}>
           <strong>Entrega:</strong>{" "}
           {resumen.tipo_entrega === "domicilio"
@@ -101,36 +124,26 @@ const ResumenCompra = () => {
 
         <Divider sx={{ my: 3 }} />
 
-        {/* Lista de artículos comprados */}
+        {/* Lista de artículos */}
         <List>
           {resumen.articulos.map((item, index) => (
             <ListItem key={index} divider alignItems="flex-start">
               <Grid container spacing={2} alignItems="center">
-                {/* Imagen del artículo */}
+                {/* Imagen */}
                 <Grid item>
-                  {item.imagen_articulo ? (
-                    <Avatar
-                      variant="rounded"
-                      src={item.imagen_articulo}
-                      alt={item.titulo_articulo}
-                      sx={{ width: 64, height: 64 }}
-                    />
-                  ) : (
-                    <Avatar
-                      variant="rounded"
-                      sx={{
-                        width: 64,
-                        height: 64,
-                        bgcolor: "grey.300",
-                        fontSize: 12,
-                      }}
-                    >
-                      Sin imagen
-                    </Avatar>
-                  )}
+                  <Avatar
+                    variant="rounded"
+                    src={item.imagen || fallbackImage}
+                    alt={item.titulo_articulo}
+                    sx={{ width: 64, height: 64 }}
+                    onError={(e) => {
+                      e.target.src = fallbackImage;
+                      e.target.style.opacity = 1;
+                    }}
+                  />
                 </Grid>
 
-                {/* Información del artículo */}
+                {/* Detalle artículo */}
                 <Grid item xs>
                   <ListItemText
                     primary={
@@ -143,28 +156,15 @@ const ResumenCompra = () => {
                       </Typography>
                     }
                     secondary={
-                      <>
-                        <Typography
-                          component="span"
-                          variant="body2"
-                          color="text.secondary"
-                          display="block"
-                        >
-                          Precio unitario: ${item.precio_articulo}
-                        </Typography>
-                        <Typography
-                          component="span"
-                          variant="body2"
-                          color="text.secondary"
-                          display="block"
-                        >
-                          Subtotal: $
-                          {calcularSubtotal(
-                            item.precio_articulo,
-                            item.cantidad
-                          )}
-                        </Typography>
-                      </>
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        component="span"
+                      >
+                        Precio unitario: $
+                        {item.precio_unitario.toLocaleString("es-CO")} <br />
+                        Subtotal: ${item.subtotal.toLocaleString("es-CO")}
+                      </Typography>
                     }
                   />
                 </Grid>
@@ -175,36 +175,29 @@ const ResumenCompra = () => {
 
         <Divider sx={{ my: 3 }} />
 
-        {/* Total de la compra */}
-        <Typography variant="h6" textAlign="right">
-          Total:{" "}
-          <strong>
-            $
-            {resumen.articulos.reduce(
-              (acc, item) =>
-                acc + calcularSubtotal(item.precio_articulo, item.cantidad),
-              0
-            )}
-          </strong>
+        {/* Total */}
+        <Typography variant="h5" textAlign="right" color="primary">
+          Total: <strong>${resumen.total.toLocaleString("es-CO")}</strong>
         </Typography>
 
-        {/* Mensaje final */}
+        {/* Mensaje estado */}
         <Typography
           variant="body2"
           textAlign="center"
           color="text.secondary"
           sx={{ mt: 2 }}
         >
-          📦 Tu compra está en tramite.
+          📦 Tu compra está en trámite. Recibirás confirmación pronto.
         </Typography>
 
-        {/* Botón para volver al historial */}
+        {/* Botón volver */}
         <Box sx={{ mt: 4, textAlign: "center" }}>
           <Button
             variant="contained"
-            onClick={() => navigate("/mis-transacciones")}
+            color="primary"
+            onClick={() => navigate("/historial-transacciones")}
           >
-            Mis Transacciones
+            Volver
           </Button>
         </Box>
       </Paper>

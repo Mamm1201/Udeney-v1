@@ -144,6 +144,9 @@ const Navbar = () => {
           </>
         ) : (
           <Box display="flex" alignItems="center" gap={2}>
+            <Button onClick={() => navigate("/")} sx={{ color: "white" }}>
+              Inicio
+            </Button>
             <Button
               onClick={() => navigate("/nosotros")}
               sx={{ color: "white" }}

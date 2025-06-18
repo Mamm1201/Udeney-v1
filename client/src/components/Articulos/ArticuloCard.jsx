@@ -1,5 +1,47 @@
-import React from "react";
-import { Card, CardContent, CardMedia, Typography, Box } from "@mui/material";
+// =====================================
+// IMPORTACIONES NECESARIAS
+// =====================================
+
+import React, { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardMedia,
+  Typography,
+  Box,
+  Tooltip,
+  IconButton,
+  Collapse,
+} from "@mui/material";
+import { styled } from "@mui/material/styles";
+
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import CategoryIcon from "@mui/icons-material/Category";
+import SchoolIcon from "@mui/icons-material/School";
+
+import categoriasMap from "../../utils/categoriaUtils";
+
+// =====================================
+// COMPONENTE ESTILIZADO: ExpandMore con ref
+// =====================================
+// Este componente corrige el warning de MUI usando forwardRef
+const ExpandMore = styled(
+  React.forwardRef((props, ref) => {
+    const { expand, ...other } = props;
+    return <IconButton ref={ref} {...other} />;
+  })
+)(({ theme, expand }) => ({
+  marginLeft: "auto",
+  transform: !expand ? "rotate(0deg)" : "rotate(180deg)",
+  transition: theme.transitions.create("transform", {
+    duration: theme.transitions.duration.shortest,
+  }),
+}));
+
+// =====================================
+// COMPONENTE PRINCIPAL
+// =====================================
 
 const ArticuloCard = ({
   titulo_articulo,
@@ -9,88 +51,88 @@ const ArticuloCard = ({
   id_usuario,
   id_categoria,
   imagen,
+  mostrarBotonCarrito = false,
+  onAgregarAlCarrito = () => {},
 }) => {
-  // Imagen de respaldo local (debe existir en tu directorio public/images)
+  const [expanded, setExpanded] = useState(false);
+
+  const handleExpandClick = () => {
+    setExpanded(!expanded);
+  };
+
   const fallbackImage = "/images/articulo-placeholder.jpg";
+  const imagenValida =
+    imagen && typeof imagen === "string" && imagen.trim() !== ""
+      ? imagen
+      : fallbackImage;
+  const isFallback = imagenValida === fallbackImage;
+
+  const nombreCategoria = categoriasMap[id_categoria] || "Sin categoría";
 
   return (
     <Card
       sx={{
         maxWidth: 345,
         margin: "auto",
-        boxShadow: 3,
-        borderRadius: 2,
-        backgroundColor: "#f5f5f5",
-        transition: "transform 0.3s, box-shadow 0.3s",
+        boxShadow: 4,
+        borderRadius: 4,
+        backgroundColor: "#ffffff",
+        transition: "transform 0.3s ease, box-shadow 0.3s ease",
         "&:hover": {
-          transform: "scale(1.02)",
-          boxShadow: 6,
+          transform: "translateY(-5px)",
+          boxShadow: 8,
         },
-        height: "100%",
+        fontFamily: "Poppins, Roboto, sans-serif",
         display: "flex",
         flexDirection: "column",
+        overflow: "hidden",
       }}
     >
-      {/* Contenedor de imagen con solución anti-parpadeo */}
+      {/* ===================================== */}
+      {/* IMAGEN DEL ARTÍCULO */}
+      {/* ===================================== */}
       <Box
-        sx={{
-          position: "relative",
-          height: 140,
-          backgroundColor: "#e0e0e0", // Fondo gris para placeholder
-        }}
+        sx={{ position: "relative", height: 200, backgroundColor: "#f0f0f0" }}
       >
         <CardMedia
           component="img"
-          height="140"
-          image={imagen || fallbackImage} // Usa imagen o fallback
-          alt={titulo_articulo || "Imagen del artículo"}
+          image={imagenValida}
+          alt={!isFallback ? titulo_articulo : ""}
           onError={(e) => {
-            // Si falla la imagen, usa el fallback y fuerza mostrar
             e.target.src = fallbackImage;
-            e.target.style.opacity = 1;
+            e.target.style.opacity = 0.8;
           }}
           sx={{
             objectFit: "cover",
-            height: 140,
+            height: "100%",
             width: "100%",
-            // Transición suave para cambios de imagen
+            opacity: isFallback ? 0.8 : 1,
             transition: "opacity 0.3s ease",
-            // Mostrar al 80% de opacidad si es placeholder, 100% si es imagen real
-            opacity: imagen ? 1 : 0.8,
           }}
         />
-
-        {/* Mostrar texto "Sin imagen" solo cuando no hay imagen (incluyendo fallback) */}
-        {!imagen && (
+        {isFallback && (
           <Box
             sx={{
               position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
+              inset: 0,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              pointerEvents: "none", // Permite clicks en la imagen debajo
+              backgroundColor: "rgba(0,0,0,0.3)",
             }}
           >
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" color="white">
               Sin imagen
             </Typography>
           </Box>
         )}
       </Box>
 
-      {/* Contenido de la tarjeta (sin cambios) */}
-      <CardContent sx={{ flexGrow: 1 }}>
-        <Typography
-          gutterBottom
-          variant="h5"
-          component="div"
-          color="primary"
-          noWrap
-        >
+      {/* ===================================== */}
+      {/* CONTENIDO PRINCIPAL */}
+      {/* ===================================== */}
+      <CardContent sx={{ flexGrow: 1, p: 2 }}>
+        <Typography variant="h6" color="primary" fontWeight="bold" noWrap>
           {titulo_articulo}
         </Typography>
 
@@ -98,39 +140,95 @@ const ArticuloCard = ({
           variant="body2"
           color="text.secondary"
           sx={{
+            mt: 1,
             display: "-webkit-box",
-            WebkitLineClamp: 3,
+            WebkitLineClamp: 2,
             WebkitBoxOrient: "vertical",
             overflow: "hidden",
-            textOverflow: "ellipsis",
-            minHeight: "4.5em",
           }}
         >
           {descripcion_articulo}
         </Typography>
 
-        <Typography variant="body2" color="text.secondary" mt={1}>
-          Institución: {institucion_articulo || "No especificada"}
+        <Typography variant="h6" color="success.main" fontWeight="bold" mt={2}>
+          Precio:{" "}
+          {new Intl.NumberFormat("es-CO", {
+            style: "currency",
+            currency: "COP",
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
+          }).format(precio_articulo || 0)}
         </Typography>
 
-        <Typography
-          variant="body1"
-          color="text.primary"
-          fontWeight="bold"
-          mt={1}
-        >
-          Precio: ${precio_articulo?.toLocaleString() || "0"}
-        </Typography>
-
-        <Box mt={2} sx={{ opacity: 0.7 }}>
-          <Typography variant="caption" color="text.secondary" display="block">
-            ID Usuario: {id_usuario}
-          </Typography>
-          <Typography variant="caption" color="text.secondary" display="block">
-            ID Categoría: {id_categoria}
-          </Typography>
-        </Box>
+        {/* ===================================== */}
+        {/* BOTÓN AGREGAR AL CARRITO */}
+        {/* ===================================== */}
+        {mostrarBotonCarrito && (
+          <Tooltip title="Añadir al carrito" arrow>
+            <IconButton
+              onClick={onAgregarAlCarrito}
+              sx={{
+                mt: 2,
+                backgroundColor: "#5C858C",
+                color: "#fff",
+                "&:hover": {
+                  backgroundColor: "#A98B71",
+                },
+                alignSelf: "center",
+                borderRadius: 2,
+                boxShadow: "0 3px 6px rgba(0,0,0,0.1)",
+              }}
+            >
+              <ShoppingCartIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        )}
       </CardContent>
+
+      {/* ===================================== */}
+      {/* BOTÓN EXPANDIR */}
+      {/* ===================================== */}
+      <Box sx={{ px: 2, pb: 1, textAlign: "right" }}>
+        <Tooltip title={expanded ? "Ocultar detalles" : "Ver más"}>
+          <ExpandMore
+            expand={expanded}
+            onClick={handleExpandClick}
+            aria-expanded={expanded}
+            aria-label="mostrar más"
+          >
+            <ExpandMoreIcon />
+          </ExpandMore>
+        </Tooltip>
+      </Box>
+
+      {/* ===================================== */}
+      {/* CONTENIDO EXPANDIDO */}
+      {/* ===================================== */}
+      <Collapse in={expanded} timeout="auto" unmountOnExit>
+        <CardContent sx={{ pt: 0 }}>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ whiteSpace: "pre-line", mb: 2 }}
+          >
+            {descripcion_articulo}
+          </Typography>
+
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+            <SchoolIcon fontSize="small" color="disabled" />
+            <Typography variant="body2" color="text.secondary">
+              {institucion_articulo || "No especificada"}
+            </Typography>
+          </Box>
+
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <CategoryIcon fontSize="small" color="action" />
+            <Typography variant="body2" sx={{ color: "eco.main" }}>
+              {nombreCategoria}
+            </Typography>
+          </Box>
+        </CardContent>
+      </Collapse>
     </Card>
   );
 };
