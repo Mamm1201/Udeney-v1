@@ -35,18 +35,18 @@ const Carrito = () => {
     useCarrito();
   const navigate = useNavigate();
 
-  const [total, setTotal] = useState(0); // Total de la compra
-  const [tipoEntrega, setTipoEntrega] = useState("domicilio"); // Tipo de entrega seleccionado
+  const [total, setTotal] = useState(0); // Total del carrito
+  const [tipoEntrega, setTipoEntrega] = useState("domicilio"); // Opción de entrega seleccionada
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
     type: "success",
   });
-  const [openConfirmDialog, setOpenConfirmDialog] = useState(false); // Diálogo de confirmación
+  const [openConfirmDialog, setOpenConfirmDialog] = useState(false); // Estado para el diálogo de confirmación
 
-  const fallbackImage = "/estudiantes.jpg"; // Imagen por defecto si falla la original
+  const fallbackImage = "/estudiantes.jpg"; // Imagen por defecto
 
-  // Recalcula el total cada vez que cambia el carrito
+  // Recalcular total del carrito cuando cambia
   useEffect(() => {
     const totalCalculado = carrito.reduce(
       (acc, item) => acc + item.precio_articulo * item.cantidad,
@@ -55,7 +55,7 @@ const Carrito = () => {
     setTotal(totalCalculado);
   }, [carrito]);
 
-  // Disminuye la cantidad o elimina el artículo
+  // Disminuir cantidad de artículo o eliminar si es 1
   const disminuirCantidad = (id_articulo) => {
     const articulo = carrito.find((item) => item.id_articulo === id_articulo);
     if (!articulo) return;
@@ -70,9 +70,8 @@ const Carrito = () => {
   const handleAbrirConfirmacion = () => setOpenConfirmDialog(true);
   const handleCerrarConfirmacion = () => setOpenConfirmDialog(false);
 
-  // Realiza la compra y redirige al resumen
+  // Finalizar compra
   const realizarCompra = async () => {
-    console.log("🛒 Enviando compra...");
     const id_usuario = parseInt(localStorage.getItem("id_usuario"));
 
     try {
@@ -88,17 +87,10 @@ const Carrito = () => {
         articulos,
       };
 
-      console.log("📦 Datos a enviar:", datos);
-
       const response = await api.post("/crear-transaccion/", datos);
 
-      console.log("✅ Transacción creada con éxito:", response.data);
-
       const id_transaccion = response?.data?.id_transaccion;
-
-      if (!id_transaccion) {
-        throw new Error("No se pudo crear la transacción correctamente.");
-      }
+      if (!id_transaccion) throw new Error("Transacción no válida.");
 
       vaciarCarrito();
       setSnackbar({
@@ -107,16 +99,12 @@ const Carrito = () => {
         type: "success",
       });
       setOpenConfirmDialog(false);
-
-      // Redirige al resumen de la transacción
       navigate(`/resumen/${id_transaccion}`);
-      console.log("➡️ Redirigiendo a resumen:", `/resumen/${id_transaccion}`);
     } catch (error) {
       console.error("❌ Error al realizar la compra:", error);
       setSnackbar({
         open: true,
-        message:
-          "❌ No se pudo completar la compra. Intenta nuevamente más tarde.",
+        message: "❌ No se pudo completar la compra.",
         type: "error",
       });
       setOpenConfirmDialog(false);
@@ -133,6 +121,7 @@ const Carrito = () => {
         <Typography>No hay artículos en el carrito.</Typography>
       ) : (
         <>
+          {/* Lista de artículos en el carrito */}
           <Grid container spacing={3}>
             {carrito.map((articulo) => (
               <Grid item xs={12} sm={6} md={4} key={articulo.id_articulo}>
@@ -143,6 +132,7 @@ const Carrito = () => {
                     flexDirection: "column",
                   }}
                 >
+                  {/* Imagen del artículo */}
                   <Box
                     sx={{
                       position: "relative",
@@ -163,7 +153,6 @@ const Carrito = () => {
                         objectFit: "cover",
                         width: "100%",
                         height: "100%",
-                        transition: "opacity 0.3s",
                         opacity: articulo.imagen ? 1 : 0.8,
                       }}
                     />
@@ -178,7 +167,6 @@ const Carrito = () => {
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          pointerEvents: "none",
                         }}
                       >
                         <Typography variant="body2" color="text.secondary">
@@ -188,6 +176,7 @@ const Carrito = () => {
                     )}
                   </Box>
 
+                  {/* Detalles del artículo */}
                   <CardContent sx={{ flexGrow: 1 }}>
                     <Typography variant="h6">
                       {articulo.titulo_articulo}
@@ -195,6 +184,7 @@ const Carrito = () => {
                     <Typography variant="body2" color="text.secondary">
                       {articulo.descripcion_articulo}
                     </Typography>
+
                     <Typography
                       variant="body1"
                       fontWeight="bold"
@@ -204,6 +194,7 @@ const Carrito = () => {
                       ${articulo.precio_articulo} x {articulo.cantidad}
                     </Typography>
 
+                    {/* Estado del artículo */}
                     <Box
                       mt={2}
                       display="flex"
@@ -238,7 +229,7 @@ const Carrito = () => {
             ))}
           </Grid>
 
-          {/* Selector de tipo de entrega */}
+          {/* Selección del tipo de entrega */}
           <FormControl fullWidth sx={{ mt: 3 }}>
             <InputLabel id="tipo-entrega-label">Tipo de entrega</InputLabel>
             <Select

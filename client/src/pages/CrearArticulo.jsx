@@ -21,22 +21,23 @@ const CrearArticulo = () => {
   const idUsuario = localStorage.getItem("id_usuario");
   const nombreUsuario = localStorage.getItem("nombres_usuario");
 
-  // Estado del formulario, inicializado sin valores null para evitar warnings
+  // Estado del formulario
   const [formData, setFormData] = useState({
-    titulo_articulo: "", // ✅ Cadena vacía en lugar de null
+    titulo_articulo: "",
     descripcion_articulo: "",
     institucion_articulo: "",
     precio_articulo: "",
-    id_categoria: "", // ✅ Cadena vacía que se transforma a número luego
-    id_usuario: parseInt(idUsuario), // Se mantiene numérico
+    id_categoria: "",
+    estado_articulo: "Bueno", // Valor por defecto
+    id_usuario: parseInt(idUsuario),
   });
 
-  const [imagen, setImagen] = useState(null); // Imagen seleccionada
-  const [categorias, setCategorias] = useState([]); // Lista de categorías
-  const [articuloCreado, setArticuloCreado] = useState(null); // Artículo creado
-  const [snackbarOpen, setSnackbarOpen] = useState(false); // Estado del Snackbar
+  const [imagen, setImagen] = useState(null);
+  const [categorias, setCategorias] = useState([]);
+  const [articuloCreado, setArticuloCreado] = useState(null);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
 
-  // Obtener las categorías disponibles al cargar el componente
+  // Obtener categorías desde la API
   useEffect(() => {
     const fetchCategorias = async () => {
       try {
@@ -49,38 +50,37 @@ const CrearArticulo = () => {
     fetchCategorias();
   }, []);
 
-  // Manejador para los campos de texto
+  // Maneja los cambios en los campos del formulario
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
-      [name]: name === "id_categoria" ? parseInt(value) : value, // Convertir a número solo la categoría
+      [name]: name === "id_categoria" ? parseInt(value) : value,
     }));
   };
 
-  // Manejador de archivo de imagen
+  // Maneja el cambio de archivo de imagen
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) setImagen(file);
   };
 
-  // Manejador del formulario
+  // Envío del formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validar selección de categoría
-    if (!formData.id_categoria || formData.id_categoria === "") {
-      alert("Por favor selecciona una categoría antes de enviar.");
+    if (!formData.id_categoria) {
+      alert("Por favor selecciona una categoría.");
       return;
     }
 
-    // Preparar datos a enviar como FormData
     const data = new FormData();
     data.append("titulo_articulo", formData.titulo_articulo);
     data.append("descripcion_articulo", formData.descripcion_articulo);
     data.append("institucion_articulo", formData.institucion_articulo);
     data.append("precio_articulo", formData.precio_articulo);
     data.append("id_categoria", formData.id_categoria);
+    data.append("estado_articulo", formData.estado_articulo); // ✅ Nuevo campo
     data.append("id_usuario", formData.id_usuario);
     if (imagen) data.append("imagen", imagen);
 
@@ -90,13 +90,14 @@ const CrearArticulo = () => {
         setArticuloCreado(response.data);
         setSnackbarOpen(true);
 
-        // Reiniciar campos del formulario después de crear
+        // Reiniciar formulario
         setFormData({
           titulo_articulo: "",
           descripcion_articulo: "",
           institucion_articulo: "",
           precio_articulo: "",
           id_categoria: "",
+          estado_articulo: "Bueno",
           id_usuario: parseInt(idUsuario),
         });
         setImagen(null);
@@ -109,10 +110,8 @@ const CrearArticulo = () => {
 
   return (
     <>
-      {/* Barra de navegación superior */}
       <NavbarVender />
 
-      {/* Área principal con fondo claro */}
       <Box
         sx={{
           minHeight: "100vh",
@@ -124,7 +123,6 @@ const CrearArticulo = () => {
           alignItems: "flex-start",
         }}
       >
-        {/* Contenedor del formulario */}
         <Box
           component="form"
           onSubmit={handleSubmit}
@@ -138,7 +136,7 @@ const CrearArticulo = () => {
             marginX: 2,
           }}
         >
-          {/* Subir imagen */}
+          {/* Imagen */}
           <TextField
             fullWidth
             type="file"
@@ -147,7 +145,7 @@ const CrearArticulo = () => {
             sx={{ mt: 1 }}
           />
 
-          {/* Campo: Título */}
+          {/* Título */}
           <TextField
             label="Título del Artículo"
             name="titulo_articulo"
@@ -158,7 +156,7 @@ const CrearArticulo = () => {
             fullWidth
           />
 
-          {/* Campo: Descripción */}
+          {/* Descripción */}
           <TextField
             label="Descripción del Artículo"
             name="descripcion_articulo"
@@ -171,7 +169,7 @@ const CrearArticulo = () => {
             fullWidth
           />
 
-          {/* Campo: Institución */}
+          {/* Institución */}
           <TextField
             label="Institución del Artículo"
             name="institucion_articulo"
@@ -182,7 +180,7 @@ const CrearArticulo = () => {
             fullWidth
           />
 
-          {/* Campo: Precio */}
+          {/* Precio */}
           <TextField
             label="Precio"
             name="precio_articulo"
@@ -194,7 +192,7 @@ const CrearArticulo = () => {
             fullWidth
           />
 
-          {/* Selector de categoría */}
+          {/* Categoría */}
           <FormControl variant="outlined" margin="normal" fullWidth required>
             <InputLabel>Categoría</InputLabel>
             <Select
@@ -217,7 +215,23 @@ const CrearArticulo = () => {
             </Select>
           </FormControl>
 
-          {/* Usuario autenticado (solo lectura) */}
+          {/* Estado del artículo */}
+          <FormControl variant="outlined" margin="normal" fullWidth required>
+            <InputLabel>Estado del Artículo</InputLabel>
+            <Select
+              name="estado_articulo"
+              value={formData.estado_articulo}
+              onChange={handleChange}
+              label="Estado del Artículo"
+            >
+              <MenuItem value="Nuevo">Nuevo</MenuItem>
+              <MenuItem value="Bueno">Bueno</MenuItem>
+              <MenuItem value="Regular">Regular</MenuItem>
+              <MenuItem value="Dañado">Dañado</MenuItem>
+            </Select>
+          </FormControl>
+
+          {/* Usuario */}
           <TextField
             label="Usuario actual"
             value={nombreUsuario || ""}
@@ -226,7 +240,7 @@ const CrearArticulo = () => {
             InputProps={{ readOnly: true }}
           />
 
-          {/* Botón de envío */}
+          {/* Botón */}
           <Button
             type="submit"
             variant="contained"
@@ -244,7 +258,7 @@ const CrearArticulo = () => {
         </Box>
       </Box>
 
-      {/* Notificación de artículo creado */}
+      {/* Snackbar de éxito */}
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={5000}
