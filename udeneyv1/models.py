@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.hashers import make_password, check_password
 
-
 class Usuarios(models.Model):
     id_usuario = models.AutoField(primary_key=True)
     nombres_usuario = models.CharField(max_length=255)
@@ -157,18 +156,33 @@ class ArticuloDetalleTransaccion(models.Model):
 
 
 # MODELO TABLA TRANSACCIONES
+# class Transacciones(models.Model):
+#     id_transaccion = models.AutoField(
+#         primary_key=True
+#     )  # Este campo se autoincrementará automáticamente
+#     id_usuario = models.ForeignKey(
+#         Usuarios, on_delete=models.CASCADE, db_column="id_usuario"
+#     )  # Nombre exacto de la columna en la base de datos
+#     fecha_transaccion = models.DateTimeField(auto_now_add=True)
+
+#     class Meta:
+#         db_table = "transacciones"  
+#         managed = True  # Django no intentará crear esta tabla
 class Transacciones(models.Model):
-    id_transaccion = models.AutoField(
-        primary_key=True
-    )  # Este campo se autoincrementará automáticamente
-    id_usuario = models.ForeignKey(
-        Usuarios, on_delete=models.CASCADE, db_column="id_usuario"
-    )  # Nombre exacto de la columna en la base de datos
+    id_transaccion = models.AutoField(primary_key=True)  # Se autoincrementa automáticamente
+
+    usuario = models.ForeignKey(
+        Usuarios,                     # Tu modelo de usuarios personalizado
+        on_delete=models.CASCADE,
+        db_column="id_usuario"        # El nombre real en la base de datos
+    )
+
     fecha_transaccion = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = "transacciones"  # Asegúrate de usar el nombre correcto de la tabla
-        managed = False  # Django no intentará crear esta tabla
+        db_table = "transacciones"
+        managed = True
+
 
 
 # MODELO TABLA CALIFICACIONES

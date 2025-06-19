@@ -64,7 +64,7 @@ const PerfilMenu = () => {
 
         <MenuItem
           onClick={() => {
-            navigate("/historial-transacciones");
+            navigate("/mis-transacciones");
             handleClose();
           }}
         >

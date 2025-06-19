@@ -209,6 +209,7 @@ class ResumenCompraSerializer(serializers.Serializer):
     tipo_transaccion = serializers.CharField()
     tipo_entrega = serializers.CharField()
     cantidad_articulos = serializers.IntegerField()
-    articulos = serializers.ListField()
+    articulos = ArticuloDetalleTransaccionAnidadoSerializer(many=True)
     total = serializers.DecimalField(max_digits=10, decimal_places=2)
+
 

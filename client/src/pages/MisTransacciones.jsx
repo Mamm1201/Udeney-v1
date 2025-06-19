@@ -1,118 +1,70 @@
-import React, { useEffect, useState } from "react";
+// src/components/MisTransacciones.jsx
+import { useEffect, useState } from "react";
 import { getMisTransacciones } from "../api/transacciones.api";
+import { useNavigate } from "react-router-dom";
 import {
-  Box,
+  CircularProgress,
   Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  TextField,
+  Card,
+  CardContent,
   Button,
-  Select,
-  MenuItem,
-  InputLabel,
-  FormControl,
+  Box,
 } from "@mui/material";
 
 const MisTransacciones = () => {
   const [transacciones, setTransacciones] = useState([]);
-  const [filtros, setFiltros] = useState({
-    fecha_inicio: "",
-    fecha_fin: "",
-    tipo: "todas", // Nueva propiedad
-  });
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState(null);
 
-  const fetchTransacciones = async () => {
-    try {
-      const filtrosEnviar = {
-        ...filtros,
-        tipo: filtros.tipo === "todas" ? null : filtros.tipo,
-      };
-      const { data } = await getMisTransacciones(filtrosEnviar);
-      setTransacciones(data);
-    } catch (error) {
-      console.error("Error al obtener transacciones del usuario:", error);
-    }
-  };
+  const navigate = useNavigate();
 
   useEffect(() => {
+    const fetchTransacciones = async () => {
+      try {
+        const response = await getMisTransacciones();
+        setTransacciones(response.data);
+      } catch (err) {
+        console.error("Error al obtener las transacciones:", err);
+        setError("No se pudieron cargar tus transacciones.");
+      } finally {
+        setCargando(false);
+      }
+    };
+
     fetchTransacciones();
   }, []);
 
-  const handleFiltrar = () => {
-    fetchTransacciones();
-  };
+  if (cargando) return <CircularProgress />;
+
+  if (error) return <Typography color="error">{error}</Typography>;
+
+  if (transacciones.length === 0) {
+    return <Typography>No tienes transacciones registradas aún.</Typography>;
+  }
 
   return (
-    <Box p={3}>
-      <Typography variant="h4" gutterBottom>
+    <Box>
+      <Typography variant="h5" gutterBottom>
         Mis Transacciones
       </Typography>
 
-      {/* Filtros */}
-      <Box display="flex" gap={2} mb={2} flexWrap="wrap">
-        <TextField
-          label="Desde"
-          type="date"
-          InputLabelProps={{ shrink: true }}
-          value={filtros.fecha_inicio}
-          onChange={(e) =>
-            setFiltros({ ...filtros, fecha_inicio: e.target.value })
-          }
-        />
-        <TextField
-          label="Hasta"
-          type="date"
-          InputLabelProps={{ shrink: true }}
-          value={filtros.fecha_fin}
-          onChange={(e) =>
-            setFiltros({ ...filtros, fecha_fin: e.target.value })
-          }
-        />
-        <FormControl sx={{ minWidth: 120 }}>
-          <InputLabel id="tipo-label">Tipo</InputLabel>
-          <Select
-            labelId="tipo-label"
-            value={filtros.tipo}
-            label="Tipo"
-            onChange={(e) => setFiltros({ ...filtros, tipo: e.target.value })}
-          >
-            <MenuItem value="todas">Todas</MenuItem>
-            <MenuItem value="compra">Compras</MenuItem>
-            <MenuItem value="venta">Ventas</MenuItem>
-          </Select>
-        </FormControl>
-        <Button variant="contained" onClick={handleFiltrar}>
-          Filtrar
-        </Button>
-      </Box>
+      {transacciones.map((tx) => (
+        <Card key={tx.id} sx={{ mb: 2 }}>
+          <CardContent>
+            <Typography variant="body1">ID Transacción: {tx.id}</Typography>
+            <Typography variant="body2">Fecha: {tx.fecha}</Typography>
+            <Typography variant="body2">Estado: {tx.estado}</Typography>
 
-      {/* Tabla de resultados */}
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>ID Transacción</TableCell>
-              <TableCell>Fecha</TableCell>
-              {/* Puedes agregar más columnas como total, estado, etc. */}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {transacciones.map((tx) => (
-              <TableRow key={tx.id_transaccion}>
-                <TableCell>{tx.id_transaccion}</TableCell>
-                <TableCell>
-                  {new Date(tx.fecha_transaccion).toLocaleString()}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            <Button
+              variant="contained"
+              sx={{ mt: 1 }}
+              onClick={() => navigate(`/resumen/${tx.id}`)}
+            >
+              Ver Resumen
+            </Button>
+          </CardContent>
+        </Card>
+      ))}
     </Box>
   );
 };

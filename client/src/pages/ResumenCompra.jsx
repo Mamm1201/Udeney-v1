@@ -33,7 +33,9 @@ const ResumenCompra = () => {
         setLoading(true);
         const response = await getResumenCompraByTransaccionId(id);
         console.log("🧾 Resumen recibido:", response.data);
+        console.log("📦 Artículos completos:", response.data.articulos);
         setResumen(response.data);
+        console.log("Artículos:", response.data.articulos);
       } catch (err) {
         console.error(err);
         setError("No se pudo cargar el resumen de compra.");
@@ -78,12 +80,12 @@ const ResumenCompra = () => {
         maxWidth: 1000,
         mx: "auto",
         p: 3,
-        backgroundColor: "#e3f2fd", // Fondo azul claro
+        backgroundColor: "#0D0D0D", // Fondo
         minHeight: "100vh",
       }}
     >
       <Paper
-        elevation={4}
+        elevation={1}
         sx={{
           p: 4,
           borderRadius: 4,
@@ -187,15 +189,20 @@ const ResumenCompra = () => {
           color="text.secondary"
           sx={{ mt: 2 }}
         >
-          📦 Tu compra está en trámite. Recibirás confirmación pronto.
+          📦 Tu compra está en trámite. Recibirás confirmación pronto. Gracias
+          por hacer parte del cambio.
         </Typography>
 
         {/* Botón volver */}
         <Box sx={{ mt: 4, textAlign: "center" }}>
           <Button
             variant="contained"
-            color="primary"
-            onClick={() => navigate("/historial-transacciones")}
+            onClick={() => navigate("/")}
+            sx={{
+              backgroundColor: "#0593A2", // Verde
+              "&:hover": { backgroundColor: "#038C7F" }, // Verde oscuro al pasar el mouse
+              color: "white",
+            }}
           >
             Volver
           </Button>

@@ -3,11 +3,9 @@
 # ====================================
 
 # Django
-from django.shortcuts import render
 from django.utils.dateparse import parse_date
-from django.utils import timezone
 
-# Django Rest Framework
+# DRF
 from rest_framework import viewsets, status, filters
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -15,10 +13,10 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.decorators import api_view
 from rest_framework_simplejwt.authentication import JWTAuthentication
-
-
-# JWT
 from rest_framework_simplejwt.tokens import RefreshToken
+
+import jwt
+from django.conf import settings
 
 # Filtros
 from django_filters.rest_framework import DjangoFilterBackend
@@ -82,7 +80,7 @@ class LoginView(APIView):
             return Response({"error": "Usuario no encontrado"}, status=404)
 
         if not user.is_active:
-            return Response({"error": "Cuenta desactivada. Contacta al administrador."}, status=403)
+            return Response({"error": "Cuenta desactivada"}, status=403)
 
         if not user.check_password(password):
             return Response({"error": "Correo o contraseña incorrectos"}, status=401)
@@ -99,7 +97,7 @@ class LoginView(APIView):
 
 
 class LogoutView(APIView):
-    """Cierre de sesión"""
+    """Cierre de sesión (placeholder si se quiere invalidar tokens)"""
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
@@ -173,7 +171,6 @@ class PagosViewSet(viewsets.ModelViewSet):
                 {"error": "El campo 'id_detalle_transaccion' es obligatorio."},
                 status=status.HTTP_400_BAD_REQUEST
             )
-
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
@@ -192,7 +189,7 @@ class PqrsViewSet(viewsets.ModelViewSet):
 @api_view(["POST"])
 def crear_con_detalles(request):
     """
-    Crea una transacción, su detalle y asigna artículos vendidos o comprados.
+    Crea una transacción, su detalle y los artículos involucrados.
     """
     try:
         data = request.data
@@ -201,23 +198,14 @@ def crear_con_detalles(request):
         tipo_entrega = data.get("tipo_entrega")
         articulos = data.get("articulos", [])
 
-        # Validaciones básicas
-        if not id_usuario or not tipo_transaccion or not tipo_entrega or not articulos:
-            return Response(
-                {"error": "Datos incompletos"}, status=status.HTTP_400_BAD_REQUEST
-            )
+        if not all([id_usuario, tipo_transaccion, tipo_entrega, articulos]):
+            return Response({"error": "Datos incompletos"}, status=400)
 
-        try:
-            usuario = Usuarios.objects.get(id_usuario=id_usuario)
-        except Usuarios.DoesNotExist:
-            return Response(
-                {"error": "Usuario no registrado"}, status=status.HTTP_404_NOT_FOUND
-            )
+        usuario = Usuarios.objects.filter(id_usuario=id_usuario).first()
+        if not usuario:
+            return Response({"error": "Usuario no registrado"}, status=404)
 
-        # Crear la transacción base
         transaccion = Transacciones.objects.create(id_usuario=usuario)
-
-        # Crear el detalle de transacción
         detalle = DetalleTransaccion.objects.create(
             id_transaccion=transaccion,
             tipo_transaccion=tipo_transaccion,
@@ -225,18 +213,13 @@ def crear_con_detalles(request):
             cantidad_articulos=len(articulos),
         )
 
-        # Asociar cada artículo con la transacción
         for art in articulos:
             id_articulo = art.get("id_articulo")
             cantidad = art.get("cantidad", 1)
 
-            try:
-                articulo = Articulos.objects.get(id_articulo=id_articulo)
-            except Articulos.DoesNotExist:
-                return Response(
-                    {"error": f"Artículo con ID {id_articulo} no existe"},
-                    status=status.HTTP_404_NOT_FOUND,
-                )
+            articulo = Articulos.objects.filter(id_articulo=id_articulo).first()
+            if not articulo:
+                return Response({"error": f"Artículo {id_articulo} no existe"}, status=404)
 
             ArticuloDetalleTransaccion.objects.create(
                 id_detalle_transaccion=detalle,
@@ -247,11 +230,9 @@ def crear_con_detalles(request):
         return Response({
             "message": "Transacción registrada correctamente",
             "id_transaccion": transaccion.id_transaccion
-        }, status=status.HTTP_201_CREATED)
+        }, status=201)
 
     except Exception as e:
-        import traceback
-        traceback.print_exc()
         return Response({"error": str(e)}, status=500)
 
 
@@ -297,125 +278,98 @@ def historial_transacciones_api(request):
 
 
 # ====================================
-#         RESUMEN COMPRA
+# RESUMEN DE COMPRA POR ID
 # ====================================
 
 class ResumenCompraAPIView(APIView):
-    """Devuelve el detalle completo de una transacción por su ID"""
+    """Retorna detalle completo de una transacción"""
 
     def get(self, request, id_transaccion):
         try:
-            # Obtener el detalle de la transacción
-            detalle = DetalleTransaccion.objects.get(id_transaccion_id=id_transaccion)
-            transaccion = detalle.id_transaccion  # acceso directo a la transacción
-
-            # Obtener todos los artículos asociados
-            articulos_relacionados = ArticuloDetalleTransaccion.objects.filter(id_detalle_transaccion=detalle)
+            detalle = DetalleTransaccion.objects.select_related("id_transaccion").get(id_transaccion_id=id_transaccion)
+            articulos_relacionados = ArticuloDetalleTransaccion.objects.select_related("id_articulo").filter(id_detalle_transaccion=detalle)
 
             articulos_data = []
             total = 0
 
             for item in articulos_relacionados:
                 articulo = item.id_articulo
-                cantidad = item.cantidad
-                subtotal = articulo.precio_articulo * cantidad
+                subtotal = articulo.precio_articulo * item.cantidad
                 total += subtotal
+
+                # Corregido: URL absoluta para imagen
+                imagen_url = request.build_absolute_uri(articulo.imagen.url) if articulo.imagen else None
 
                 articulos_data.append({
                     "id_articulo": articulo.id_articulo,
                     "titulo_articulo": articulo.titulo_articulo,
                     "precio_unitario": articulo.precio_articulo,
-                    "cantidad": cantidad,
+                    "cantidad": item.cantidad,
                     "subtotal": subtotal,
-                    "imagen": articulo.imagen.url if articulo.imagen else None
+                    "imagen": imagen_url,
                 })
 
-            # Construir la respuesta completa
-            resumen = {
-                "id_transaccion": transaccion.id_transaccion,
-                "fecha_transaccion": transaccion.fecha_transaccion,
+            return Response({
+                "id_transaccion": detalle.id_transaccion.id_transaccion,
+                "fecha_transaccion": detalle.id_transaccion.fecha_transaccion,
                 "tipo_transaccion": detalle.tipo_transaccion,
                 "tipo_entrega": detalle.tipo_entrega,
                 "cantidad_articulos": detalle.cantidad_articulos,
                 "articulos": articulos_data,
                 "total": total
-            }
-
-            return Response(resumen, status=status.HTTP_200_OK)
+            }, status=200)
 
         except DetalleTransaccion.DoesNotExist:
-            return Response({"error": "Detalle no encontrado."}, status=404)
+            return Response({"error": "Transacción no encontrada"}, status=404)
         except Exception as e:
             return Response({"error": str(e)}, status=500)
 
-        
+
+
 # ====================================
-#          MIS TRANSACCIONES
-# ====================================        
+# MIS TRANSACCIONES (Autenticado)
+# ====================================
+
 class MisTransaccionesAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]  # Ya valida token automáticamente
 
     def get(self, request):
-        # 🔐 Extraer manualmente el usuario desde el token
-        jwt_authenticator = JWTAuthentication()
-        validated_token = jwt_authenticator.get_validated_token(request.headers.get('Authorization').split(' ')[1])
-        user_id = validated_token.get('user_id')
+        # 1️⃣ Obtener token del encabezado Authorization
+        auth_header = request.headers.get('Authorization', '')
+
+        if not auth_header.startswith('Bearer '):
+            return Response({"error": "Token no proporcionado"}, status=401)
+
+        token = auth_header.split(' ')[1]
 
         try:
+            # 2️⃣ Decodificar el token
+            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+            user_id = payload.get("user_id")
+
+            if not user_id:
+                return Response({"error": "Token inválido (sin user_id)"}, status=401)
+
+            # 3️⃣ Obtener el usuario desde tu modelo personalizado
             usuario = Usuarios.objects.get(id_usuario=user_id)
+
+            # 4️⃣ Obtener transacciones del usuario (usando el campo 'usuario')
+            transacciones = Transacciones.objects.filter(usuario=usuario)
+
+            # 5️⃣ Serializar las transacciones (ajustado a tus campos reales)
+            data = [{
+                "id": t.id_transaccion,
+                "fecha": t.fecha_transaccion
+            } for t in transacciones]
+
+            return Response({"transacciones": data})
+
+        except jwt.ExpiredSignatureError:
+            return Response({"error": "Token expirado"}, status=401)
+        except jwt.DecodeError:
+            return Response({"error": "Token inválido"}, status=401)
         except Usuarios.DoesNotExist:
-            return Response({"detail": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
-
-        resumen = []
-        transacciones = Transacciones.objects.filter(id_usuario=usuario)
-
-        for transaccion in transacciones:
-            try:
-                detalle = DetalleTransaccion.objects.get(id_transaccion=transaccion)
-                articulos_detalle = ArticuloDetalleTransaccion.objects.filter(id_detalle_transaccion=detalle)
-
-                articulos_data = []
-                total = 0
-
-                for item in articulos_detalle:
-                    articulo = item.id_articulo
-                    cantidad = item.cantidad
-                    subtotal = articulo.precio_articulo * cantidad
-                    total += subtotal
-
-                    articulos_data.append({
-                        "titulo_articulo": articulo.titulo_articulo,
-                        "precio_unitario": articulo.precio_articulo,
-                        "cantidad": cantidad,
-                        "subtotal": subtotal,
-                        "imagen": articulo.imagen.url if articulo.imagen else None,
-                    })
-
-                resumen.append({
-                    "id_transaccion": transaccion.id_transaccion,
-                    "fecha_transaccion": transaccion.fecha_transaccion,
-                    "tipo_transaccion": detalle.tipo_transaccion,
-                    "tipo_entrega": detalle.tipo_entrega,
-                    "cantidad_articulos": detalle.cantidad_articulos or sum(item["cantidad"] for item in articulos_data),
-                    "articulos": articulos_data,
-                    "total": total,
-                })
-            except DetalleTransaccion.DoesNotExist:
-                continue
-
-        return Response(resumen, status=status.HTTP_200_OK)
-
-
-
-
-
-
-
-
-
-
-
-
+            return Response({"error": "Usuario no encontrado"}, status=404)
 
 
 
