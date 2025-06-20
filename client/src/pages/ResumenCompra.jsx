@@ -206,6 +206,24 @@ const ResumenCompra = () => {
           >
             Volver
           </Button>
+          {/* Botón para calificar transacción */}
+          <Box sx={{ mt: 2, textAlign: "center" }}>
+            <Button
+              variant="outlined"
+              onClick={() => navigate(`/calificar/${resumen.id_transaccion}`)}
+              sx={{
+                borderColor: "#1976d2",
+                color: "#1976d2",
+                "&:hover": {
+                  backgroundColor: "#1976d2",
+                  color: "white",
+                },
+                mb: 2,
+              }}
+            >
+              Calificar transacción
+            </Button>
+          </Box>
         </Box>
       </Paper>
     </Box>

@@ -41,7 +41,6 @@ from .serializers import (
 # ====================================
 
 class RegistroUsuarioView(APIView):
-    """Registro de nuevos usuarios"""
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -64,7 +63,6 @@ class RegistroUsuarioView(APIView):
 
 
 class LoginView(APIView):
-    """Login de usuarios registrados"""
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -97,7 +95,6 @@ class LoginView(APIView):
 
 
 class LogoutView(APIView):
-    """Cierre de sesión (placeholder si se quiere invalidar tokens)"""
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
@@ -188,9 +185,6 @@ class PqrsViewSet(viewsets.ModelViewSet):
 
 @api_view(["POST"])
 def crear_con_detalles(request):
-    """
-    Crea una transacción, su detalle y los artículos involucrados.
-    """
     try:
         data = request.data
         id_usuario = data.get("id_usuario")
@@ -205,7 +199,9 @@ def crear_con_detalles(request):
         if not usuario:
             return Response({"error": "Usuario no registrado"}, status=404)
 
-        transaccion = Transacciones.objects.create(id_usuario=usuario)
+        # ✅ CAMBIO: usar 'usuario' (nombre del campo del modelo)
+        transaccion = Transacciones.objects.create(usuario=usuario)
+
         detalle = DetalleTransaccion.objects.create(
             id_transaccion=transaccion,
             tipo_transaccion=tipo_transaccion,
@@ -242,7 +238,6 @@ def crear_con_detalles(request):
 
 @api_view(["GET"])
 def historial_transacciones_api(request):
-    """Historial de compras y ventas por usuario y fechas opcionales."""
     id_usuario = request.query_params.get("id_usuario")
     if not id_usuario:
         return Response({"error": "ID de usuario obligatorio"}, status=400)
@@ -255,12 +250,15 @@ def historial_transacciones_api(request):
     fecha_inicio = parse_date(request.query_params.get("fecha_inicio")) if request.query_params.get("fecha_inicio") else None
     fecha_fin = parse_date(request.query_params.get("fecha_fin")) if request.query_params.get("fecha_fin") else None
 
+    # ✅ CAMBIO: usar 'usuario_id' en lugar de 'id_usuario_id'
     compras = Transacciones.objects.filter(
-        id_usuario_id=id_usuario,
+        usuario_id=id_usuario,
         detalletransaccion__tipo_transaccion="compra"
     )
+
+    # ✅ CAMBIO: verificar si Articulos tiene campo 'usuario'
     ventas = Transacciones.objects.filter(
-        detalletransaccion__id_articulo__id_usuario=id_usuario,
+        detalletransaccion__id_articulo__usuario_id=id_usuario,
         detalletransaccion__tipo_transaccion="venta"
     )
 
@@ -282,8 +280,6 @@ def historial_transacciones_api(request):
 # ====================================
 
 class ResumenCompraAPIView(APIView):
-    """Retorna detalle completo de una transacción"""
-
     def get(self, request, id_transaccion):
         try:
             detalle = DetalleTransaccion.objects.select_related("id_transaccion").get(id_transaccion_id=id_transaccion)
@@ -297,7 +293,6 @@ class ResumenCompraAPIView(APIView):
                 subtotal = articulo.precio_articulo * item.cantidad
                 total += subtotal
 
-                # Corregido: URL absoluta para imagen
                 imagen_url = request.build_absolute_uri(articulo.imagen.url) if articulo.imagen else None
 
                 articulos_data.append({
@@ -325,52 +320,44 @@ class ResumenCompraAPIView(APIView):
             return Response({"error": str(e)}, status=500)
 
 
-
 # ====================================
 # MIS TRANSACCIONES (Autenticado)
 # ====================================
 
-class MisTransaccionesAPIView(APIView):
-    permission_classes = [IsAuthenticated]  # Ya valida token automáticamente
+# class MisTransaccionesAPIView(APIView):
+#     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        # 1️⃣ Obtener token del encabezado Authorization
-        auth_header = request.headers.get('Authorization', '')
+#     def get(self, request):
+#         auth_header = request.headers.get('Authorization', '')
+#         if not auth_header.startswith('Bearer '):
+#             return Response({"error": "Token no proporcionado"}, status=401)
 
-        if not auth_header.startswith('Bearer '):
-            return Response({"error": "Token no proporcionado"}, status=401)
+#         token = auth_header.split(' ')[1]
 
-        token = auth_header.split(' ')[1]
+#         try:
+#             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+#             user_id = payload.get("user_id")
 
-        try:
-            # 2️⃣ Decodificar el token
-            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-            user_id = payload.get("user_id")
+#             if not user_id:
+#                 return Response({"error": "Token inválido (sin user_id)"}, status=401)
 
-            if not user_id:
-                return Response({"error": "Token inválido (sin user_id)"}, status=401)
+#             usuario = Usuarios.objects.get(id_usuario=user_id)
 
-            # 3️⃣ Obtener el usuario desde tu modelo personalizado
-            usuario = Usuarios.objects.get(id_usuario=user_id)
+#             # ✅ CAMBIO: usar 'usuario' (campo del modelo)
+#             transacciones = Transacciones.objects.filter(usuario=usuario)
 
-            # 4️⃣ Obtener transacciones del usuario (usando el campo 'usuario')
-            transacciones = Transacciones.objects.filter(usuario=usuario)
+#             data = [{
+#                 "id": t.id_transaccion,
+#                 "fecha": t.fecha_transaccion
+#             } for t in transacciones]
 
-            # 5️⃣ Serializar las transacciones (ajustado a tus campos reales)
-            data = [{
-                "id": t.id_transaccion,
-                "fecha": t.fecha_transaccion
-            } for t in transacciones]
+#             return Response({"transacciones": data})
 
-            return Response({"transacciones": data})
-
-        except jwt.ExpiredSignatureError:
-            return Response({"error": "Token expirado"}, status=401)
-        except jwt.DecodeError:
-            return Response({"error": "Token inválido"}, status=401)
-        except Usuarios.DoesNotExist:
-            return Response({"error": "Usuario no encontrado"}, status=404)
-
-
-
-
+#         except jwt.ExpiredSignatureError:
+#             return Response({"error": "Token expirado"}, status=401)
+#         except jwt.DecodeError:
+#             return Response({"error": "Token inválido"}, status=401)
+#         except Usuarios.DoesNotExist:
+#             return Response({"error": "Usuario no encontrado"}, status=404)
+#         except Exception as e:
+#             return Response({"error": str(e)}, status=500 })

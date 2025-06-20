@@ -23,7 +23,7 @@ from .views import (
     LoginView,
     RegistroUsuarioView,
     historial_transacciones_api,
-    crear_con_detalles,  ResumenCompraAPIView, MisTransaccionesAPIView,
+    crear_con_detalles,  ResumenCompraAPIView,
 )
 
 # Configura el router para las rutas generadas automáticamente
@@ -50,14 +50,14 @@ urlpatterns = [
     path("articulos/<int:id_articulo>/", ArticuloDetailAPIView.as_view(), name="detalle-articulo"),
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
-
-    # path("historial/", historial_transacciones_api, name="historial_api"),
+    
+    # Rutas Administrador
     path("historial/", historial_transacciones_api, name="historial_api"),
-    # path("api/v1/resumen-compra/<int:id_transaccion>/", ResumenCompraAPIView.as_view(), name="resumen-compra"),
     path("resumen-compra/<int:id_transaccion>/", ResumenCompraAPIView.as_view(), name="resumen-compra"),
 
+    # Rutas Compra
     path("crear-transaccion/", crear_con_detalles, name="crear_transaccion"),
-    path("mis-transacciones/", MisTransaccionesAPIView.as_view(), name="mis-transacciones"),
+    # path("mis-transacciones/", MisTransaccionesAPIView.as_view(), name="mis-transacciones"),
     
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

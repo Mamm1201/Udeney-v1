@@ -30,6 +30,7 @@ import UserProfile from "./pages/UserProfile";
 import ActualizarDatos from "./pages/ActualizarDatos";
 import HistorialTransacciones from "./pages/HistorialTransacciones";
 import MisTransacciones from "./pages/MisTransacciones";
+import Calificar from "./pages/Calificar";
 
 // Administración
 import Rol from "./pages/Rol";
@@ -82,6 +83,7 @@ const AppRoutes = () => {
           path="/detalle-transaccion/:id"
           element={<DetalleTransaccion />}
         />
+        <Route path="/calificar/:id" element={<Calificar />} />
 
         {/* --- Administración --- */}
         <Route path="/rol" element={<Rol />} />

@@ -19,10 +19,10 @@ api.interceptors.request.use((config) => {
 
   // Lista de rutas protegidas que requieren autenticación
   const rutasProtegidas = [
-    "/mis-transacciones/",
-    "/crear-transaccion",
-    "/pagos/",
-    "/pqrs/",
+    "/mis-transacciones",
+    "/crear-con-detalles",
+    "/api/v1/pagos/",
+    "/api/v1/pqrs/",
   ];
 
   // Verifica si la URL actual es una de las protegidas
