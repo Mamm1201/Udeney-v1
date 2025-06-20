@@ -1,35 +1,49 @@
+// ======================================================
+// Calificar.jsx - Componente para calificar una transacción
+// Versión con diseño visual moderno, emojis y fondo con imagen
+// ======================================================
+
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   Box,
   Button,
-  MenuItem,
-  Select,
   TextField,
   Typography,
-  FormControl,
-  InputLabel,
   Snackbar,
   Alert,
+  Paper,
+  Stack,
 } from "@mui/material";
-import api from "../api/axiosConfig";
+import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
+import api from "../api/axiosConfig"; // Reemplaza si tu ruta cambia
+
+// Opciones de calificación con texto y emojis
+const opcionesCalificacion = [
+  { label: "😄 Excelente", value: "excelente" },
+  { label: "😊 Buena", value: "buena" },
+  { label: "😞 Mala", value: "mala" },
+];
 
 const Calificar = () => {
   const navigate = useNavigate();
-  const { id } = useParams(); // id de la transacción (viene de la URL)
+  const { id } = useParams(); // ID de transacción desde la URL
+
+  // Estados locales
   const [tipoCalificacion, setTipoCalificacion] = useState("");
   const [comentario, setComentario] = useState("");
   const [mensaje, setMensaje] = useState({ texto: "", tipo: "success" });
   const [mostrarAlerta, setMostrarAlerta] = useState(false);
 
+  // Enviar calificación al backend
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      const response = await api.post("/calificaciones/", {
+      await api.post("/calificaciones/", {
         id_transaccion: id,
         tipo_calificacion: tipoCalificacion,
-        comentario: comentario,
+        comentario: comentario || null,
       });
 
       setMensaje({
@@ -38,10 +52,8 @@ const Calificar = () => {
       });
       setMostrarAlerta(true);
 
-      // Redirigir después de unos segundos
-      setTimeout(() => {
-        navigate("/mis-transacciones");
-      }, 2000);
+      // Volver atrás luego de unos segundos
+      setTimeout(() => navigate("/articulos"), 1000);
     } catch (error) {
       console.error("❌ Error al enviar calificación:", error);
       setMensaje({
@@ -53,41 +65,92 @@ const Calificar = () => {
   };
 
   return (
-    <Box sx={{ maxWidth: 500, mx: "auto", mt: 4 }}>
-      <Typography variant="h5" gutterBottom>
-        Calificar Transacción #{id}
-      </Typography>
+    <Box
+      sx={{
+        minHeight: "100vh",
+        backgroundImage:
+          "linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(0,0,0,0.8)), url('/otoño1.jpg')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        p: 2,
+      }}
+    >
+      <Paper
+        elevation={6}
+        sx={{
+          p: 4,
+          maxWidth: 500,
+          width: "100%",
+          borderRadius: 4,
+          backgroundColor: "#ffffffee",
+        }}
+      >
+        {/* Título e ícono */}
+        <Box display="flex" alignItems="center" mb={2}>
+          <EmojiEmotionsIcon color="primary" sx={{ fontSize: 32, mr: 1 }} />
+          <Typography variant="h5" fontWeight="bold">
+            Calificar Transacción #{id}
+          </Typography>
+        </Box>
 
-      <form onSubmit={handleSubmit}>
-        <FormControl fullWidth sx={{ mb: 2 }}>
-          <InputLabel>Tipo de Calificación</InputLabel>
-          <Select
-            value={tipoCalificacion}
-            label="Tipo de Calificación"
-            onChange={(e) => setTipoCalificacion(e.target.value)}
-            required
+        {/* Formulario de calificación */}
+        <form onSubmit={handleSubmit}>
+          <Typography variant="subtitle1" mb={1}>
+            ¿Cómo fue tu experiencia?
+          </Typography>
+
+          {/* Opciones visuales de calificación */}
+          <Stack direction="row" spacing={2} mb={3}>
+            {opcionesCalificacion.map((opcion) => (
+              <Button
+                key={opcion.value}
+                variant={
+                  tipoCalificacion === opcion.value ? "contained" : "outlined"
+                }
+                onClick={() => setTipoCalificacion(opcion.value)}
+                sx={{
+                  flex: 1,
+                  textTransform: "none",
+                  fontSize: "1.1rem",
+                  whiteSpace: "nowrap",
+                  borderRadius: 2,
+                }}
+              >
+                {opcion.label}
+              </Button>
+            ))}
+          </Stack>
+
+          {/* Comentario opcional */}
+          <TextField
+            label="Comentario (opcional)"
+            multiline
+            rows={4}
+            fullWidth
+            value={comentario}
+            onChange={(e) => setComentario(e.target.value)}
+            placeholder="¿Qué te gustaría contarnos sobre esta transacción?"
+            sx={{ mb: 3 }}
+          />
+
+          {/* Botón para enviar */}
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            fullWidth
+            size="large"
+            disabled={!tipoCalificacion}
           >
-            <MenuItem value="excelente">Excelente</MenuItem>
-            <MenuItem value="buena">Buena</MenuItem>
-            <MenuItem value="mala">Mala</MenuItem>
-          </Select>
-        </FormControl>
+            Enviar Calificación
+          </Button>
+        </form>
+      </Paper>
 
-        <TextField
-          label="Comentario"
-          multiline
-          rows={4}
-          fullWidth
-          value={comentario}
-          onChange={(e) => setComentario(e.target.value)}
-          sx={{ mb: 2 }}
-        />
-
-        <Button type="submit" variant="contained" color="primary" fullWidth>
-          Enviar Calificación
-        </Button>
-      </form>
-
+      {/* Alerta inferior */}
       <Snackbar
         open={mostrarAlerta}
         autoHideDuration={4000}

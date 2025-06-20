@@ -185,6 +185,14 @@ class CalificacionesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Calificaciones
         fields = "__all__"
+        extra_kwargs = {
+            'comentario': {
+                'required': False,
+                'allow_null': True,
+                'allow_blank': True,
+            }
+        }
+
 
 # ====================================
 # SERIALIZADOR DE PAGOS

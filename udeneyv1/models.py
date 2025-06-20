@@ -187,21 +187,20 @@ class Transacciones(models.Model):
 
 # MODELO TABLA CALIFICACIONES
 class Calificaciones(models.Model):
-    id_calificacion = models.AutoField(
-        primary_key=True
-    )  # Este campo se autoincrementará automáticamente
+    id_calificacion = models.AutoField(primary_key=True)
     tipo_calificacion = models.CharField(
         max_length=20,
         choices=[("excelente", "Excelente"), ("buena", "Buena"), ("mala", "Mala")],
     )
-    comentario = models.TextField()
-    id_transaccion = models.ForeignKey(
+    comentario = models.TextField(null=True, blank=True)
+
+    id_transaccion = models.ForeignKey(  # 🔥 Este campo estaba faltando
         Transacciones, on_delete=models.CASCADE, db_column="id_transaccion"
-    )  # Nombre exacto de la columna en la base de datos
+    )
 
     class Meta:
-        db_table = "calificaciones"  # Asegúrate de usar el nombre correcto de la tabla
-        managed = False  # Django no intentará crear esta tabla
+        db_table = "calificaciones"
+        managed = False
         
 # MODELO TABLA PAGOS
 class Pagos(models.Model):

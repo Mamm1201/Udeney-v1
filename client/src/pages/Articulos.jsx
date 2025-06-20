@@ -83,7 +83,7 @@ const Articulos = () => {
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" mt={8}>
-        <CircularProgress sx={{ color: "#45858C" }} />
+        <CircularProgress sx={{ color: "#B6540D" }} />
       </Box>
     );
   }
@@ -94,7 +94,7 @@ const Articulos = () => {
       <Box position="fixed" top={0} left={0} right={0} zIndex={10}>
         <Navbar />
       </Box>
-      <Box pt={10}>
+      <Box pt={10} sx={{ backgroundColor: "#291010", minHeight: "100vh" }}>
         {" "}
         {/* Padding para compensar el Navbar fijo */}
         <Container maxWidth="lg" sx={{ mt: 5, mb: 5 }}>
@@ -104,7 +104,7 @@ const Articulos = () => {
             fontWeight={700}
             gutterBottom
             sx={{
-              color: "#2E7D32",
+              color: "#6EF55F",
               fontFamily: "Poppins, sans-serif",
             }}
           >
