@@ -178,8 +178,6 @@ class PagosViewSet(viewsets.ModelViewSet):
 #     queryset = Pqrs.objects.all()
 #     serializer_class = PqrsSerializer
 
-from rest_framework.permissions import AllowAny
-
 class PqrsViewSet(viewsets.ModelViewSet):
     queryset = Pqrs.objects.all()
     serializer_class = PqrsSerializer
