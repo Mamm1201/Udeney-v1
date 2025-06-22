@@ -64,12 +64,12 @@ const Navbar = () => {
   );
 
   return (
-    <AppBar position="static" sx={{ backgroundColor: "#86C388" }}>
+    <AppBar position="static" sx={{ backgroundColor: "#45858C" }}>
       <Toolbar
         sx={{
           display: "flex",
           justifyContent: "space-between",
-          color: "#1E1E1E",
+          color: "white",
         }}
       >
         <Logo />
@@ -78,7 +78,7 @@ const Navbar = () => {
           <>
             <IconButton
               onClick={handleMobileMenuOpen}
-              sx={{ color: "#1E1E1E" }}
+              sx={{ color: "#F2E4BB" }}
             >
               <MenuIcon />
             </IconButton>
@@ -87,9 +87,20 @@ const Navbar = () => {
               open={Boolean(mobileMenuAnchor)}
               onClose={handleMobileMenuClose}
             >
-              <MenuItem onClick={() => navigate("/nosotros")}>
+              <MenuItem
+                onClick={() => navigate("/nosotros")}
+                sx={{
+                  transition: "all 0.3s ease",
+                  "&:hover": {
+                    backgroundColor: "rgba(0, 0, 0, 0.08)",
+                    opacity: 0.85,
+                    boxShadow: "0 0 6px rgba(0,0,0,0.65)",
+                  },
+                }}
+              >
                 Nosotros
               </MenuItem>
+
               <MenuItem onClick={() => navigate("/contacto")}>
                 Contacto
               </MenuItem>
@@ -133,15 +144,18 @@ const Navbar = () => {
           </>
         ) : (
           <Box display="flex" alignItems="center" gap={2}>
+            <Button onClick={() => navigate("/")} sx={{ color: "white" }}>
+              Inicio
+            </Button>
             <Button
               onClick={() => navigate("/nosotros")}
-              sx={{ color: "#1E1E1E" }}
+              sx={{ color: "white" }}
             >
               Nosotros
             </Button>
             <Button
               onClick={() => navigate("/contacto")}
-              sx={{ color: "#1E1E1E" }}
+              sx={{ color: "white" }}
             >
               Contacto
             </Button>
@@ -149,7 +163,7 @@ const Navbar = () => {
             <Button
               onClick={handleOpenRoles}
               endIcon={<ArrowDropDownIcon />}
-              sx={{ color: "#1E1E1E" }}
+              sx={{ color: "white" }}
             >
               ¿Qué deseas hacer hoy?
             </Button>
@@ -179,7 +193,7 @@ const Navbar = () => {
               </>
             ) : (
               <>
-                <Typography variant="body1" sx={{ color: "#1E1E1E" }}>
+                <Typography variant="body1" sx={{ color: "#C9F235" }}>
                   ¡Hola, <strong>{nombre}</strong>!
                 </Typography>
                 <PerfilMenu />

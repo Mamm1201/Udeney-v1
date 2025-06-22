@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.hashers import make_password, check_password
 
-
 class Usuarios(models.Model):
     id_usuario = models.AutoField(primary_key=True)
     nombres_usuario = models.CharField(max_length=255)
@@ -111,6 +110,7 @@ class Articulos(models.Model):
         Categorias, on_delete=models.CASCADE, db_column="id_categoria"
     )  # Nombre exacto de la columna en la base de datos
     imagen = models.ImageField(upload_to="articulos/", null=True, blank=True)
+    disponible = models.BooleanField(default=True)  # Validar si esta disponible o no
 
     class Meta:
         db_table = "articulos"  # Asegúrate de usar el nombre correcto de la tabla
@@ -139,6 +139,7 @@ class DetalleTransaccion(models.Model):
         db_table = "detalle_transaccion"
         managed = False
 
+
         
 class ArticuloDetalleTransaccion(models.Model):
     id = models.AutoField(primary_key=True)
@@ -156,56 +157,51 @@ class ArticuloDetalleTransaccion(models.Model):
 
 
 # MODELO TABLA TRANSACCIONES
+# class Transacciones(models.Model):
+#     id_transaccion = models.AutoField(
+#         primary_key=True
+#     )  # Este campo se autoincrementará automáticamente
+#     id_usuario = models.ForeignKey(
+#         Usuarios, on_delete=models.CASCADE, db_column="id_usuario"
+#     )  # Nombre exacto de la columna en la base de datos
+#     fecha_transaccion = models.DateTimeField(auto_now_add=True)
+
+#     class Meta:
+#         db_table = "transacciones"  
+#         managed = True  # Django no intentará crear esta tabla
 class Transacciones(models.Model):
-    id_transaccion = models.AutoField(
-        primary_key=True
-    )  # Este campo se autoincrementará automáticamente
-    id_usuario = models.ForeignKey(
-        Usuarios, on_delete=models.CASCADE, db_column="id_usuario"
-    )  # Nombre exacto de la columna en la base de datos
-    fecha_transaccion = models.DateTimeField()
+    id_transaccion = models.AutoField(primary_key=True)  # Se autoincrementa automáticamente
+
+    usuario = models.ForeignKey(
+        Usuarios,                     # Tu modelo de usuarios personalizado
+        on_delete=models.CASCADE,
+        db_column="id_usuario"        # El nombre real en la base de datos
+    )
+
+    fecha_transaccion = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = "transacciones"  # Asegúrate de usar el nombre correcto de la tabla
-        managed = False  # Django no intentará crear esta tabla
+        db_table = "transacciones"
+        managed = True
+
 
 
 # MODELO TABLA CALIFICACIONES
 class Calificaciones(models.Model):
-    id_calificacion = models.AutoField(
-        primary_key=True
-    )  # Este campo se autoincrementará automáticamente
+    id_calificacion = models.AutoField(primary_key=True)
     tipo_calificacion = models.CharField(
         max_length=20,
         choices=[("excelente", "Excelente"), ("buena", "Buena"), ("mala", "Mala")],
     )
-    comentario = models.TextField()
-    id_transaccion = models.ForeignKey(
+    comentario = models.TextField(null=True, blank=True)
+
+    id_transaccion = models.ForeignKey(  # 🔥 Este campo estaba faltando
         Transacciones, on_delete=models.CASCADE, db_column="id_transaccion"
-    )  # Nombre exacto de la columna en la base de datos
+    )
 
     class Meta:
-        db_table = "calificaciones"  # Asegúrate de usar el nombre correcto de la tabla
-        managed = False  # Django no intentará crear esta tabla
-
-
-# # MODELO TABLA PAGOS
-# class Pagos(models.Model):
-#     id_pago = models.AutoField(
-#         primary_key=True
-#     )  # Este campo se autoincrementará automáticamente
-#     id_detalle_transaccion = models.ForeignKey(
-#         Transacciones, on_delete=models.CASCADE, db_column="id_detalle_transaccion"
-#     )  # Nombre exacto de la columna en la base de datos
-#     fecha_pago = models.DateTimeField(auto_now_add=True)
-#     valor_pago = models.DecimalField(max_digits=10, decimal_places=2)
-#     estado_pago = models.CharField(
-#         max_length=20, choices=[("aprobado", "Aprobado"), ("pendiente", "Pendiente")]
-#     )
-
-#     class Meta:
-#         db_table = "pagos"  # Nombre correcto de la tabla en la base de datos
-#         managed = False  # Django no intentará crear esta tabla
+        db_table = "calificaciones"
+        managed = False
         
 # MODELO TABLA PAGOS
 class Pagos(models.Model):

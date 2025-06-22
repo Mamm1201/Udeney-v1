@@ -3,46 +3,43 @@
 # ====================================
 
 # Django
-from django.shortcuts import render
 from django.utils.dateparse import parse_date
 
-# Django Rest Framework
+# DRF
 from rest_framework import viewsets, status, filters
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.decorators import api_view, action
-from datetime import datetime
-from django.utils import timezone
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.tokens import RefreshToken
 
+import jwt
+from django.conf import settings
 
 # Filtros
 from django_filters.rest_framework import DjangoFilterBackend
 
-# ORM y funciones de agrupación
-from django.db.models import Count
-from django.db.models.functions import TruncMonth, TruncYear
-
-# Modelos del sistema
+# Modelos
 from .models import (
     Usuarios, Articulos, Categorias, Roles, UsuarioRol,
-    DetalleTransaccion, Transacciones, Calificaciones, Pagos, Pqrs, ArticuloDetalleTransaccion
+    DetalleTransaccion, Transacciones, Calificaciones, Pagos, Pqrs,
+    ArticuloDetalleTransaccion
 )
 
-# Serializadores del sistema
+# Serializadores
 from .serializers import (
     UsuariosSerializer, ArticulosSerializer, CategoriasSerializer,
     RolesSerializer, UsuarioRolSerializer, DetalleTransaccionSerializer,
-    TransaccionesSerializer, CalificacionesSerializer, PagosSerializer, PqrsSerializer, ArticuloDetalleTransaccionSerializer
+    TransaccionesSerializer, CalificacionesSerializer, PagosSerializer,
+    PqrsSerializer, DetalleTransaccionAnidadoSerializer, ResumenCompraSerializer
 )
 
-# JWT
-from rest_framework_simplejwt.tokens import RefreshToken
+# ====================================
+# AUTENTICACIÓN
+# ====================================
 
-# ====================================
-# REGISTRO DE USUARIO
-# ====================================
 class RegistroUsuarioView(APIView):
     permission_classes = [AllowAny]
 
@@ -51,26 +48,20 @@ class RegistroUsuarioView(APIView):
         if serializer.is_valid():
             user = serializer.save()
             refresh = RefreshToken.for_user(user)
-            return Response(
-                {
-                    "message": "Usuario registrado exitosamente",
-                    "user": {
-                        "id_usuario": user.id_usuario,
-                        "email_usuario": user.email_usuario,
-                        "nombres_usuario": user.nombres_usuario,
-                        "apellidos_usuario": user.apellidos_usuario,
-                    },
-                    "access_token": str(refresh.access_token),
-                    "refresh_token": str(refresh),
+            return Response({
+                "message": "Usuario registrado exitosamente",
+                "user": {
+                    "id_usuario": user.id_usuario,
+                    "email_usuario": user.email_usuario,
+                    "nombres_usuario": user.nombres_usuario,
+                    "apellidos_usuario": user.apellidos_usuario,
                 },
-                status=status.HTTP_201_CREATED,
-            )
+                "access_token": str(refresh.access_token),
+                "refresh_token": str(refresh),
+            }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# ====================================
-# LOGIN DE USUARIO
-# ====================================
 class LoginView(APIView):
     permission_classes = [AllowAny]
 
@@ -83,31 +74,26 @@ class LoginView(APIView):
 
         try:
             user = Usuarios.objects.get(email_usuario=email)
-        except Usuarios.DoesNotExist as e:
-            return Response({"error": f"Usuario no encontrado: {str(e)}"}, status=404)
+        except Usuarios.DoesNotExist:
+            return Response({"error": "Usuario no encontrado"}, status=404)
 
         if not user.is_active:
-            return Response({"error": "Cuenta desactivada. Contacta al administrador."}, status=403)
+            return Response({"error": "Cuenta desactivada"}, status=403)
 
         if not user.check_password(password):
             return Response({"error": "Correo o contraseña incorrectos"}, status=401)
 
         refresh = RefreshToken.for_user(user)
-        return Response(
-            {
-                "message": f"Bienvenido {user.nombres_usuario}",
-                "id_usuario": user.id_usuario,
-                "email": user.email_usuario,
-                "nombres_usuario": user.nombres_usuario,
-                "access_token": str(refresh.access_token),
-                "refresh_token": str(refresh),
-            }
-        )
+        return Response({
+            "message": f"Bienvenido {user.nombres_usuario}",
+            "id_usuario": user.id_usuario,
+            "email": user.email_usuario,
+            "nombres_usuario": user.nombres_usuario,
+            "access_token": str(refresh.access_token),
+            "refresh_token": str(refresh),
+        })
 
 
-# ====================================
-# LOGOUT (SIMBÓLICO)
-# ====================================
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -116,82 +102,7 @@ class LogoutView(APIView):
 
 
 # ====================================
-# HISTORIAL DE TRANSACCIONES - API
-# ====================================
-@api_view(["GET"])
-def historial_transacciones_api(request):
-    id_usuario = request.query_params.get("id_usuario")
-    if not id_usuario:
-        return Response({"error": "Debe proporcionar el ID del usuario"}, status=400)
-
-    # Se obtienen los parámetros de fecha como cadenas
-    fecha_inicio_str = request.query_params.get("fecha_inicio")
-    fecha_fin_str = request.query_params.get("fecha_fin")
-
-    # Se convierten en fechas si están en formato válido, sino quedan como None
-    fecha_inicio = parse_date(fecha_inicio_str) if isinstance(fecha_inicio_str, str) else None
-    fecha_fin = parse_date(fecha_fin_str) if isinstance(fecha_fin_str, str) else None
-
-    try:
-        # ============================
-        # COMPRAS (el usuario compra)
-        # ============================
-        compras = Transacciones.objects.filter(
-            id_usuario=id_usuario,
-            id_detalle_transaccion__tipo_transaccion="compra"
-        )
-
-        # ============================
-        # VENTAS (el usuario vende)
-        # ============================
-        ventas = Transacciones.objects.filter(
-            id_detalle_transaccion__id_articulo__id_usuario=id_usuario,
-            id_detalle_transaccion__tipo_transaccion="venta"
-        )
-
-        # Filtro por fechas si se proporcionaron
-        if fecha_inicio:
-            compras = compras.filter(fecha_transaccion__gte=fecha_inicio)
-            ventas = ventas.filter(fecha_transaccion__gte=fecha_inicio)
-        if fecha_fin:
-            compras = compras.filter(fecha_transaccion__lte=fecha_fin)
-            ventas = ventas.filter(fecha_transaccion__lte=fecha_fin)
-
-        # Agrupar por mes y año - compras
-        compras_grouped = (
-            compras.annotate(
-                year=TruncYear("fecha_transaccion"),
-                month=TruncMonth("fecha_transaccion")
-            )
-            .values("year", "month")
-            .annotate(total_compras=Count("id_transaccion"))
-            .order_by("year", "month")
-        )
-
-        # Agrupar por mes y año - ventas
-        ventas_grouped = (
-            ventas.annotate(
-                year=TruncYear("fecha_transaccion"),
-                month=TruncMonth("fecha_transaccion")
-            )
-            .values("year", "month")
-            .annotate(total_ventas=Count("id_transaccion"))
-            .order_by("year", "month")
-        )
-
-        # Retornar la respuesta en JSON
-        return Response({
-            "compras": list(compras_grouped),
-            "ventas": list(ventas_grouped)
-        })
-
-    except Exception as e:
-        # Captura errores generales del proceso
-        return Response({"error": str(e)}, status=500)
-    
-
-# ====================================
-# CRUD GENERAL PARA MODELOS DEL SISTEMA
+# CRUD GENERAL
 # ====================================
 
 class UsuariosViewSet(viewsets.ModelViewSet):
@@ -199,13 +110,42 @@ class UsuariosViewSet(viewsets.ModelViewSet):
     serializer_class = UsuariosSerializer
 
 
-
-
+# class ArticulosViewSet(viewsets.ModelViewSet):
+#     queryset = Articulos.objects.filter(disponible=True)
+#     serializer_class = ArticulosSerializer
+#     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+#     filterset_fields = ['id_categoria']
+    
 class ArticulosViewSet(viewsets.ModelViewSet):
-    queryset = Articulos.objects.all()
     serializer_class = ArticulosSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['id_categoria']
+
+    def get_queryset(self):
+        if self.action == 'retrieve':
+            return Articulos.objects.all()  # ✅ Permite ver cualquier artículo por ID
+        return Articulos.objects.filter(disponible=True)
+    
+# ====================================
+# OBTENER TODOS LOS ARTICULOS DESDE MIS ARTICULOS HASTA LOS VENDIDOS
+# ==================================== 
+    
+@action(detail=False, methods=['get'], url_path='mis-articulos')
+def mis_articulos(self, request):
+    id_usuario = request.query_params.get("id_usuario")
+    if not id_usuario:
+        return Response({"error": "id_usuario requerido"}, status=400)
+
+    articulos = Articulos.objects.filter(id_usuario=id_usuario)
+    serializer = self.get_serializer(articulos, many=True)
+    return Response(serializer.data)
+# ====================================
+# CRUD PARA OBTENER TODOS LOS ARTICULOS EN MODO ADMIN
+# ====================================      
+class TodosArticulosViewSet(viewsets.ModelViewSet):
+    queryset = Articulos.objects.all()
+    serializer_class = ArticulosSerializer
+
 
 
 class ArticuloDetailAPIView(RetrieveAPIView):
@@ -232,129 +172,236 @@ class UsuarioRolViewSet(viewsets.ModelViewSet):
 class DetalleTransaccionViewSet(viewsets.ModelViewSet):
     queryset = DetalleTransaccion.objects.all()
     serializer_class = DetalleTransaccionSerializer
-    
-# ====================================
-# TRANSACCIONES - CREATE VALIDADO
-# ====================================
+
+
 class TransaccionesViewSet(viewsets.ModelViewSet):
     queryset = Transacciones.objects.all()
-    serializer_class = TransaccionesSerializer
 
-    # Vista personalizada para crear una transacción con varios artículos
-@api_view(["POST"])
-def crear_con_detalles(request):
-    print(">>> ✅ LLEGÓ A LA VISTA crear_con_detalles CON MÉTODO:", request.method)
-    
-    try:
-        print(">>> MÉTODO:", request.method)
-        print(">>> request.data en crear_con_detalles:", request.data)
-
-        id_usuario = request.data.get("id_usuario")
-        tipo_transaccion = request.data.get("tipo_transaccion")
-        tipo_entrega = request.data.get("tipo_entrega")
-        articulos = request.data.get("articulos", [])
-
-        # Crear la transacción principal
-        transaccion = Transacciones.objects.create(
-            id_usuario_id=id_usuario,
-            fecha_transaccion=timezone.now(),
-        )
-
-        # Crear el detalle de la transacción (uno solo en este diseño)
-        detalle = DetalleTransaccion.objects.create(
-            id_transaccion=transaccion,
-            tipo_transaccion=tipo_transaccion,
-            tipo_entrega=tipo_entrega,
-        )
-
-        # Ahora insertamos cada artículo con su cantidad al modelo intermedio
-        for art in articulos:
-            try:
-                articulo = Articulos.objects.get(id_articulo=art["id_articulo"])
-            except Articulos.DoesNotExist:
-                return Response(
-                    {"error": f"Artículo con id {art['id_articulo']} no existe."},
-                    status=400
-                )
-
-            ArticuloDetalleTransaccion.objects.create(
-                id_detalle_transaccion=detalle,
-                id_articulo=articulo,
-                cantidad=art["cantidad"]
-            )
-
-        return Response({
-            "message": "Transacción creada exitosamente",
-            "id_transaccion": transaccion.id_transaccion
-        }, status=201)
-
-    except Exception as e:
-        import traceback
-        traceback.print_exc()  # 👈 Imprime error completo en consola
-        return Response({"error": str(e)}, status=500)
-
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            from .serializers import TransaccionConDetalleSerializer
+            return TransaccionConDetalleSerializer
+        return TransaccionesSerializer
 
 
 class CalificacionesViewSet(viewsets.ModelViewSet):
     queryset = Calificaciones.objects.all()
     serializer_class = CalificacionesSerializer
-   
-# CORRECCIÓN PRINCIPAL AQUÍ: validar 'id_detalle_transaccion' en creación de Pagos
+
+
 class PagosViewSet(viewsets.ModelViewSet):
     queryset = Pagos.objects.all()
     serializer_class = PagosSerializer
 
     def create(self, request, *args, **kwargs):
-        data = request.data
-
-        # Validar que 'id_detalle_transaccion' esté presente y no sea nulo
-        if not data.get("id_detalle_transaccion"):
+        if not request.data.get("id_detalle_transaccion"):
             return Response(
                 {"error": "El campo 'id_detalle_transaccion' es obligatorio."},
                 status=status.HTTP_400_BAD_REQUEST
             )
-
-        serializer = self.get_serializer(data=data)
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)    
-    
-# ====================================
-# DETALLE TRANSACCION CON ARTICULO
-# ====================================   
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+
 
 class PqrsViewSet(viewsets.ModelViewSet):
     queryset = Pqrs.objects.all()
     serializer_class = PqrsSerializer
-    
-@api_view(['GET'])
-def detalle_transaccion_con_articulo(request, id_detalle_transaccion):
+    permission_classes = [AllowAny]  # <--- Cambiado aquí
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_fields = ['id_usuario', 'tipo_pqr']
+    ordering_fields = ['fecha_pqr']
+
+
+
+
+# ====================================
+# CREAR TRANSACCIÓN CON DETALLES
+# ====================================
+
+@api_view(["POST"])
+def crear_con_detalles(request):
     try:
-        detalle = DetalleTransaccion.objects.get(pk=id_detalle_transaccion)
-        articulo = Articulos.objects.get(pk=detalle.id_articulo.id_articulo)
+        data = request.data
+        id_usuario = data.get("id_usuario")
+        tipo_transaccion = data.get("tipo_transaccion")
+        tipo_entrega = data.get("tipo_entrega")
+        articulos = data.get("articulos", [])
 
-        total = articulo.precio * detalle.cantidad_articulos
+        if not all([id_usuario, tipo_transaccion, tipo_entrega, articulos]):
+            return Response({"error": "Datos incompletos"}, status=400)
 
-        data = {
-            "tipo_transaccion": detalle.tipo_transaccion,
-            "tipo_entrega": detalle.tipo_entrega,
-            "total": total,
-            "articulos": [
-                {
-                    "titulo_articulo": articulo.titulo_articulo,
-                    "cantidad_articulos": detalle.cantidad_articulos,
-                    "precio_articulo": articulo.precio,
-                    "imagen_articulo": articulo.imagen_articulo.url if articulo.imagen_articulo else None
-                }
-            ]
-        }
+        usuario = Usuarios.objects.filter(id_usuario=id_usuario).first()
+        if not usuario:
+            return Response({"error": "Usuario no registrado"}, status=404)
 
-        return Response(data)
+        transaccion = Transacciones.objects.create(usuario=usuario)
 
-    except DetalleTransaccion.DoesNotExist:
-        return Response({"error": "Detalle de transacción no encontrado."}, status=404)
-    except Articulos.DoesNotExist:
-        return Response({"error": "Artículo relacionado no encontrado."}, status=404)
+        detalle = DetalleTransaccion.objects.create(
+            id_transaccion=transaccion,
+            tipo_transaccion=tipo_transaccion,
+            tipo_entrega=tipo_entrega,
+            cantidad_articulos=len(articulos),
+        )
+
+        for art in articulos:
+            id_articulo = art.get("id_articulo")
+            cantidad = art.get("cantidad", 1)
+
+            articulo = Articulos.objects.filter(id_articulo=id_articulo).first()
+            if not articulo:
+                return Response({"error": f"Artículo {id_articulo} no existe"}, status=404)
+
+            ArticuloDetalleTransaccion.objects.create(
+                id_detalle_transaccion=detalle,
+                id_articulo=articulo,
+                cantidad=cantidad,
+            )
+
+            # 🚨 Marcar el artículo como no disponible
+            articulo.disponible = False
+            articulo.save()
+
+        return Response({
+            "message": "Transacción registrada correctamente",
+            "id_transaccion": transaccion.id_transaccion
+        }, status=201)
+
     except Exception as e:
         return Response({"error": str(e)}, status=500)
 
+
+
+
+# ====================================
+# HISTORIAL DE TRANSACCIONES
+# ====================================
+
+@api_view(["GET"])
+def historial_transacciones_api(request):
+    id_usuario = request.query_params.get("id_usuario")
+    if not id_usuario:
+        return Response({"error": "ID de usuario obligatorio"}, status=400)
+
+    try:
+        id_usuario = int(id_usuario)
+    except ValueError:
+        return Response({"error": "ID inválido"}, status=400)
+
+    fecha_inicio = parse_date(request.query_params.get("fecha_inicio")) if request.query_params.get("fecha_inicio") else None
+    fecha_fin = parse_date(request.query_params.get("fecha_fin")) if request.query_params.get("fecha_fin") else None
+
+    # ✅ CAMBIO: usar 'usuario_id' en lugar de 'id_usuario_id'
+    compras = Transacciones.objects.filter(
+        usuario_id=id_usuario,
+        detalletransaccion__tipo_transaccion="compra"
+    )
+
+    # ✅ CAMBIO: verificar si Articulos tiene campo 'usuario'
+    ventas = Transacciones.objects.filter(
+        detalletransaccion__id_articulo__usuario_id=id_usuario,
+        detalletransaccion__tipo_transaccion="venta"
+    )
+
+    if fecha_inicio:
+        compras = compras.filter(fecha_transaccion__gte=fecha_inicio)
+        ventas = ventas.filter(fecha_transaccion__gte=fecha_inicio)
+    if fecha_fin:
+        compras = compras.filter(fecha_transaccion__lte=fecha_fin)
+        ventas = ventas.filter(fecha_transaccion__lte=fecha_fin)
+
+    compras_data = list(compras.values("id_transaccion", "fecha_transaccion"))
+    ventas_data = list(ventas.values("id_transaccion", "fecha_transaccion"))
+
+    return Response({"compras": compras_data, "ventas": ventas_data})
+
+
+# ====================================
+# RESUMEN DE COMPRA POR ID
+# ====================================
+
+class ResumenCompraAPIView(APIView):
+    def get(self, request, id_transaccion):
+        try:
+            detalle = DetalleTransaccion.objects.select_related("id_transaccion").get(id_transaccion_id=id_transaccion)
+            articulos_relacionados = ArticuloDetalleTransaccion.objects.select_related("id_articulo").filter(id_detalle_transaccion=detalle)
+
+            articulos_data = []
+            total = 0
+
+            for item in articulos_relacionados:
+                articulo = item.id_articulo
+                subtotal = articulo.precio_articulo * item.cantidad
+                total += subtotal
+
+                imagen_url = request.build_absolute_uri(articulo.imagen.url) if articulo.imagen else None
+
+                articulos_data.append({
+                    "id_articulo": articulo.id_articulo,
+                    "titulo_articulo": articulo.titulo_articulo,
+                    "precio_unitario": articulo.precio_articulo,
+                    "cantidad": item.cantidad,
+                    "subtotal": subtotal,
+                    "imagen": imagen_url,
+                })
+
+            return Response({
+                "id_transaccion": detalle.id_transaccion.id_transaccion,
+                "fecha_transaccion": detalle.id_transaccion.fecha_transaccion,
+                "tipo_transaccion": detalle.tipo_transaccion,
+                "tipo_entrega": detalle.tipo_entrega,
+                "cantidad_articulos": detalle.cantidad_articulos,
+                "articulos": articulos_data,
+                "total": total
+            }, status=200)
+
+        except DetalleTransaccion.DoesNotExist:
+            return Response({"error": "Transacción no encontrada"}, status=404)
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
+
+
+# ====================================
+# MIS TRANSACCIONES (Autenticado)
+# ====================================
+
+# class MisTransaccionesAPIView(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def get(self, request):
+#         auth_header = request.headers.get('Authorization', '')
+#         if not auth_header.startswith('Bearer '):
+#             return Response({"error": "Token no proporcionado"}, status=401)
+
+#         token = auth_header.split(' ')[1]
+
+#         try:
+#             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+#             user_id = payload.get("user_id")
+
+#             if not user_id:
+#                 return Response({"error": "Token inválido (sin user_id)"}, status=401)
+
+#             usuario = Usuarios.objects.get(id_usuario=user_id)
+
+#             # ✅ CAMBIO: usar 'usuario' (campo del modelo)
+#             transacciones = Transacciones.objects.filter(usuario=usuario)
+
+#             data = [{
+#                 "id": t.id_transaccion,
+#                 "fecha": t.fecha_transaccion
+#             } for t in transacciones]
+
+#             return Response({"transacciones": data})
+
+#         except jwt.ExpiredSignatureError:
+#             return Response({"error": "Token expirado"}, status=401)
+#         except jwt.DecodeError:
+#             return Response({"error": "Token inválido"}, status=401)
+#         except Usuarios.DoesNotExist:
+#             return Response({"error": "Usuario no encontrado"}, status=404)
+#         except Exception as e:
+#             return Response({"error": str(e)}, status=500 })
