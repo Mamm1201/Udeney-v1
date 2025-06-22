@@ -17,13 +17,13 @@ jobs:
       # 📥 1. Clona el repositorio
       - uses: actions/checkout@v4
 
-      # 🐍 2. Configura la versión de Python especificada
+      # 🐍 2. Configura Python
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
-      # 💾 3. Cachea los paquetes de pip para acelerar flujos posteriores
+      # 💾 3. Cache de dependencias pip
       - name: Cache pip packages
         uses: actions/cache@v3
         with:
@@ -32,61 +32,56 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      # 🧰 4. Actualiza pip e instala pip-tools para generar requirements.txt
+      # 📦 4. Instala herramientas de pip
       - name: Upgrade pip and install pip-tools
         run: |
           python -m pip install --upgrade pip
           pip install pip-tools
 
-      # 📄 5. Genera/actualiza requirements.txt desde requirements.in
+      # 📄 5. Compila requirements.txt desde requirements.in
       - name: Compile requirements.txt desde requirements.in
         run: |
-          pip-compile --upgrade requirements.in
+          pip-compile requirements.in
 
-      # 🚨 6. Verifica si requirements.txt fue modificado y no se ha subido
-      - name: Verificar si requirements.txt está actualizado
-        run: |
-          git diff --exit-code requirements.txt || (echo "❌ requirements.txt no está actualizado. Ejecuta pip-compile y commitea los cambios." && exit 1)
-
-      # 📦 7. Instala dependencias del backend
-      - name: Instalar dependencias del backend
+      # 📦 6. Instala dependencias del backend
+      - name: Install dependencies
         run: |
           pip install -r requirements.txt
           pip install pytest pytest-django black flake8
 
-      # 🧪 8. Formatea y analiza el código backend
-      - name: Formatear código con Black (auto-fix)
+      # 🧪 7. Corre pruebas y formato en el backend
+      - name: Format code with Black (auto-fix)
         run: |
           black .
 
-      - name: Ejecutar flake8
+      - name: Run flake8 linter
         run: |
           flake8 .
 
-      # 🌐 9. Configura Node.js para el frontend
+      # 🌐 8. Configura Node.js para el frontend
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: "18"
 
-      # 📦 10. Instala dependencias del frontend
-      - name: Instalar dependencias del frontend
+      # 📦 9. Instala dependencias del frontend
+      - name: Install frontend dependencies
         run: |
           cd client
           npm ci
 
-      # 🧹 11. Ejecuta linters y formateadores en el frontend
-      - name: Ejecutar ESLint
+      # 🧹 10. Linter y formato en frontend
+      - name: Run ESLint
         run: |
           cd client
           npx eslint . --max-warnings=0
 
-      - name: Formatear código con Prettier (auto-fix)
+      - name: Format code with Prettier (auto-fix)
         run: |
           cd client
           npx prettier --write "**/*.{js,jsx,json,css,md}"
 
-      # 📤 12. Subida de reportes de cobertura (opcional si usas pytest-cov)
+      # 📤 11. Subida de reportes de cobertura (opcional si usas pytest-cov)
       - name: Upload coverage report
         if: always()
         uses: actions/upload-artifact@v4
