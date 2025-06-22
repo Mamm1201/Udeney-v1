@@ -29,7 +29,7 @@ from .views import (
 # Configura el router para las rutas generadas automáticamente
 router = DefaultRouter()
 router.register(r"usuarios", UsuariosViewSet)
-router.register(r"articulos", ArticulosViewSet)
+# router.register(r"articulos", ArticulosViewSet)
 router.register(r"categorias", CategoriasViewSet)
 router.register(r"roles", RolesViewSet)
 router.register(r"usuario-rol", UsuarioRolViewSet)
@@ -38,6 +38,8 @@ router.register(r"transacciones", TransaccionesViewSet)
 router.register(r"calificaciones", CalificacionesViewSet)
 router.register(r"pagos", PagosViewSet)
 router.register(r"pqrs", PqrsViewSet)
+router.register(r'articulos', ArticulosViewSet, basename='articulos')
+
 
 urlpatterns = [
     # Rutas del router

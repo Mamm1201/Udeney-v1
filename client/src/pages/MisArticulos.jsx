@@ -114,12 +114,12 @@ const MisArticulos = () => {
                   flexDirection: "column",
                 }}
               >
-                {/* Imagen con estilos para que no quede pegada a los bordes */}
+                {/* Imagen del artículo (con imagen por defecto si no existe) */}
                 <CardMedia
                   component="img"
                   image={
                     articulo.imagen ||
-                    "https://via.placeholder.com/300x160?text=Sin+imagen"
+                    "https://picsum.photos/seed/sin-imagen/300/160"
                   }
                   alt={articulo.titulo_articulo}
                   sx={{

@@ -37,7 +37,7 @@ const CrearArticulo = () => {
   const [articuloCreado, setArticuloCreado] = useState(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
 
-  // Obtener categorías desde la API
+  // Obtener categorías desde la API al montar el componente
   useEffect(() => {
     const fetchCategorias = async () => {
       try {
@@ -80,8 +80,10 @@ const CrearArticulo = () => {
     data.append("institucion_articulo", formData.institucion_articulo);
     data.append("precio_articulo", formData.precio_articulo);
     data.append("id_categoria", formData.id_categoria);
-    data.append("estado_articulo", formData.estado_articulo); // ✅ Nuevo campo
+    data.append("estado_articulo", formData.estado_articulo);
     data.append("id_usuario", formData.id_usuario);
+    data.append("disponible", true); // ✅ Se agrega campo booleano 'disponible' como true
+
     if (imagen) data.append("imagen", imagen);
 
     try {

@@ -11,7 +11,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.generics import RetrieveAPIView
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, action
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -110,11 +110,42 @@ class UsuariosViewSet(viewsets.ModelViewSet):
     serializer_class = UsuariosSerializer
 
 
+# class ArticulosViewSet(viewsets.ModelViewSet):
+#     queryset = Articulos.objects.filter(disponible=True)
+#     serializer_class = ArticulosSerializer
+#     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+#     filterset_fields = ['id_categoria']
+    
 class ArticulosViewSet(viewsets.ModelViewSet):
-    queryset = Articulos.objects.all()
     serializer_class = ArticulosSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['id_categoria']
+
+    def get_queryset(self):
+        if self.action == 'retrieve':
+            return Articulos.objects.all()  # ✅ Permite ver cualquier artículo por ID
+        return Articulos.objects.filter(disponible=True)
+    
+# ====================================
+# OBTENER TODOS LOS ARTICULOS DESDE MIS ARTICULOS HASTA LOS VENDIDOS
+# ==================================== 
+    
+@action(detail=False, methods=['get'], url_path='mis-articulos')
+def mis_articulos(self, request):
+    id_usuario = request.query_params.get("id_usuario")
+    if not id_usuario:
+        return Response({"error": "id_usuario requerido"}, status=400)
+
+    articulos = Articulos.objects.filter(id_usuario=id_usuario)
+    serializer = self.get_serializer(articulos, many=True)
+    return Response(serializer.data)
+# ====================================
+# CRUD PARA OBTENER TODOS LOS ARTICULOS EN MODO ADMIN
+# ====================================      
+class TodosArticulosViewSet(viewsets.ModelViewSet):
+    queryset = Articulos.objects.all()
+    serializer_class = ArticulosSerializer
+
 
 
 class ArticuloDetailAPIView(RetrieveAPIView):
@@ -174,9 +205,7 @@ class PagosViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-# class PqrsViewSet(viewsets.ModelViewSet):
-#     queryset = Pqrs.objects.all()
-#     serializer_class = PqrsSerializer
+
 
 class PqrsViewSet(viewsets.ModelViewSet):
     queryset = Pqrs.objects.all()
@@ -209,7 +238,6 @@ def crear_con_detalles(request):
         if not usuario:
             return Response({"error": "Usuario no registrado"}, status=404)
 
-        # ✅ CAMBIO: usar 'usuario' (nombre del campo del modelo)
         transaccion = Transacciones.objects.create(usuario=usuario)
 
         detalle = DetalleTransaccion.objects.create(
@@ -233,6 +261,10 @@ def crear_con_detalles(request):
                 cantidad=cantidad,
             )
 
+            # 🚨 Marcar el artículo como no disponible
+            articulo.disponible = False
+            articulo.save()
+
         return Response({
             "message": "Transacción registrada correctamente",
             "id_transaccion": transaccion.id_transaccion
@@ -240,6 +272,8 @@ def crear_con_detalles(request):
 
     except Exception as e:
         return Response({"error": str(e)}, status=500)
+
+
 
 
 # ====================================

@@ -90,6 +90,14 @@ class CategoriasSerializer(serializers.ModelSerializer):
 # ====================================
 # SERIALIZADOR DE ARTÍCULOS
 # ====================================
+# class ArticulosSerializer(serializers.ModelSerializer):
+#     imagen = serializers.ImageField(use_url=True, required=False)
+#     id_usuario = serializers.PrimaryKeyRelatedField(queryset=Usuarios.objects.all())
+#     id_categoria = serializers.PrimaryKeyRelatedField(queryset=Categorias.objects.all())
+
+#     class Meta:
+#         model = Articulos
+#         fields = "__all__"        
 class ArticulosSerializer(serializers.ModelSerializer):
     imagen = serializers.ImageField(use_url=True, required=False)
     id_usuario = serializers.PrimaryKeyRelatedField(queryset=Usuarios.objects.all())
@@ -98,6 +106,11 @@ class ArticulosSerializer(serializers.ModelSerializer):
     class Meta:
         model = Articulos
         fields = "__all__"
+        read_only_fields = ["disponible"]  # <- ⚠️ Asegura que solo el backend lo controle
+
+    def create(self, validated_data):
+        validated_data['disponible'] = True  # ✅ Fuerza a que se cree como disponible
+        return super().create(validated_data)
 
 # ====================================
 # SERIALIZADOR DE DETALLE TRANSACCIÓN

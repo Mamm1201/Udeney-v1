@@ -201,28 +201,6 @@ const Articulos = () => {
                             {articulo.titulo_articulo}
                           </Typography>
 
-                          {/* <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            sx={{
-                              height: "40px",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                            }}
-                          >
-                            {articulo.descripcion_articulo}
-                          </Typography> */}
-
-                          {/* {articulo.institucion_articulo && (
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
-                              sx={{ display: "block", mt: 1 }}
-                            >
-                              {articulo.institucion_articulo}
-                            </Typography>
-                          )} */}
-
                           <Typography
                             variant="subtitle1"
                             fontWeight="bold"

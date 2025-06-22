@@ -110,6 +110,7 @@ class Articulos(models.Model):
         Categorias, on_delete=models.CASCADE, db_column="id_categoria"
     )  # Nombre exacto de la columna en la base de datos
     imagen = models.ImageField(upload_to="articulos/", null=True, blank=True)
+    disponible = models.BooleanField(default=True)  # Validar si esta disponible o no
 
     class Meta:
         db_table = "articulos"  # Asegúrate de usar el nombre correcto de la tabla
