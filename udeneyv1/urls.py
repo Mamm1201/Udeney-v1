@@ -1,13 +1,12 @@
 from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-from .views import ArticuloDetailAPIView
-
-# importación para token de validación
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from django.conf import settings
 from django.conf.urls.static import static
 
-from .views import ResumenCompraAPIView
+from rest_framework.routers import DefaultRouter
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
 
 from .views import (
     UsuariosViewSet,
@@ -23,13 +22,14 @@ from .views import (
     LoginView,
     RegistroUsuarioView,
     historial_transacciones_api,
-    crear_con_detalles,  ResumenCompraAPIView,
+    crear_con_detalles,
+    ResumenCompraAPIView,
+    ArticuloDetailAPIView,
 )
 
-# Configura el router para las rutas generadas automáticamente
+# Configuración del router
 router = DefaultRouter()
 router.register(r"usuarios", UsuariosViewSet)
-# router.register(r"articulos", ArticulosViewSet)
 router.register(r"categorias", CategoriasViewSet)
 router.register(r"roles", RolesViewSet)
 router.register(r"usuario-rol", UsuarioRolViewSet)
@@ -38,28 +38,33 @@ router.register(r"transacciones", TransaccionesViewSet)
 router.register(r"calificaciones", CalificacionesViewSet)
 router.register(r"pagos", PagosViewSet)
 router.register(r"pqrs", PqrsViewSet)
-router.register(r'articulos', ArticulosViewSet, basename='articulos')
-
+router.register(r"articulos", ArticulosViewSet, basename="articulos")
 
 urlpatterns = [
-    # Rutas del router
+    # Rutas automáticas generadas por router
     path("", include(router.urls)),
 
-    # Rutas personalizadas
+    # Autenticación
+    path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+
+    # Registro e inicio de sesión
     path("register/", RegistroUsuarioView.as_view(), name="register"),
     path("login/", LoginView.as_view(), name="login"),
 
-    path("articulos/<int:id_articulo>/", ArticuloDetailAPIView.as_view(), name="detalle-articulo"),
-    path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
-    path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
-    
-    # Rutas Administrador
-    path("historial/", historial_transacciones_api, name="historial_api"),
-    path("resumen-compra/<int:id_transaccion>/", ResumenCompraAPIView.as_view(), name="resumen-compra"),
+    # Artículos
+    path(
+        "articulos/<int:id_articulo>/",
+        ArticuloDetailAPIView.as_view(),
+        name="detalle-articulo"
+    ),
 
-    # Rutas Compra
+    # Transacciones y compras
     path("crear-transaccion/", crear_con_detalles, name="crear_transaccion"),
-    # path("mis-transacciones/", MisTransaccionesAPIView.as_view(), name="mis-transacciones"),
-    
+    path(
+        "resumen-compra/<int:id_transaccion>/",
+        ResumenCompraAPIView.as_view(),
+        name="resumen-compra"
+    ),
+    path("historial/", historial_transacciones_api, name="historial_api"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-

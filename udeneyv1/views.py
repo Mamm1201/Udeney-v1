@@ -12,11 +12,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.decorators import api_view, action
-from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
-
-import jwt
-from django.conf import settings
 
 # Filtros
 from django_filters.rest_framework import DjangoFilterBackend
@@ -33,8 +29,9 @@ from .serializers import (
     UsuariosSerializer, ArticulosSerializer, CategoriasSerializer,
     RolesSerializer, UsuarioRolSerializer, DetalleTransaccionSerializer,
     TransaccionesSerializer, CalificacionesSerializer, PagosSerializer,
-    PqrsSerializer, DetalleTransaccionAnidadoSerializer, ResumenCompraSerializer
+    PqrsSerializer, DetalleTransaccionAnidadoSerializer,
 )
+
 
 # ====================================
 # AUTENTICACIÓN
@@ -70,7 +67,9 @@ class LoginView(APIView):
         password = request.data.get("password")
 
         if not email or not password:
-            return Response({"error": "Debe ingresar correo y contraseña"}, status=400)
+            return Response(
+                {"error": "Debe ingresar correo y contraseña"}, status=400
+            )
 
         try:
             user = Usuarios.objects.get(email_usuario=email)
@@ -81,7 +80,9 @@ class LoginView(APIView):
             return Response({"error": "Cuenta desactivada"}, status=403)
 
         if not user.check_password(password):
-            return Response({"error": "Correo o contraseña incorrectos"}, status=401)
+            return Response(
+                {"error": "Correo o contraseña incorrectos"}, status=401
+            )
 
         refresh = RefreshToken.for_user(user)
         return Response({
@@ -102,7 +103,7 @@ class LogoutView(APIView):
 
 
 # ====================================
-# CRUD GENERAL
+# CRUD USUARIOS
 # ====================================
 
 class UsuariosViewSet(viewsets.ModelViewSet):
@@ -110,12 +111,10 @@ class UsuariosViewSet(viewsets.ModelViewSet):
     serializer_class = UsuariosSerializer
 
 
-# class ArticulosViewSet(viewsets.ModelViewSet):
-#     queryset = Articulos.objects.filter(disponible=True)
-#     serializer_class = ArticulosSerializer
-#     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-#     filterset_fields = ['id_categoria']
-    
+# ====================================
+# CRUD ARTICULOS
+# ====================================
+
 class ArticulosViewSet(viewsets.ModelViewSet):
     serializer_class = ArticulosSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
@@ -123,13 +122,10 @@ class ArticulosViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         if self.action == 'retrieve':
-            return Articulos.objects.all()  # ✅ Permite ver cualquier artículo por ID
+            return Articulos.objects.all()
         return Articulos.objects.filter(disponible=True)
-    
-# ====================================
-# OBTENER TODOS LOS ARTICULOS DESDE MIS ARTICULOS HASTA LOS VENDIDOS
-# ==================================== 
-    
+
+
 @action(detail=False, methods=['get'], url_path='mis-articulos')
 def mis_articulos(self, request):
     id_usuario = request.query_params.get("id_usuario")
@@ -139,13 +135,11 @@ def mis_articulos(self, request):
     articulos = Articulos.objects.filter(id_usuario=id_usuario)
     serializer = self.get_serializer(articulos, many=True)
     return Response(serializer.data)
-# ====================================
-# CRUD PARA OBTENER TODOS LOS ARTICULOS EN MODO ADMIN
-# ====================================      
+
+
 class TodosArticulosViewSet(viewsets.ModelViewSet):
     queryset = Articulos.objects.all()
     serializer_class = ArticulosSerializer
-
 
 
 class ArticuloDetailAPIView(RetrieveAPIView):
@@ -154,40 +148,67 @@ class ArticuloDetailAPIView(RetrieveAPIView):
     lookup_field = "id_articulo"
 
 
+# ====================================
+# CRUD CATEGORIAS
+# ====================================
+
 class CategoriasViewSet(viewsets.ModelViewSet):
     queryset = Categorias.objects.all()
     serializer_class = CategoriasSerializer
 
+
+# ====================================
+# CRUD ROLES
+# ====================================
 
 class RolesViewSet(viewsets.ModelViewSet):
     queryset = Roles.objects.all()
     serializer_class = RolesSerializer
 
 
+# ====================================
+# CRUD USUARIO - ROL
+# ====================================
+
 class UsuarioRolViewSet(viewsets.ModelViewSet):
     queryset = UsuarioRol.objects.all()
     serializer_class = UsuarioRolSerializer
 
+
+# ====================================
+# CRUD DETALLE - TRANSACCIÓN
+# ====================================
 
 class DetalleTransaccionViewSet(viewsets.ModelViewSet):
     queryset = DetalleTransaccion.objects.all()
     serializer_class = DetalleTransaccionSerializer
 
 
+# ====================================
+# CRUD TRANSACCIONES
+# ====================================
+
 class TransaccionesViewSet(viewsets.ModelViewSet):
     queryset = Transacciones.objects.all()
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
-            from .serializers import TransaccionConDetalleSerializer
-            return TransaccionConDetalleSerializer
+            return DetalleTransaccionAnidadoSerializer  # Reusa el anidado
         return TransaccionesSerializer
 
+
+# ====================================
+# CRUD CALIFICACIONES
+# ====================================
 
 class CalificacionesViewSet(viewsets.ModelViewSet):
     queryset = Calificaciones.objects.all()
     serializer_class = CalificacionesSerializer
 
+
+# ====================================
+# CRUD PAGOS
+# ====================================
 
 class PagosViewSet(viewsets.ModelViewSet):
     queryset = Pagos.objects.all()
@@ -205,17 +226,17 @@ class PagosViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-
+# ====================================
+# CRUD PQRS
+# ====================================
 
 class PqrsViewSet(viewsets.ModelViewSet):
     queryset = Pqrs.objects.all()
     serializer_class = PqrsSerializer
-    permission_classes = [AllowAny]  # <--- Cambiado aquí
+    permission_classes = [AllowAny]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ['id_usuario', 'tipo_pqr']
     ordering_fields = ['fecha_pqr']
-
-
 
 
 # ====================================
@@ -224,56 +245,51 @@ class PqrsViewSet(viewsets.ModelViewSet):
 
 @api_view(["POST"])
 def crear_con_detalles(request):
-    try:
-        data = request.data
-        id_usuario = data.get("id_usuario")
-        tipo_transaccion = data.get("tipo_transaccion")
-        tipo_entrega = data.get("tipo_entrega")
-        articulos = data.get("articulos", [])
+    data = request.data
+    id_usuario = data.get("id_usuario")
+    tipo_transaccion = data.get("tipo_transaccion")
+    tipo_entrega = data.get("tipo_entrega")
+    articulos = data.get("articulos", [])
 
-        if not all([id_usuario, tipo_transaccion, tipo_entrega, articulos]):
-            return Response({"error": "Datos incompletos"}, status=400)
+    if not all([id_usuario, tipo_transaccion, tipo_entrega, articulos]):
+        return Response({"error": "Datos incompletos"}, status=400)
 
-        usuario = Usuarios.objects.filter(id_usuario=id_usuario).first()
-        if not usuario:
-            return Response({"error": "Usuario no registrado"}, status=404)
+    usuario = Usuarios.objects.filter(id_usuario=id_usuario).first()
+    if not usuario:
+        return Response({"error": "Usuario no registrado"}, status=404)
 
-        transaccion = Transacciones.objects.create(usuario=usuario)
+    transaccion = Transacciones.objects.create(usuario=usuario)
 
-        detalle = DetalleTransaccion.objects.create(
-            id_transaccion=transaccion,
-            tipo_transaccion=tipo_transaccion,
-            tipo_entrega=tipo_entrega,
-            cantidad_articulos=len(articulos),
-        )
+    detalle = DetalleTransaccion.objects.create(
+        id_transaccion=transaccion,
+        tipo_transaccion=tipo_transaccion,
+        tipo_entrega=tipo_entrega,
+        cantidad_articulos=len(articulos),
+    )
 
-        for art in articulos:
-            id_articulo = art.get("id_articulo")
-            cantidad = art.get("cantidad", 1)
+    for art in articulos:
+        id_articulo = art.get("id_articulo")
+        cantidad = art.get("cantidad", 1)
 
-            articulo = Articulos.objects.filter(id_articulo=id_articulo).first()
-            if not articulo:
-                return Response({"error": f"Artículo {id_articulo} no existe"}, status=404)
-
-            ArticuloDetalleTransaccion.objects.create(
-                id_detalle_transaccion=detalle,
-                id_articulo=articulo,
-                cantidad=cantidad,
+        articulo = Articulos.objects.filter(id_articulo=id_articulo).first()
+        if not articulo:
+            return Response(
+                {"error": f"Artículo {id_articulo} no existe"}, status=404
             )
 
-            # 🚨 Marcar el artículo como no disponible
-            articulo.disponible = False
-            articulo.save()
+        ArticuloDetalleTransaccion.objects.create(
+            id_detalle_transaccion=detalle,
+            id_articulo=articulo,
+            cantidad=cantidad,
+        )
 
-        return Response({
-            "message": "Transacción registrada correctamente",
-            "id_transaccion": transaccion.id_transaccion
-        }, status=201)
+        articulo.disponible = False
+        articulo.save()
 
-    except Exception as e:
-        return Response({"error": str(e)}, status=500)
-
-
+    return Response({
+        "message": "Transacción registrada correctamente",
+        "id_transaccion": transaccion.id_transaccion
+    }, status=201)
 
 
 # ====================================
@@ -291,16 +307,17 @@ def historial_transacciones_api(request):
     except ValueError:
         return Response({"error": "ID inválido"}, status=400)
 
-    fecha_inicio = parse_date(request.query_params.get("fecha_inicio")) if request.query_params.get("fecha_inicio") else None
-    fecha_fin = parse_date(request.query_params.get("fecha_fin")) if request.query_params.get("fecha_fin") else None
+    fecha_inicio = parse_date(
+        request.query_params.get("fecha_inicio")
+    ) if request.query_params.get("fecha_inicio") else None
+    fecha_fin = parse_date(
+        request.query_params.get("fecha_fin")
+    ) if request.query_params.get("fecha_fin") else None
 
-    # ✅ CAMBIO: usar 'usuario_id' en lugar de 'id_usuario_id'
     compras = Transacciones.objects.filter(
         usuario_id=id_usuario,
         detalletransaccion__tipo_transaccion="compra"
     )
-
-    # ✅ CAMBIO: verificar si Articulos tiene campo 'usuario'
     ventas = Transacciones.objects.filter(
         detalletransaccion__id_articulo__usuario_id=id_usuario,
         detalletransaccion__tipo_transaccion="venta"
@@ -313,8 +330,12 @@ def historial_transacciones_api(request):
         compras = compras.filter(fecha_transaccion__lte=fecha_fin)
         ventas = ventas.filter(fecha_transaccion__lte=fecha_fin)
 
-    compras_data = list(compras.values("id_transaccion", "fecha_transaccion"))
-    ventas_data = list(ventas.values("id_transaccion", "fecha_transaccion"))
+    compras_data = list(compras.values(
+        "id_transaccion", "fecha_transaccion"
+    ))
+    ventas_data = list(ventas.values(
+        "id_transaccion", "fecha_transaccion"
+    ))
 
     return Response({"compras": compras_data, "ventas": ventas_data})
 
@@ -326,19 +347,24 @@ def historial_transacciones_api(request):
 class ResumenCompraAPIView(APIView):
     def get(self, request, id_transaccion):
         try:
-            detalle = DetalleTransaccion.objects.select_related("id_transaccion").get(id_transaccion_id=id_transaccion)
-            articulos_relacionados = ArticuloDetalleTransaccion.objects.select_related("id_articulo").filter(id_detalle_transaccion=detalle)
+            detalle = DetalleTransaccion.objects.select_related(
+                "id_transaccion"
+            ).get(id_transaccion_id=id_transaccion)
+            articulos = ArticuloDetalleTransaccion.objects.select_related(
+                "id_articulo"
+            ).filter(id_detalle_transaccion=detalle)
 
             articulos_data = []
             total = 0
-
-            for item in articulos_relacionados:
+            for item in articulos:
                 articulo = item.id_articulo
                 subtotal = articulo.precio_articulo * item.cantidad
                 total += subtotal
 
-                imagen_url = request.build_absolute_uri(articulo.imagen.url) if articulo.imagen else None
-
+                imagen_url = (
+                    request.build_absolute_uri(articulo.imagen.url)
+                    if articulo.imagen else None
+                )
                 articulos_data.append({
                     "id_articulo": articulo.id_articulo,
                     "titulo_articulo": articulo.titulo_articulo,
@@ -357,51 +383,7 @@ class ResumenCompraAPIView(APIView):
                 "articulos": articulos_data,
                 "total": total
             }, status=200)
-
         except DetalleTransaccion.DoesNotExist:
             return Response({"error": "Transacción no encontrada"}, status=404)
         except Exception as e:
             return Response({"error": str(e)}, status=500)
-
-
-# ====================================
-# MIS TRANSACCIONES (Autenticado)
-# ====================================
-
-# class MisTransaccionesAPIView(APIView):
-#     permission_classes = [IsAuthenticated]
-
-#     def get(self, request):
-#         auth_header = request.headers.get('Authorization', '')
-#         if not auth_header.startswith('Bearer '):
-#             return Response({"error": "Token no proporcionado"}, status=401)
-
-#         token = auth_header.split(' ')[1]
-
-#         try:
-#             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-#             user_id = payload.get("user_id")
-
-#             if not user_id:
-#                 return Response({"error": "Token inválido (sin user_id)"}, status=401)
-
-#             usuario = Usuarios.objects.get(id_usuario=user_id)
-
-#             # ✅ CAMBIO: usar 'usuario' (campo del modelo)
-#             transacciones = Transacciones.objects.filter(usuario=usuario)
-
-#             data = [{
-#                 "id": t.id_transaccion,
-#                 "fecha": t.fecha_transaccion
-#             } for t in transacciones]
-
-#             return Response({"transacciones": data})
-
-#         except jwt.ExpiredSignatureError:
-#             return Response({"error": "Token expirado"}, status=401)
-#         except jwt.DecodeError:
-#             return Response({"error": "Token inválido"}, status=401)
-#         except Usuarios.DoesNotExist:
-#             return Response({"error": "Usuario no encontrado"}, status=404)
-#         except Exception as e:
-#             return Response({"error": str(e)}, status=500 })

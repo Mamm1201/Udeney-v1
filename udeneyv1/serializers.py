@@ -1,5 +1,5 @@
 # ====================================
-# IMPORTACIONES
+# IMPORTACIONES NECESARIAS
 # ====================================
 from rest_framework import serializers
 from .models import (
@@ -15,6 +15,7 @@ from .models import (
     Pqrs,
     ArticuloDetalleTransaccion,
 )
+
 
 # ====================================
 # SERIALIZADOR DE USUARIOS
@@ -35,7 +36,6 @@ class UsuariosSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
-        # Crear usuario con contraseña encriptada
         user = Usuarios(
             nombres_usuario=validated_data["nombres_usuario"],
             apellidos_usuario=validated_data["apellidos_usuario"],
@@ -48,7 +48,6 @@ class UsuariosSerializer(serializers.ModelSerializer):
         return user
 
     def update(self, instance, validated_data):
-        # Actualizar usuario; encripta contraseña si se modifica
         for attr, value in validated_data.items():
             if attr == "password_usuario":
                 instance.set_password(value)
@@ -57,6 +56,7 @@ class UsuariosSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
+
 # ====================================
 # SERIALIZADOR DE ROLES
 # ====================================
@@ -64,6 +64,7 @@ class RolesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Roles
         fields = "__all__"
+
 
 # ====================================
 # SERIALIZADOR DE USUARIO_ROL
@@ -79,6 +80,7 @@ class UsuarioRolSerializer(serializers.ModelSerializer):
         model = UsuarioRol
         fields = ["id_usuario_rol", "id_usuario", "id_rol"]
 
+
 # ====================================
 # SERIALIZADOR DE CATEGORÍAS
 # ====================================
@@ -87,30 +89,28 @@ class CategoriasSerializer(serializers.ModelSerializer):
         model = Categorias
         fields = "__all__"
 
+
 # ====================================
 # SERIALIZADOR DE ARTÍCULOS
 # ====================================
-# class ArticulosSerializer(serializers.ModelSerializer):
-#     imagen = serializers.ImageField(use_url=True, required=False)
-#     id_usuario = serializers.PrimaryKeyRelatedField(queryset=Usuarios.objects.all())
-#     id_categoria = serializers.PrimaryKeyRelatedField(queryset=Categorias.objects.all())
-
-#     class Meta:
-#         model = Articulos
-#         fields = "__all__"        
 class ArticulosSerializer(serializers.ModelSerializer):
     imagen = serializers.ImageField(use_url=True, required=False)
-    id_usuario = serializers.PrimaryKeyRelatedField(queryset=Usuarios.objects.all())
-    id_categoria = serializers.PrimaryKeyRelatedField(queryset=Categorias.objects.all())
+    id_usuario = serializers.PrimaryKeyRelatedField(
+        queryset=Usuarios.objects.all()
+    )
+    id_categoria = serializers.PrimaryKeyRelatedField(
+        queryset=Categorias.objects.all()
+    )
 
     class Meta:
         model = Articulos
         fields = "__all__"
-        read_only_fields = ["disponible"]  # <- ⚠️ Asegura que solo el backend lo controle
+        read_only_fields = ["disponible"]
 
     def create(self, validated_data):
-        validated_data['disponible'] = True  # ✅ Fuerza a que se cree como disponible
+        validated_data['disponible'] = True
         return super().create(validated_data)
+
 
 # ====================================
 # SERIALIZADOR DE DETALLE TRANSACCIÓN
@@ -120,6 +120,7 @@ class DetalleTransaccionSerializer(serializers.ModelSerializer):
         model = DetalleTransaccion
         fields = "__all__"
 
+
 # ====================================
 # SERIALIZADOR DE ARTÍCULO DETALLE TRANSACCIÓN
 # ====================================
@@ -128,23 +129,35 @@ class ArticuloDetalleTransaccionSerializer(serializers.ModelSerializer):
         model = ArticuloDetalleTransaccion
         fields = "__all__"
 
+
 # ====================================
 # SERIALIZADOR ANIDADO DE ARTÍCULOS EN DETALLE TRANSACCIÓN
 # ====================================
 class ArticuloDetalleTransaccionAnidadoSerializer(serializers.ModelSerializer):
-    titulo_articulo = serializers.CharField(source='id_articulo.titulo_articulo')
-    precio_articulo = serializers.DecimalField(source='id_articulo.precio_articulo', max_digits=10, decimal_places=2)
+    titulo_articulo = serializers.CharField(
+        source='id_articulo.titulo_articulo'
+    )
+    precio_articulo = serializers.DecimalField(
+        source='id_articulo.precio_articulo',
+        max_digits=10,
+        decimal_places=2
+    )
     imagen_articulo = serializers.SerializerMethodField()
 
     class Meta:
         model = ArticuloDetalleTransaccion
-        fields = ['titulo_articulo', 'cantidad', 'precio_articulo', 'imagen_articulo']
+        fields = [
+            'titulo_articulo',
+            'cantidad',
+            'precio_articulo',
+            'imagen_articulo'
+        ]
 
     def get_imagen_articulo(self, obj):
-        # Devuelve la URL de la imagen del artículo
         if obj.id_articulo.imagen:
             return obj.id_articulo.imagen.url
         return None
+
 
 # ====================================
 # SERIALIZADOR ANIDADO DE DETALLE TRANSACCIÓN CON ARTÍCULOS
@@ -157,9 +170,13 @@ class DetalleTransaccionAnidadoSerializer(serializers.ModelSerializer):
         fields = ['tipo_transaccion', 'tipo_entrega', 'articulos']
 
     def get_articulos(self, detalle):
-        # Obtiene todos los artículos relacionados con este detalle
-        articulos = ArticuloDetalleTransaccion.objects.filter(id_detalle_transaccion=detalle)
-        return ArticuloDetalleTransaccionAnidadoSerializer(articulos, many=True).data
+        articulos = ArticuloDetalleTransaccion.objects.filter(
+            id_detalle_transaccion=detalle
+        )
+        return ArticuloDetalleTransaccionAnidadoSerializer(
+            articulos, many=True
+        ).data
+
 
 # ====================================
 # SERIALIZADOR DE TRANSACCIÓN CON DETALLES COMPLETOS
@@ -169,27 +186,39 @@ class TransaccionConDetalleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Transacciones
-        fields = ['id_transaccion', 'fecha_transaccion', 'id_usuario', 'detalle']
+        fields = [
+            'id_transaccion',
+            'fecha_transaccion',
+            'id_usuario',
+            'detalle'
+        ]
 
     def get_detalle(self, transaccion):
         try:
-            detalle = DetalleTransaccion.objects.get(id_transaccion=transaccion)
+            detalle = DetalleTransaccion.objects.get(
+                id_transaccion=transaccion
+            )
             return DetalleTransaccionAnidadoSerializer(detalle).data
         except DetalleTransaccion.DoesNotExist:
             return None
 
+
 # ====================================
-# SERIALIZADOR BÁSICO DE TRANSACCIONES (OPCIONAL)
+# SERIALIZADOR BÁSICO DE TRANSACCIONES
 # ====================================
 class TransaccionesSerializer(serializers.ModelSerializer):
     id_detalle_transaccion = serializers.PrimaryKeyRelatedField(read_only=True)
-    detalle_transaccion_data = DetalleTransaccionSerializer(source='id_detalle_transaccion', read_only=True)
+    detalle_transaccion_data = DetalleTransaccionSerializer(
+        source='id_detalle_transaccion',
+        read_only=True
+    )
 
     class Meta:
         model = Transacciones
         fields = "__all__"
         extra_fields = ['detalle_transaccion_data']
         depth = 0
+
 
 # ====================================
 # SERIALIZADOR DE CALIFICACIONES
@@ -215,6 +244,7 @@ class PagosSerializer(serializers.ModelSerializer):
         model = Pagos
         fields = "__all__"
 
+
 # ====================================
 # SERIALIZADOR DE PQRS
 # ====================================
@@ -224,6 +254,9 @@ class PqrsSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+# ====================================
+# SERIALIZADOR DE RESUMEN COMPRA
+# ====================================
 class ResumenCompraSerializer(serializers.Serializer):
     id_transaccion = serializers.IntegerField()
     fecha_transaccion = serializers.DateTimeField()
@@ -232,5 +265,3 @@ class ResumenCompraSerializer(serializers.Serializer):
     cantidad_articulos = serializers.IntegerField()
     articulos = ArticuloDetalleTransaccionAnidadoSerializer(many=True)
     total = serializers.DecimalField(max_digits=10, decimal_places=2)
-
-
