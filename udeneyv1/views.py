@@ -174,9 +174,21 @@ class PagosViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
+# class PqrsViewSet(viewsets.ModelViewSet):
+#     queryset = Pqrs.objects.all()
+#     serializer_class = PqrsSerializer
+
+from rest_framework.permissions import AllowAny
+
 class PqrsViewSet(viewsets.ModelViewSet):
     queryset = Pqrs.objects.all()
     serializer_class = PqrsSerializer
+    permission_classes = [AllowAny]  # <--- Cambiado aquí
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_fields = ['id_usuario', 'tipo_pqr']
+    ordering_fields = ['fecha_pqr']
+
+
 
 
 # ====================================

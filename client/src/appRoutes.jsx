@@ -34,6 +34,7 @@ import Calificar from "./pages/Calificar";
 
 // Administración
 import Rol from "./pages/Rol";
+import PqrsAdmin from "./components/admin/PqrsAdmin";
 
 // Página base o futura app interna
 import App from "./pages/App";
@@ -87,6 +88,7 @@ const AppRoutes = () => {
 
         {/* --- Administración --- */}
         <Route path="/rol" element={<Rol />} />
+        <Route path="/admin/pqrs" element={<PqrsAdmin />} />
 
         {/* --- Ruta auxiliar o futura app/dashboard --- */}
         <Route path="/app" element={<App />} />
