@@ -19,23 +19,39 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 # Modelos
 from .models import (
-    Usuarios, Articulos, Categorias, Roles, UsuarioRol,
-    DetalleTransaccion, Transacciones, Calificaciones, Pagos, Pqrs,
-    ArticuloDetalleTransaccion
+    Usuarios,
+    Articulos,
+    Categorias,
+    Roles,
+    UsuarioRol,
+    DetalleTransaccion,
+    Transacciones,
+    Calificaciones,
+    Pagos,
+    Pqrs,
+    ArticuloDetalleTransaccion,
 )
 
 # Serializadores
 from .serializers import (
-    UsuariosSerializer, ArticulosSerializer, CategoriasSerializer,
-    RolesSerializer, UsuarioRolSerializer, DetalleTransaccionSerializer,
-    TransaccionesSerializer, CalificacionesSerializer, PagosSerializer,
-    PqrsSerializer, DetalleTransaccionAnidadoSerializer,
+    UsuariosSerializer,
+    ArticulosSerializer,
+    CategoriasSerializer,
+    RolesSerializer,
+    UsuarioRolSerializer,
+    DetalleTransaccionSerializer,
+    TransaccionesSerializer,
+    CalificacionesSerializer,
+    PagosSerializer,
+    PqrsSerializer,
+    DetalleTransaccionAnidadoSerializer,
 )
 
 
 # ====================================
 # AUTENTICACIÓN
 # ====================================
+
 
 class RegistroUsuarioView(APIView):
     permission_classes = [AllowAny]
@@ -45,17 +61,20 @@ class RegistroUsuarioView(APIView):
         if serializer.is_valid():
             user = serializer.save()
             refresh = RefreshToken.for_user(user)
-            return Response({
-                "message": "Usuario registrado exitosamente",
-                "user": {
-                    "id_usuario": user.id_usuario,
-                    "email_usuario": user.email_usuario,
-                    "nombres_usuario": user.nombres_usuario,
-                    "apellidos_usuario": user.apellidos_usuario,
+            return Response(
+                {
+                    "message": "Usuario registrado exitosamente",
+                    "user": {
+                        "id_usuario": user.id_usuario,
+                        "email_usuario": user.email_usuario,
+                        "nombres_usuario": user.nombres_usuario,
+                        "apellidos_usuario": user.apellidos_usuario,
+                    },
+                    "access_token": str(refresh.access_token),
+                    "refresh_token": str(refresh),
                 },
-                "access_token": str(refresh.access_token),
-                "refresh_token": str(refresh),
-            }, status=status.HTTP_201_CREATED)
+                status=status.HTTP_201_CREATED,
+            )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -67,9 +86,7 @@ class LoginView(APIView):
         password = request.data.get("password")
 
         if not email or not password:
-            return Response(
-                {"error": "Debe ingresar correo y contraseña"}, status=400
-            )
+            return Response({"error": "Debe ingresar correo y contraseña"}, status=400)
 
         try:
             user = Usuarios.objects.get(email_usuario=email)
@@ -80,19 +97,19 @@ class LoginView(APIView):
             return Response({"error": "Cuenta desactivada"}, status=403)
 
         if not user.check_password(password):
-            return Response(
-                {"error": "Correo o contraseña incorrectos"}, status=401
-            )
+            return Response({"error": "Correo o contraseña incorrectos"}, status=401)
 
         refresh = RefreshToken.for_user(user)
-        return Response({
-            "message": f"Bienvenido {user.nombres_usuario}",
-            "id_usuario": user.id_usuario,
-            "email": user.email_usuario,
-            "nombres_usuario": user.nombres_usuario,
-            "access_token": str(refresh.access_token),
-            "refresh_token": str(refresh),
-        })
+        return Response(
+            {
+                "message": f"Bienvenido {user.nombres_usuario}",
+                "id_usuario": user.id_usuario,
+                "email": user.email_usuario,
+                "nombres_usuario": user.nombres_usuario,
+                "access_token": str(refresh.access_token),
+                "refresh_token": str(refresh),
+            }
+        )
 
 
 class LogoutView(APIView):
@@ -106,6 +123,7 @@ class LogoutView(APIView):
 # CRUD USUARIOS
 # ====================================
 
+
 class UsuariosViewSet(viewsets.ModelViewSet):
     queryset = Usuarios.objects.all()
     serializer_class = UsuariosSerializer
@@ -115,18 +133,19 @@ class UsuariosViewSet(viewsets.ModelViewSet):
 # CRUD ARTICULOS
 # ====================================
 
+
 class ArticulosViewSet(viewsets.ModelViewSet):
     serializer_class = ArticulosSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    filterset_fields = ['id_categoria']
+    filterset_fields = ["id_categoria"]
 
     def get_queryset(self):
-        if self.action == 'retrieve':
+        if self.action == "retrieve":
             return Articulos.objects.all()
         return Articulos.objects.filter(disponible=True)
 
 
-@action(detail=False, methods=['get'], url_path='mis-articulos')
+@action(detail=False, methods=["get"], url_path="mis-articulos")
 def mis_articulos(self, request):
     id_usuario = request.query_params.get("id_usuario")
     if not id_usuario:
@@ -152,6 +171,7 @@ class ArticuloDetailAPIView(RetrieveAPIView):
 # CRUD CATEGORIAS
 # ====================================
 
+
 class CategoriasViewSet(viewsets.ModelViewSet):
     queryset = Categorias.objects.all()
     serializer_class = CategoriasSerializer
@@ -160,6 +180,7 @@ class CategoriasViewSet(viewsets.ModelViewSet):
 # ====================================
 # CRUD ROLES
 # ====================================
+
 
 class RolesViewSet(viewsets.ModelViewSet):
     queryset = Roles.objects.all()
@@ -170,6 +191,7 @@ class RolesViewSet(viewsets.ModelViewSet):
 # CRUD USUARIO - ROL
 # ====================================
 
+
 class UsuarioRolViewSet(viewsets.ModelViewSet):
     queryset = UsuarioRol.objects.all()
     serializer_class = UsuarioRolSerializer
@@ -178,6 +200,7 @@ class UsuarioRolViewSet(viewsets.ModelViewSet):
 # ====================================
 # CRUD DETALLE - TRANSACCIÓN
 # ====================================
+
 
 class DetalleTransaccionViewSet(viewsets.ModelViewSet):
     queryset = DetalleTransaccion.objects.all()
@@ -188,11 +211,12 @@ class DetalleTransaccionViewSet(viewsets.ModelViewSet):
 # CRUD TRANSACCIONES
 # ====================================
 
+
 class TransaccionesViewSet(viewsets.ModelViewSet):
     queryset = Transacciones.objects.all()
 
     def get_serializer_class(self):
-        if self.action == 'retrieve':
+        if self.action == "retrieve":
             return DetalleTransaccionAnidadoSerializer  # Reusa el anidado
         return TransaccionesSerializer
 
@@ -200,6 +224,7 @@ class TransaccionesViewSet(viewsets.ModelViewSet):
 # ====================================
 # CRUD CALIFICACIONES
 # ====================================
+
 
 class CalificacionesViewSet(viewsets.ModelViewSet):
     queryset = Calificaciones.objects.all()
@@ -210,6 +235,7 @@ class CalificacionesViewSet(viewsets.ModelViewSet):
 # CRUD PAGOS
 # ====================================
 
+
 class PagosViewSet(viewsets.ModelViewSet):
     queryset = Pagos.objects.all()
     serializer_class = PagosSerializer
@@ -218,7 +244,7 @@ class PagosViewSet(viewsets.ModelViewSet):
         if not request.data.get("id_detalle_transaccion"):
             return Response(
                 {"error": "El campo 'id_detalle_transaccion' es obligatorio."},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -230,18 +256,20 @@ class PagosViewSet(viewsets.ModelViewSet):
 # CRUD PQRS
 # ====================================
 
+
 class PqrsViewSet(viewsets.ModelViewSet):
     queryset = Pqrs.objects.all()
     serializer_class = PqrsSerializer
     permission_classes = [AllowAny]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
-    filterset_fields = ['id_usuario', 'tipo_pqr']
-    ordering_fields = ['fecha_pqr']
+    filterset_fields = ["id_usuario", "tipo_pqr"]
+    ordering_fields = ["fecha_pqr"]
 
 
 # ====================================
 # CREAR TRANSACCIÓN CON DETALLES
 # ====================================
+
 
 @api_view(["POST"])
 def crear_con_detalles(request):
@@ -273,9 +301,7 @@ def crear_con_detalles(request):
 
         articulo = Articulos.objects.filter(id_articulo=id_articulo).first()
         if not articulo:
-            return Response(
-                {"error": f"Artículo {id_articulo} no existe"}, status=404
-            )
+            return Response({"error": f"Artículo {id_articulo} no existe"}, status=404)
 
         ArticuloDetalleTransaccion.objects.create(
             id_detalle_transaccion=detalle,
@@ -286,15 +312,19 @@ def crear_con_detalles(request):
         articulo.disponible = False
         articulo.save()
 
-    return Response({
-        "message": "Transacción registrada correctamente",
-        "id_transaccion": transaccion.id_transaccion
-    }, status=201)
+    return Response(
+        {
+            "message": "Transacción registrada correctamente",
+            "id_transaccion": transaccion.id_transaccion,
+        },
+        status=201,
+    )
 
 
 # ====================================
 # HISTORIAL DE TRANSACCIONES
 # ====================================
+
 
 @api_view(["GET"])
 def historial_transacciones_api(request):
@@ -307,20 +337,23 @@ def historial_transacciones_api(request):
     except ValueError:
         return Response({"error": "ID inválido"}, status=400)
 
-    fecha_inicio = parse_date(
-        request.query_params.get("fecha_inicio")
-    ) if request.query_params.get("fecha_inicio") else None
-    fecha_fin = parse_date(
-        request.query_params.get("fecha_fin")
-    ) if request.query_params.get("fecha_fin") else None
+    fecha_inicio = (
+        parse_date(request.query_params.get("fecha_inicio"))
+        if request.query_params.get("fecha_inicio")
+        else None
+    )
+    fecha_fin = (
+        parse_date(request.query_params.get("fecha_fin"))
+        if request.query_params.get("fecha_fin")
+        else None
+    )
 
     compras = Transacciones.objects.filter(
-        usuario_id=id_usuario,
-        detalletransaccion__tipo_transaccion="compra"
+        usuario_id=id_usuario, detalletransaccion__tipo_transaccion="compra"
     )
     ventas = Transacciones.objects.filter(
         detalletransaccion__id_articulo__usuario_id=id_usuario,
-        detalletransaccion__tipo_transaccion="venta"
+        detalletransaccion__tipo_transaccion="venta",
     )
 
     if fecha_inicio:
@@ -330,12 +363,8 @@ def historial_transacciones_api(request):
         compras = compras.filter(fecha_transaccion__lte=fecha_fin)
         ventas = ventas.filter(fecha_transaccion__lte=fecha_fin)
 
-    compras_data = list(compras.values(
-        "id_transaccion", "fecha_transaccion"
-    ))
-    ventas_data = list(ventas.values(
-        "id_transaccion", "fecha_transaccion"
-    ))
+    compras_data = list(compras.values("id_transaccion", "fecha_transaccion"))
+    ventas_data = list(ventas.values("id_transaccion", "fecha_transaccion"))
 
     return Response({"compras": compras_data, "ventas": ventas_data})
 
@@ -344,12 +373,13 @@ def historial_transacciones_api(request):
 # RESUMEN DE COMPRA POR ID
 # ====================================
 
+
 class ResumenCompraAPIView(APIView):
     def get(self, request, id_transaccion):
         try:
-            detalle = DetalleTransaccion.objects.select_related(
-                "id_transaccion"
-            ).get(id_transaccion_id=id_transaccion)
+            detalle = DetalleTransaccion.objects.select_related("id_transaccion").get(
+                id_transaccion_id=id_transaccion
+            )
             articulos = ArticuloDetalleTransaccion.objects.select_related(
                 "id_articulo"
             ).filter(id_detalle_transaccion=detalle)
@@ -363,26 +393,32 @@ class ResumenCompraAPIView(APIView):
 
                 imagen_url = (
                     request.build_absolute_uri(articulo.imagen.url)
-                    if articulo.imagen else None
+                    if articulo.imagen
+                    else None
                 )
-                articulos_data.append({
-                    "id_articulo": articulo.id_articulo,
-                    "titulo_articulo": articulo.titulo_articulo,
-                    "precio_unitario": articulo.precio_articulo,
-                    "cantidad": item.cantidad,
-                    "subtotal": subtotal,
-                    "imagen": imagen_url,
-                })
+                articulos_data.append(
+                    {
+                        "id_articulo": articulo.id_articulo,
+                        "titulo_articulo": articulo.titulo_articulo,
+                        "precio_unitario": articulo.precio_articulo,
+                        "cantidad": item.cantidad,
+                        "subtotal": subtotal,
+                        "imagen": imagen_url,
+                    }
+                )
 
-            return Response({
-                "id_transaccion": detalle.id_transaccion.id_transaccion,
-                "fecha_transaccion": detalle.id_transaccion.fecha_transaccion,
-                "tipo_transaccion": detalle.tipo_transaccion,
-                "tipo_entrega": detalle.tipo_entrega,
-                "cantidad_articulos": detalle.cantidad_articulos,
-                "articulos": articulos_data,
-                "total": total
-            }, status=200)
+            return Response(
+                {
+                    "id_transaccion": detalle.id_transaccion.id_transaccion,
+                    "fecha_transaccion": detalle.id_transaccion.fecha_transaccion,
+                    "tipo_transaccion": detalle.tipo_transaccion,
+                    "tipo_entrega": detalle.tipo_entrega,
+                    "cantidad_articulos": detalle.cantidad_articulos,
+                    "articulos": articulos_data,
+                    "total": total,
+                },
+                status=200,
+            )
         except DetalleTransaccion.DoesNotExist:
             return Response({"error": "Transacción no encontrada"}, status=404)
         except Exception as e:

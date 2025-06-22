@@ -65,9 +65,7 @@ class UsuarioRol(models.Model):
     id_usuario = models.ForeignKey(
         "usuarios", on_delete=models.CASCADE, db_column="id_usuario"
     )
-    id_rol = models.CharField(
-        max_length=10, choices=ROL_CHOICES, db_column="id_rol"
-    )
+    id_rol = models.CharField(max_length=10, choices=ROL_CHOICES, db_column="id_rol")
 
     class Meta:
         db_table = "usuario_rol"
@@ -124,8 +122,7 @@ class Articulos(models.Model):
 class DetalleTransaccion(models.Model):
     id_detalle_transaccion = models.AutoField(primary_key=True)
     tipo_transaccion = models.CharField(
-        max_length=20,
-        choices=[("venta", "Venta"), ("compra", "Compra")]
+        max_length=20, choices=[("venta", "Venta"), ("compra", "Compra")]
     )
     tipo_entrega = models.CharField(
         max_length=20,
@@ -136,10 +133,7 @@ class DetalleTransaccion(models.Model):
     )
     cantidad_articulos = models.IntegerField(null=True, blank=True)
     id_transaccion = models.ForeignKey(
-        'Transacciones',
-        on_delete=models.CASCADE,
-        db_column="id_transaccion",
-        null=True
+        "Transacciones", on_delete=models.CASCADE, db_column="id_transaccion", null=True
     )
 
     class Meta:
@@ -153,14 +147,10 @@ class DetalleTransaccion(models.Model):
 class ArticuloDetalleTransaccion(models.Model):
     id = models.AutoField(primary_key=True)
     id_detalle_transaccion = models.ForeignKey(
-        DetalleTransaccion,
-        on_delete=models.CASCADE,
-        db_column="id_detalle_transaccion"
+        DetalleTransaccion, on_delete=models.CASCADE, db_column="id_detalle_transaccion"
     )
     id_articulo = models.ForeignKey(
-        Articulos,
-        on_delete=models.CASCADE,
-        db_column="id_articulo"
+        Articulos, on_delete=models.CASCADE, db_column="id_articulo"
     )
     cantidad = models.IntegerField()
 
@@ -175,9 +165,7 @@ class ArticuloDetalleTransaccion(models.Model):
 class Transacciones(models.Model):
     id_transaccion = models.AutoField(primary_key=True)
     usuario = models.ForeignKey(
-        Usuarios,
-        on_delete=models.CASCADE,
-        db_column="id_usuario"
+        Usuarios, on_delete=models.CASCADE, db_column="id_usuario"
     )
     fecha_transaccion = models.DateTimeField(auto_now_add=True)
 
@@ -201,9 +189,7 @@ class Calificaciones(models.Model):
     )
     comentario = models.TextField(null=True, blank=True)
     id_transaccion = models.ForeignKey(
-        Transacciones,
-        on_delete=models.CASCADE,
-        db_column="id_transaccion"
+        Transacciones, on_delete=models.CASCADE, db_column="id_transaccion"
     )
 
     class Meta:
@@ -217,18 +203,12 @@ class Calificaciones(models.Model):
 class Pagos(models.Model):
     id_pago = models.AutoField(primary_key=True)
     id_detalle_transaccion = models.ForeignKey(
-        DetalleTransaccion,
-        on_delete=models.CASCADE,
-        db_column="id_detalle_transaccion"
+        DetalleTransaccion, on_delete=models.CASCADE, db_column="id_detalle_transaccion"
     )
     fecha_pago = models.DateTimeField(auto_now_add=True)
     valor_pago = models.DecimalField(max_digits=10, decimal_places=2)
     estado_pago = models.CharField(
-        max_length=20,
-        choices=[
-            ("aprobado", "Aprobado"),
-            ("pendiente", "Pendiente")
-        ]
+        max_length=20, choices=[("aprobado", "Aprobado"), ("pendiente", "Pendiente")]
     )
 
     class Meta:
@@ -252,14 +232,10 @@ class Pqrs(models.Model):
     descripcion_pqr = models.TextField()
     fecha_pqr = models.DateTimeField(auto_now_add=True)
     id_usuario = models.ForeignKey(
-        Usuarios,
-        on_delete=models.CASCADE,
-        db_column="id_usuario"
+        Usuarios, on_delete=models.CASCADE, db_column="id_usuario"
     )
     id_transaccion = models.ForeignKey(
-        Transacciones,
-        on_delete=models.CASCADE,
-        db_column="id_transaccion"
+        Transacciones, on_delete=models.CASCADE, db_column="id_transaccion"
     )
 
     class Meta:

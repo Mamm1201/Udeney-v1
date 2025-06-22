@@ -95,12 +95,8 @@ class CategoriasSerializer(serializers.ModelSerializer):
 # ====================================
 class ArticulosSerializer(serializers.ModelSerializer):
     imagen = serializers.ImageField(use_url=True, required=False)
-    id_usuario = serializers.PrimaryKeyRelatedField(
-        queryset=Usuarios.objects.all()
-    )
-    id_categoria = serializers.PrimaryKeyRelatedField(
-        queryset=Categorias.objects.all()
-    )
+    id_usuario = serializers.PrimaryKeyRelatedField(queryset=Usuarios.objects.all())
+    id_categoria = serializers.PrimaryKeyRelatedField(queryset=Categorias.objects.all())
 
     class Meta:
         model = Articulos
@@ -108,7 +104,7 @@ class ArticulosSerializer(serializers.ModelSerializer):
         read_only_fields = ["disponible"]
 
     def create(self, validated_data):
-        validated_data['disponible'] = True
+        validated_data["disponible"] = True
         return super().create(validated_data)
 
 
@@ -134,24 +130,15 @@ class ArticuloDetalleTransaccionSerializer(serializers.ModelSerializer):
 # SERIALIZADOR ANIDADO DE ARTÍCULOS EN DETALLE TRANSACCIÓN
 # ====================================
 class ArticuloDetalleTransaccionAnidadoSerializer(serializers.ModelSerializer):
-    titulo_articulo = serializers.CharField(
-        source='id_articulo.titulo_articulo'
-    )
+    titulo_articulo = serializers.CharField(source="id_articulo.titulo_articulo")
     precio_articulo = serializers.DecimalField(
-        source='id_articulo.precio_articulo',
-        max_digits=10,
-        decimal_places=2
+        source="id_articulo.precio_articulo", max_digits=10, decimal_places=2
     )
     imagen_articulo = serializers.SerializerMethodField()
 
     class Meta:
         model = ArticuloDetalleTransaccion
-        fields = [
-            'titulo_articulo',
-            'cantidad',
-            'precio_articulo',
-            'imagen_articulo'
-        ]
+        fields = ["titulo_articulo", "cantidad", "precio_articulo", "imagen_articulo"]
 
     def get_imagen_articulo(self, obj):
         if obj.id_articulo.imagen:
@@ -167,15 +154,13 @@ class DetalleTransaccionAnidadoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DetalleTransaccion
-        fields = ['tipo_transaccion', 'tipo_entrega', 'articulos']
+        fields = ["tipo_transaccion", "tipo_entrega", "articulos"]
 
     def get_articulos(self, detalle):
         articulos = ArticuloDetalleTransaccion.objects.filter(
             id_detalle_transaccion=detalle
         )
-        return ArticuloDetalleTransaccionAnidadoSerializer(
-            articulos, many=True
-        ).data
+        return ArticuloDetalleTransaccionAnidadoSerializer(articulos, many=True).data
 
 
 # ====================================
@@ -186,18 +171,11 @@ class TransaccionConDetalleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Transacciones
-        fields = [
-            'id_transaccion',
-            'fecha_transaccion',
-            'id_usuario',
-            'detalle'
-        ]
+        fields = ["id_transaccion", "fecha_transaccion", "id_usuario", "detalle"]
 
     def get_detalle(self, transaccion):
         try:
-            detalle = DetalleTransaccion.objects.get(
-                id_transaccion=transaccion
-            )
+            detalle = DetalleTransaccion.objects.get(id_transaccion=transaccion)
             return DetalleTransaccionAnidadoSerializer(detalle).data
         except DetalleTransaccion.DoesNotExist:
             return None
@@ -209,14 +187,13 @@ class TransaccionConDetalleSerializer(serializers.ModelSerializer):
 class TransaccionesSerializer(serializers.ModelSerializer):
     id_detalle_transaccion = serializers.PrimaryKeyRelatedField(read_only=True)
     detalle_transaccion_data = DetalleTransaccionSerializer(
-        source='id_detalle_transaccion',
-        read_only=True
+        source="id_detalle_transaccion", read_only=True
     )
 
     class Meta:
         model = Transacciones
         fields = "__all__"
-        extra_fields = ['detalle_transaccion_data']
+        extra_fields = ["detalle_transaccion_data"]
         depth = 0
 
 
@@ -228,10 +205,10 @@ class CalificacionesSerializer(serializers.ModelSerializer):
         model = Calificaciones
         fields = "__all__"
         extra_kwargs = {
-            'comentario': {
-                'required': False,
-                'allow_null': True,
-                'allow_blank': True,
+            "comentario": {
+                "required": False,
+                "allow_null": True,
+                "allow_blank": True,
             }
         }
 

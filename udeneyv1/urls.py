@@ -43,28 +43,24 @@ router.register(r"articulos", ArticulosViewSet, basename="articulos")
 urlpatterns = [
     # Rutas automáticas generadas por router
     path("", include(router.urls)),
-
     # Autenticación
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
-
     # Registro e inicio de sesión
     path("register/", RegistroUsuarioView.as_view(), name="register"),
     path("login/", LoginView.as_view(), name="login"),
-
     # Artículos
     path(
         "articulos/<int:id_articulo>/",
         ArticuloDetailAPIView.as_view(),
-        name="detalle-articulo"
+        name="detalle-articulo",
     ),
-
     # Transacciones y compras
     path("crear-transaccion/", crear_con_detalles, name="crear_transaccion"),
     path(
         "resumen-compra/<int:id_transaccion>/",
         ResumenCompraAPIView.as_view(),
-        name="resumen-compra"
+        name="resumen-compra",
     ),
     path("historial/", historial_transacciones_api, name="historial_api"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
