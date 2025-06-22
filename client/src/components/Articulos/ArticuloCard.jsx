@@ -30,7 +30,7 @@ const ExpandMore = styled(
   React.forwardRef((props, ref) => {
     const { expand, ...other } = props;
     return <IconButton ref={ref} {...other} />;
-  })
+  }),
 )(({ theme, expand }) => ({
   marginLeft: "auto",
   transform: !expand ? "rotate(0deg)" : "rotate(180deg)",

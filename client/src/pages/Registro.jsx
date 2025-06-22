@@ -41,7 +41,7 @@ const Registro = () => {
     e.preventDefault();
 
     const camposRequeridos = Object.values(formData).every(
-      (campo) => campo !== ""
+      (campo) => campo !== "",
     );
     if (!camposRequeridos) {
       setSnackbarError(true);
@@ -69,7 +69,7 @@ const Registro = () => {
       setSnackbarMessage(
         error.response?.data?.email_usuario?.[0] ||
           error.response?.data?.detail ||
-          "Hubo un error al registrar."
+          "Hubo un error al registrar.",
       );
       setOpenSnackbar(true);
     }

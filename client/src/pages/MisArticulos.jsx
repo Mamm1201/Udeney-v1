@@ -34,7 +34,7 @@ const MisArticulos = () => {
     try {
       const res = await api.get(`/articulos/`);
       const filtrados = res.data.filter(
-        (art) => parseInt(art.id_usuario) === parseInt(id_usuario)
+        (art) => parseInt(art.id_usuario) === parseInt(id_usuario),
       );
       setArticulos(filtrados);
     } catch (error) {
@@ -53,7 +53,7 @@ const MisArticulos = () => {
     try {
       await api.delete(`/articulos/${articuloAEliminar.id_articulo}/`);
       setArticulos((prev) =>
-        prev.filter((a) => a.id_articulo !== articuloAEliminar.id_articulo)
+        prev.filter((a) => a.id_articulo !== articuloAEliminar.id_articulo),
       );
       setSnackbar({
         open: true,

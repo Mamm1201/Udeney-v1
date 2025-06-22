@@ -51,7 +51,7 @@ const Carrito = () => {
   useEffect(() => {
     const totalCalculado = carrito.reduce(
       (acc, item) => acc + item.precio_articulo * item.cantidad,
-      0
+      0,
     );
     setTotal(totalCalculado);
   }, [carrito]);

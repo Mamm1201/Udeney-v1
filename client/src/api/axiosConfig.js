@@ -27,7 +27,7 @@ api.interceptors.request.use((config) => {
 
   // Verifica si la URL actual es una de las protegidas
   const requiereToken = rutasProtegidas.some((ruta) =>
-    config.url.includes(ruta)
+    config.url.includes(ruta),
   );
 
   // Añadir encabezado Authorization solo si es necesario
@@ -51,7 +51,7 @@ api.interceptors.response.use(
       // Aquí puedes redirigir al login o limpiar el token si quieres
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;

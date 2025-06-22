@@ -31,7 +31,7 @@ export const CarritoProvider = ({ children }) => {
         return prev.map((i) =>
           i.id_articulo === item.id_articulo
             ? { ...i, cantidad: i.cantidad + 1 }
-            : i
+            : i,
         );
       }
       return [...prev, { ...item, cantidad: 1 }];
