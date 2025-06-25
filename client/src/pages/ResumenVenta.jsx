@@ -8,8 +8,18 @@ import {
   CircularProgress,
   Grid,
   Chip,
+  Paper,
 } from "@mui/material";
+import NavbarVender from "../components/NavbarVender";
+import Pie from "../components/Pie";
 import axios from "axios";
+
+const CATEGORIAS = {
+  1: "Prenda",
+  2: "Útiles",
+  3: "Libros",
+  4: "Herramientas",
+};
 
 const ResumenVenta = () => {
   const { id } = useParams();
@@ -34,97 +44,143 @@ const ResumenVenta = () => {
 
   if (loading) {
     return (
-      <Box sx={{ textAlign: "center", mt: 8 }}>
-        <CircularProgress />
-      </Box>
+      <>
+        <NavbarVender />
+        <Box sx={{ textAlign: "center", mt: 8 }}>
+          <CircularProgress sx={{ color: "#468C8C" }} />
+        </Box>
+        <Pie />
+      </>
     );
   }
 
   if (!articulo) {
     return (
-      <Box sx={{ textAlign: "center", mt: 8 }}>
-        <Typography color="error">No se encontró el artículo</Typography>
-      </Box>
+      <>
+        <NavbarVender />
+        <Box sx={{ textAlign: "center", mt: 8 }}>
+          <Typography color="error">No se encontró el artículo</Typography>
+        </Box>
+        <Pie />
+      </>
     );
   }
 
   return (
-    <Box sx={{ maxWidth: 1000, mx: "auto", mt: 4, p: 2 }}>
-      <Grid container spacing={4}>
-        {/* Imagen del artículo */}
-        <Grid item xs={12} md={6}>
-          <Box
-            component="img"
-            src={`http://localhost:8000/media/${articulo.imagen}`}
-            alt={articulo.titulo_articulo}
-            sx={{
-              width: "100%",
-              height: "auto",
-              borderRadius: 2,
-              boxShadow: 3,
-            }}
-          />
-        </Grid>
-
-        {/* Detalles del artículo */}
-        <Grid item xs={12} md={6}>
-          <Typography variant="h4" gutterBottom>
-            {articulo.titulo_articulo}
+    <>
+      <NavbarVender />
+      <Box sx={{ maxWidth: 1100, mx: "auto", mt: 4, p: 3, minHeight: "80vh" }}>
+        {/* Agradecimiento */}
+        <Box
+          sx={{
+            mb: 3,
+            backgroundColor: "#f0fdfa",
+            borderLeft: "6px solid #468C8C",
+            p: 2,
+            borderRadius: 2,
+          }}
+        >
+          <Typography variant="h6" fontWeight="bold" color="#468C8C">
+            🎉 ¡Gracias por publicar tu artículo!
           </Typography>
-
-          <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>
-            Otras marcas
+          <Typography variant="body2">
+            Este es un resumen de tu publicación. Puedes revisarla, y si deseas modificarla, accede desde <strong>Mis artículos</strong>.
           </Typography>
+        </Box>
 
-          <Typography variant="h5" sx={{ color: "green", mb: 2 }}>
-            ${articulo.precio_articulo?.toLocaleString()}
-          </Typography>
+        {/* Contenido principal */}
+        <Paper elevation={4} sx={{ p: 4, borderRadius: 4 }}>
+          <Grid container spacing={4}>
+            {/* Imagen */}
+            <Grid item xs={12} md={6}>
+              {articulo.imagen ? (
+                <Box
+                  component="img"
+                  src={articulo.imagen}
+                  alt={articulo.titulo_articulo}
+                  sx={{
+                    width: "100%",
+                    height: "auto",
+                    borderRadius: 3,
+                    boxShadow: 4,
+                    objectFit: "cover",
+                  }}
+                />
+              ) : (
+                <Typography variant="body2" color="text.secondary">
+                  Imagen no disponible
+                </Typography>
+              )}
+            </Grid>
 
-          <Divider sx={{ my: 2 }} />
+            {/* Info */}
+            <Grid item xs={12} md={6}>
+              <Typography variant="h4" fontWeight="bold" gutterBottom color="#468C8C">
+                {articulo.titulo_articulo}
+              </Typography>
 
-          <Typography variant="body1" sx={{ mb: 2 }}>
-            {articulo.descripcion_articulo}
-          </Typography>
+              <Typography variant="subtitle1" sx={{ mb: 2 }}>
+                <strong>Institución:</strong> {articulo.institucion_articulo || "No registrada"}
+              </Typography>
 
-          <Box sx={{ mb: 2 }}>
-            <Typography variant="subtitle2">Talla</Typography>
-            <Chip label="Única" />
-          </Box>
+              <Typography variant="h5" sx={{ color: "#2e7d32", mb: 2, fontWeight: 600 }}>
+                ${parseFloat(articulo.precio_articulo).toLocaleString()}
+              </Typography>
 
-          <Box sx={{ mb: 2 }}>
-            <Typography variant="subtitle2">Categoría</Typography>
-            <Chip label={articulo.nombre_categoria || `ID ${articulo.id_categoria}`} />
-          </Box>
+              <Divider sx={{ my: 2 }} />
 
-          <Box sx={{ mb: 2 }}>
-            <Typography variant="subtitle2">Estado</Typography>
-            <Chip label="En perfecto estado" />
-          </Box>
+              <Typography variant="body1" sx={{ mb: 2 }}>
+                {articulo.descripcion_articulo}
+              </Typography>
 
-          <Box sx={{ mb: 2 }}>
-            <Typography variant="subtitle2">Color</Typography>
-            <Chip label="Blanco" />
-          </Box>
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="subtitle2">Categoría</Typography>
+                <Chip
+                  label={CATEGORIAS[articulo.id_categoria] || `ID ${articulo.id_categoria}`}
+                  sx={{
+                    mt: 0.5,
+                    backgroundColor: "#468C8C",
+                    color: "#fff",
+                    fontWeight: "bold",
+                    borderRadius: 1,
+                  }}
+                />
+              </Box>
 
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-            Publicado el:{" "}
-            {articulo.fecha_creacion
-              ? new Date(articulo.fecha_creacion).toLocaleDateString()
-              : "Fecha no disponible"}
-          </Typography>
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="subtitle2">Estado</Typography>
+                <Chip
+                  label={articulo.disponible ? "Disponible" : "No disponible"}
+                  color={articulo.disponible ? "success" : "default"}
+                  sx={{ mt: 0.5, fontWeight: 500, borderRadius: 1 }}
+                />
+              </Box>
 
-          <Box sx={{ mt: 4 }}>
-            <Button
-              variant="contained"
-              fullWidth
-              onClick={() => navigate("/mis-articulos")}
-            >
-              Ver todos mis artículos
-            </Button>
-          </Box>
-        </Grid>
-      </Grid>
-    </Box>
+              <Box sx={{ mt: 4 }}>
+                <Button
+                  variant="contained"
+                  fullWidth
+                  onClick={() => navigate("/mis-articulos")}
+                  sx={{
+                    backgroundColor: "#468C8C",
+                    "&:hover": {
+                      backgroundColor: "#3a7c7c",
+                    },
+                    py: 1.5,
+                    borderRadius: 2,
+                    fontWeight: "bold",
+                    fontSize: "1rem",
+                  }}
+                >
+                  Ir a mis artículos
+                </Button>
+              </Box>
+            </Grid>
+          </Grid>
+        </Paper>
+      </Box>
+      <Pie />
+    </>
   );
 };
 

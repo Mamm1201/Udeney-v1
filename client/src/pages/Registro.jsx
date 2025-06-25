@@ -1,10 +1,5 @@
-<<<<<<< HEAD
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-=======
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
->>>>>>> develop
 import {
   TextField,
   Button,
@@ -20,7 +15,6 @@ import { registrarUsuario } from "../api/register.api";
 const Registro = () => {
   const navigate = useNavigate();
 
-  // Formulario
   const [formData, setFormData] = useState({
     email_usuario: "",
     nombres_usuario: "",
@@ -31,22 +25,19 @@ const Registro = () => {
     fecha_nacimiento: "",
   });
 
-  // Snackbar de éxito y error
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarError, setSnackbarError] = useState(false);
 
-  // Manejo de campos
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Envío del formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     const camposRequeridos = Object.values(formData).every(
-      (campo) => campo !== "",
+      (campo) => campo !== ""
     );
     if (!camposRequeridos) {
       setSnackbarError(true);
@@ -63,7 +54,6 @@ const Registro = () => {
         setSnackbarMessage("¡Usuario registrado exitosamente!");
         setOpenSnackbar(true);
 
-        // Redirigir al login después de 2 segundos
         setTimeout(() => navigate("/login"), 2000);
       } else {
         throw new Error("Error al registrar");
@@ -74,7 +64,7 @@ const Registro = () => {
       setSnackbarMessage(
         error.response?.data?.email_usuario?.[0] ||
           error.response?.data?.detail ||
-          "Hubo un error al registrar.",
+          "Hubo un error al registrar."
       );
       setOpenSnackbar(true);
     }
@@ -96,7 +86,6 @@ const Registro = () => {
         Registro de Usuario
       </Typography>
 
-      {/* Formulario */}
       <Box
         component="form"
         onSubmit={handleSubmit}
@@ -182,7 +171,6 @@ const Registro = () => {
         </Button>
       </Box>
 
-      {/* Snackbar para éxito o error */}
       <Snackbar
         open={openSnackbar}
         autoHideDuration={3000}

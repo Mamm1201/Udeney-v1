@@ -156,7 +156,7 @@ class ArticuloDetalleTransaccion(models.Model):
 
     class Meta:
         db_table = "articulo_detalle_transaccion"
-        managed = False
+        managed = True
 
 
 # ====================================
@@ -171,7 +171,7 @@ class Transacciones(models.Model):
 
     class Meta:
         db_table = "transacciones"
-        managed = True
+        managed = False
 
 
 # ====================================

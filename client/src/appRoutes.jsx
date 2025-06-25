@@ -69,33 +69,15 @@ const AppRoutes = () => {
         {/* --- Gestión de artículos del usuario --- */}
         <Route path="/mis-articulos" element={<MisArticulos />} />
         <Route path="/crear-articulo" element={<CrearArticulo />} />
-<<<<<<< HEAD
         <Route path="/editar-articulo/:id_articulo" element={<EditarArticulo />} />
-=======
-        <Route
-          path="/editar-articulo/:id_articulo"
-          element={<EditarArticulo />}
-        />
         <Route path="/mis-transacciones" element={<MisTransacciones />} />
->>>>>>> develop
 
         {/* --- Perfil de usuario --- */}
         <Route path="/user" element={<UserProfile />} />
         <Route path="/actualizar-datos" element={<ActualizarDatos />} />
-<<<<<<< HEAD
         <Route path="/historial-transacciones" element={<HistorialTransacciones />} />
         <Route path="/detalle-transaccion/:id" element={<DetalleTransaccion />} />
-=======
-        <Route
-          path="/historial-transacciones"
-          element={<HistorialTransacciones />}
-        />
-        <Route
-          path="/detalle-transaccion/:id"
-          element={<DetalleTransaccion />}
-        />
         <Route path="/calificar/:id" element={<Calificar />} />
->>>>>>> develop
 
         {/* --- Administración --- */}
         <Route path="/rol" element={<Rol />} />
