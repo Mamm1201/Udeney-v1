@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import NavbarVender from "../components/NavbarVender";
 import { useNavigate } from "react-router-dom";
 import {
@@ -9,34 +9,28 @@ import {
   Select,
   InputLabel,
   FormControl,
-  Snackbar,
-  Alert,
+  Typography,
 } from "@mui/material";
 import { getCategorias, crearArticulo } from "../api/articulos.api";
+import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 
 const CrearArticulo = () => {
   const navigate = useNavigate();
-
-  // Obtener datos del usuario desde localStorage
   const idUsuario = localStorage.getItem("id_usuario");
   const nombreUsuario = localStorage.getItem("nombres_usuario");
 
-  // Estado del formulario, inicializado sin valores null para evitar warnings
   const [formData, setFormData] = useState({
-    titulo_articulo: "", // ✅ Cadena vacía en lugar de null
+    titulo_articulo: "",
     descripcion_articulo: "",
     institucion_articulo: "",
     precio_articulo: "",
-    id_categoria: "", // ✅ Cadena vacía que se transforma a número luego
-    id_usuario: parseInt(idUsuario), // Se mantiene numérico
+    id_categoria: "",
+    id_usuario: parseInt(idUsuario),
   });
 
-  const [imagen, setImagen] = useState(null); // Imagen seleccionada
-  const [categorias, setCategorias] = useState([]); // Lista de categorías
-  const [articuloCreado, setArticuloCreado] = useState(null); // Artículo creado
-  const [snackbarOpen, setSnackbarOpen] = useState(false); // Estado del Snackbar
+  const [imagen, setImagen] = useState(null);
+  const [categorias, setCategorias] = useState([]);
 
-  // Obtener las categorías disponibles al cargar el componente
   useEffect(() => {
     const fetchCategorias = async () => {
       try {
@@ -49,153 +43,173 @@ const CrearArticulo = () => {
     fetchCategorias();
   }, []);
 
-  // Manejador para los campos de texto
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
-      [name]: name === "id_categoria" ? parseInt(value) : value, // Convertir a número solo la categoría
+      [name]: name === "id_categoria" ? parseInt(value) : value,
     }));
   };
 
-  // Manejador de archivo de imagen
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) setImagen(file);
   };
 
-  // Manejador del formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Validar selección de categoría
-    if (!formData.id_categoria || formData.id_categoria === "") {
+    if (!formData.id_categoria) {
       alert("Por favor selecciona una categoría antes de enviar.");
       return;
     }
 
-    // Preparar datos a enviar como FormData
     const data = new FormData();
-    data.append("titulo_articulo", formData.titulo_articulo);
-    data.append("descripcion_articulo", formData.descripcion_articulo);
-    data.append("institucion_articulo", formData.institucion_articulo);
-    data.append("precio_articulo", formData.precio_articulo);
-    data.append("id_categoria", formData.id_categoria);
-    data.append("id_usuario", formData.id_usuario);
+    Object.entries(formData).forEach(([key, value]) =>
+      data.append(key, value)
+    );
     if (imagen) data.append("imagen", imagen);
 
     try {
-      const response = await crearArticulo(data);
-      if (response.status === 201) {
-        setArticuloCreado(response.data);
-        setSnackbarOpen(true);
-
-        // Reiniciar campos del formulario después de crear
-        setFormData({
-          titulo_articulo: "",
-          descripcion_articulo: "",
-          institucion_articulo: "",
-          precio_articulo: "",
-          id_categoria: "",
-          id_usuario: parseInt(idUsuario),
-        });
-        setImagen(null);
+      const res = await crearArticulo(data);
+      if (res.status === 201) {
+        const idArticulo = res.data.id_articulo;
+        navigate(`/resumen-venta/${idArticulo}`);
       }
-    } catch (error) {
-      console.error("Error al crear artículo:", error);
-      alert("Error al crear artículo: " + error.message);
+    } catch (err) {
+      console.error("Error al crear artículo:", err);
+      alert("Error al crear artículo: " + err.message);
     }
+  };
+
+  const inputFocusStyle = {
+    "& .MuiOutlinedInput-root": {
+      "& fieldset": {
+        borderColor: "#ccc",
+        transition: "0.3s ease",
+      },
+      "&:hover fieldset": {
+        borderColor: "#468C8C",
+      },
+      "&.Mui-focused fieldset": {
+        borderColor: "#468C8C",
+        boxShadow: "0 0 8px 4px rgba(70, 140, 140, 0.75)",
+      },
+    },
   };
 
   return (
     <>
-      {/* Barra de navegación superior */}
       <NavbarVender />
-
-      {/* Área principal con fondo claro */}
       <Box
         sx={{
           minHeight: "100vh",
-          backgroundColor: "#e9ecef",
-          paddingTop: 8,
+          backgroundColor: "#fff",
+          paddingTop: 10,
           paddingBottom: 4,
           display: "flex",
           justifyContent: "center",
-          alignItems: "flex-start",
         }}
       >
-        {/* Contenedor del formulario */}
         <Box
           component="form"
           onSubmit={handleSubmit}
-          sx={{
-            width: "100%",
-            maxWidth: 500,
-            backgroundColor: "#ffffff",
-            padding: 4,
-            borderRadius: 2,
-            boxShadow: 3,
-            marginX: 2,
-          }}
+          sx={{ width: "100%", maxWidth: 900, px: 6, py: 4 }}
         >
-          {/* Subir imagen */}
-          <TextField
-            fullWidth
-            type="file"
-            onChange={handleImageChange}
-            inputProps={{ accept: "image/*" }}
-            sx={{ mt: 1 }}
-          />
+          <Typography variant="body2" sx={{ color: "#d97706", mb: 3 }}>
+            Solo aceptamos artículos en buen estado.{" "}
+            
+          </Typography>
 
-          {/* Campo: Título */}
+          <Box
+            sx={{
+              border: "2px dashed #468C8C",
+              borderRadius: 2,
+              p: 4,
+              my: 2,
+              backgroundColor: "#f0fdfa",
+              textAlign: "center",
+            }}
+          >
+            <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
+              <PhotoCameraIcon sx={{ fontSize: 50, color: "#468C8C" }} />
+            </Box>
+            <Button
+              variant="contained"
+              component="label"
+              sx={{
+                backgroundColor: "#468C8C",
+                color: "#fff",
+                ":hover": { backgroundColor: "#3b7c7c" },
+              }}
+            >
+              Seleccionar fotos
+              <input
+                type="file"
+                accept="image/*"
+                hidden
+                onChange={handleImageChange}
+              />
+            </Button>
+            <Typography variant="caption" sx={{ mt: 1, display: "block" }}>
+              Tamaño recomendado: 1080x1080px.
+            </Typography>
+
+            {/* Vista previa de imagen */}
+            {imagen && (
+              <Box mt={2}>
+                <img
+                  src={URL.createObjectURL(imagen)}
+                  alt="Vista previa"
+                  style={{ maxWidth: "100%", maxHeight: 300, marginTop: 10 }}
+                />
+              </Box>
+            )}
+          </Box>
+
           <TextField
-            label="Título del Artículo"
+            label="Un buen título debe ser claro y descriptivo."
             name="titulo_articulo"
             value={formData.titulo_articulo}
             onChange={handleChange}
-            variant="outlined"
-            margin="normal"
             fullWidth
+            required
+            sx={{ my: 2, ...inputFocusStyle }}
           />
 
-          {/* Campo: Descripción */}
           <TextField
-            label="Descripción del Artículo"
+            label="Cuéntanos más de tu artículo"
             name="descripcion_articulo"
             value={formData.descripcion_articulo}
             onChange={handleChange}
-            variant="outlined"
-            margin="normal"
             multiline
             rows={4}
             fullWidth
+            required
+            placeholder="Describe tu artículo con precisión: tamaño, estado, materiales y cualquier detalle que lo haga especial. Una buena descripción atrae más compradores..."
+            sx={{ my: 2, ...inputFocusStyle }}
           />
 
-          {/* Campo: Institución */}
           <TextField
-            label="Institución del Artículo"
+            label="Institución"
             name="institucion_articulo"
             value={formData.institucion_articulo}
             onChange={handleChange}
-            variant="outlined"
-            margin="normal"
             fullWidth
+            sx={{ my: 2, ...inputFocusStyle }}
           />
 
-          {/* Campo: Precio */}
           <TextField
             label="Precio"
             name="precio_articulo"
             value={formData.precio_articulo}
             onChange={handleChange}
-            variant="outlined"
-            margin="normal"
             type="number"
             fullWidth
+            required
+            sx={{ my: 2, ...inputFocusStyle }}
           />
 
-          {/* Selector de categoría */}
-          <FormControl variant="outlined" margin="normal" fullWidth required>
+          <FormControl fullWidth required sx={{ my: 2, ...inputFocusStyle }}>
             <InputLabel>Categoría</InputLabel>
             <Select
               name="id_categoria"
@@ -206,70 +220,38 @@ const CrearArticulo = () => {
               <MenuItem value="">
                 <em>Selecciona una categoría</em>
               </MenuItem>
-              {categorias.map((categoria) => (
-                <MenuItem
-                  key={categoria.id_categoria}
-                  value={categoria.id_categoria}
-                >
-                  {categoria.nombre_categoria}
+              {categorias.map((cat) => (
+                <MenuItem key={cat.id_categoria} value={cat.id_categoria}>
+                  {cat.nombre_categoria}
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
 
-          {/* Usuario autenticado (solo lectura) */}
           <TextField
             label="Usuario actual"
             value={nombreUsuario || ""}
-            margin="normal"
             fullWidth
             InputProps={{ readOnly: true }}
+            sx={{ my: 2, ...inputFocusStyle }}
           />
 
-          {/* Botón de envío */}
           <Button
             type="submit"
-            variant="contained"
-            color="primary"
             fullWidth
+            variant="contained"
             sx={{
-              borderRadius: 4,
-              marginTop: 2,
-              padding: "10px 0",
-              fontSize: "16px",
+              mt: 4,
+              py: 1.5,
+              fontWeight: "bold",
+              backgroundColor: "#468C8C",
+              ":hover": { backgroundColor: "#3b7c7c" },
             }}
           >
-            Subir Artículo
+            Continuar
           </Button>
         </Box>
       </Box>
-
-      {/* Notificación de artículo creado */}
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={5000}
-        onClose={() => setSnackbarOpen(false)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <Alert
-          onClose={() => setSnackbarOpen(false)}
-          severity="success"
-          sx={{ width: "100%" }}
-          action={
-            <Button
-              color="inherit"
-              size="small"
-              onClick={() =>
-                navigate(`/articulos/${articuloCreado?.id_articulo}`)
-              }
-            >
-              Ver artículo
-            </Button>
-          }
-        >
-          🎉 ¡Artículo creado exitosamente!
-        </Alert>
-      </Snackbar>
     </>
   );
 };

@@ -1,10 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Logo from "./Logo";
-import LoginButton from "./Loginbutton";
-import LogoutButton from "./LogoutButton";
-import PerfilMenu from "./PerfilMenuVendedor";
-
 import {
   AppBar,
   Toolbar,
@@ -16,10 +11,16 @@ import {
   IconButton,
   useMediaQuery,
   useTheme,
+  Badge,
 } from "@mui/material";
-
 import MenuIcon from "@mui/icons-material/Menu";
-import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+
+import Logo from "./Logo";
+import LoginButton from "./Loginbutton";
+import LogoutButton from "./LogoutButton";
+import PerfilMenu from "./PerfilMenu";
+import { useCarrito } from "../context/CarritoContext";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -27,17 +28,12 @@ const Navbar = () => {
   const isLoggedIn = !!localStorage.getItem("access_token");
 
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // Detectar vista móvil
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-  // Menú móvil (hamburguesa)
   const [mobileMenuAnchor, setMobileMenuAnchor] = useState(null);
-  const handleMobileMenuOpen = (e) => setMobileMenuAnchor(e.currentTarget);
+  const handleMobileMenuOpen = (event) =>
+    setMobileMenuAnchor(event.currentTarget);
   const handleMobileMenuClose = () => setMobileMenuAnchor(null);
-
-  // Menú para seleccionar el rol
-  const [anchorEl, setAnchorEl] = useState(null);
-  const handleOpenRoles = (e) => setAnchorEl(e.currentTarget);
-  const handleCloseRoles = () => setAnchorEl(null);
 
   const handleLogout = () => {
     const nombre = localStorage.getItem("nombres_usuario");
@@ -53,31 +49,40 @@ const Navbar = () => {
     } else {
       navigate("/articulos");
     }
-    handleCloseRoles();
-    handleMobileMenuClose(); // Cierra también el menú móvil si está abierto
   };
+
+  const { carrito } = useCarrito();
+  const cantidadEnCarrito = carrito.reduce(
+    (acc, item) => acc + item.cantidad,
+    0
+  );
 
   return (
     <AppBar
       position="static"
       sx={{
-        backgroundColor: "#86C384",
+        backgroundColor: "#45858C",
+        height: "64px", // Asegura altura consistente
       }}
     >
       <Toolbar
         sx={{
           display: "flex",
           justifyContent: "space-between",
-          color: "black",
+          alignItems: "center",
+          minHeight: "64px !important",
+          px: 2, // Padding horizontal
+          color: "white",
         }}
       >
-        {/* Logo a la izquierda */}
         <Logo />
 
-        {/* Contenido para móvil (menú hamburguesa) */}
         {isMobile ? (
           <>
-            <IconButton color="black" onClick={handleMobileMenuOpen} edge="end">
+            <IconButton
+              onClick={handleMobileMenuOpen}
+              sx={{ color: "#F2E4BB" }}
+            >
               <MenuIcon />
             </IconButton>
             <Menu
@@ -85,28 +90,15 @@ const Navbar = () => {
               open={Boolean(mobileMenuAnchor)}
               onClose={handleMobileMenuClose}
             >
-              <MenuItem onClick={() => navigate("/")}>Inicio</MenuItem>
-              <MenuItem onClick={() => navigate("/nosotros")}>
-                Nosotros
-              </MenuItem>
-              <MenuItem onClick={() => navigate("/contacto")}>
-                Contacto
-              </MenuItem>
-              <MenuItem onClick={handleOpenRoles}>
-                ¿Qué deseas hacer hoy? <ArrowDropDownIcon fontSize="small" />
-              </MenuItem>
-              <Menu
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={handleCloseRoles}
+              <MenuItem onClick={() => navigate("/nosotros")}>Nosotros</MenuItem>
+              <MenuItem onClick={() => navigate("/contacto")}>Contacto</MenuItem>
+
+              <MenuItem
+                onClick={() => seleccionarRol("comprador")}
+                sx={{ minWidth: 220 }} // iguala espacio visual
               >
-                <MenuItem onClick={() => seleccionarRol("vendedor")}>
-                  📦 Vender artículos
-                </MenuItem>
-                <MenuItem onClick={() => seleccionarRol("comprador")}>
-                  🛒 Comprar artículos
-                </MenuItem>
-              </Menu>
+                🛒 Comprar artículos
+              </MenuItem>
 
               {!isLoggedIn ? (
                 <>
@@ -123,61 +115,62 @@ const Navbar = () => {
                   <MenuItem onClick={handleLogout}>Cerrar sesión</MenuItem>
                 </>
               )}
+
+              <MenuItem onClick={() => navigate("/carrito")}>
+                <Badge badgeContent={cantidadEnCarrito} color="error">
+                  <ShoppingCartIcon />
+                </Badge>
+              </MenuItem>
             </Menu>
           </>
         ) : (
-          // Contenido para escritorio
           <Box display="flex" alignItems="center" gap={2}>
-            <Button onClick={() => navigate("/")} color="inherit">
+            <Button onClick={() => navigate("/")} sx={{ color: "white" }}>
               Inicio
             </Button>
-            <Button onClick={() => navigate("/nosotros")} color="inherit">
+            <Button onClick={() => navigate("/nosotros")} sx={{ color: "white" }}>
               Nosotros
             </Button>
-            <Button onClick={() => navigate("/contacto")} color="inherit">
+            <Button onClick={() => navigate("/contacto")} sx={{ color: "white" }}>
               Contacto
             </Button>
 
             <Button
-              onClick={handleOpenRoles}
-              color="inherit"
-              endIcon={<ArrowDropDownIcon />}
+              onClick={() => seleccionarRol("comprador")}
+              sx={{ color: "white", minWidth: 220 }} // iguala tamaño al menú original
             >
-              ¿Qué deseas hacer hoy?
+              🛒 Comprar artículos
             </Button>
-            <Menu
-              anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
-              onClose={handleCloseRoles}
-            >
-              <MenuItem onClick={() => seleccionarRol("vendedor")}>
-                📦 Vender artículos
-              </MenuItem>
-              <MenuItem onClick={() => seleccionarRol("comprador")}>
-                🛒 Comprar artículos
-              </MenuItem>
-            </Menu>
 
             {!isLoggedIn ? (
               <>
                 <LoginButton />
                 <Button
                   onClick={() => navigate("/registro")}
-                  color="inherit"
                   variant="outlined"
+                  sx={{ color: "#1E1E1E", borderColor: "#1E1E1E" }}
                 >
                   Registrarse
                 </Button>
               </>
             ) : (
               <>
-                <Typography variant="body1">
+                <Typography variant="body1" sx={{ color: "#C9F235" }}>
                   ¡Hola, <strong>{nombre}</strong>!
                 </Typography>
                 <PerfilMenu />
                 <LogoutButton variant="text" size="small" />
               </>
             )}
+
+            <IconButton
+              onClick={() => navigate("/carrito")}
+              sx={{ color: "#1E1E1E" }}
+            >
+              <Badge badgeContent={cantidadEnCarrito} color="error">
+                <ShoppingCartIcon />
+              </Badge>
+            </IconButton>
           </Box>
         )}
       </Toolbar>

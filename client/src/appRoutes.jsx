@@ -7,6 +7,7 @@ import Contacto from "./pages/Contacto";
 import PoliticaCookies from "./pages/PoliticaCookies";
 import PoliticaPrivacidad from "./pages/PoliticaPrivacidad";
 import AvisoLegal from "./pages/AvisoLegal";
+import ResumenVenta from "./pages/ResumenVenta";
 
 // Autenticación
 import Login from "./pages/Login";
@@ -47,6 +48,7 @@ const AppRoutes = () => {
         <Route path="/politica-cookies" element={<PoliticaCookies />} />
         <Route path="/politica-privacidad" element={<PoliticaPrivacidad />} />
         <Route path="/aviso-legal" element={<AvisoLegal />} />
+        <Route path="/resumen-venta/:id" element={<ResumenVenta />} />
 
         {/* --- Autenticación --- */}
         <Route path="/login" element={<Login />} />
@@ -64,22 +66,13 @@ const AppRoutes = () => {
         {/* --- Gestión de artículos del usuario --- */}
         <Route path="/mis-articulos" element={<MisArticulos />} />
         <Route path="/crear-articulo" element={<CrearArticulo />} />
-        <Route
-          path="/editar-articulo/:id_articulo"
-          element={<EditarArticulo />}
-        />
+        <Route path="/editar-articulo/:id_articulo" element={<EditarArticulo />} />
 
         {/* --- Perfil de usuario --- */}
         <Route path="/user" element={<UserProfile />} />
         <Route path="/actualizar-datos" element={<ActualizarDatos />} />
-        <Route
-          path="/historial-transacciones"
-          element={<HistorialTransacciones />}
-        />
-        <Route
-          path="/detalle-transaccion/:id"
-          element={<DetalleTransaccion />}
-        />
+        <Route path="/historial-transacciones" element={<HistorialTransacciones />} />
+        <Route path="/detalle-transaccion/:id" element={<DetalleTransaccion />} />
 
         {/* --- Administración --- */}
         <Route path="/rol" element={<Rol />} />
