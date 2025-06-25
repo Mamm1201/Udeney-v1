@@ -10,7 +10,7 @@ const Pie = () => {
     <Box
       component="footer"
       sx={{
-        backgroundColor: "#86C388", // tono ecológico
+        backgroundColor: "#45858C", // tono ecológico
         color: "white",
         padding: 2,
         textAlign: "center",
@@ -46,7 +46,7 @@ const Pie = () => {
       <Box mt={1}>
         <IconButton
           component={MuiLink}
-          href="https://www.facebook.com/share/1RXuUs2LGZ/"
+          href="https://www.facebook.com/share/19Uo7fDWZZ/"
           target="_blank"
           rel="noopener"
           color="inherit"

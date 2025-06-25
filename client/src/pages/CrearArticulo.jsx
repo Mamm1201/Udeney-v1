@@ -48,6 +48,7 @@ const CrearArticulo = () => {
     setFormData((prevData) => ({
       ...prevData,
       [name]: name === "id_categoria" ? parseInt(value) : value,
+      [name]: name === "id_categoria" ? parseInt(value) : value,
     }));
   };
 

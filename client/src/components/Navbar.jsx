@@ -60,7 +60,7 @@ const Navbar = () => {
   const { carrito } = useCarrito();
   const cantidadEnCarrito = carrito.reduce(
     (acc, item) => acc + item.cantidad,
-    0
+    0,
   );
 
   return (

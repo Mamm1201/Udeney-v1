@@ -114,7 +114,7 @@ const ActualizarDatos = () => {
     } catch (error) {
       console.error(
         "Error al actualizar:",
-        error.response?.data || error.message
+        error.response?.data || error.message,
       );
 
       // Mostrar mensaje de error en Snackbar si la actualización falla

@@ -24,7 +24,6 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path(
         "api/v1/", include("udeneyv1.urls")
-        
     ),  # Se coloco prefijo api/v1/ para versiones futuras
 ]
 

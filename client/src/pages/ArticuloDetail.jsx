@@ -1,24 +1,32 @@
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import axios from "axios";
-import ArticuloCard from "../components/articulos/ArticuloCard";
+
+// Componentes personalizados
+import ArticuloCard from "../components/Articulos/ArticuloCard";
 import Navbar from "../components/Navbar";
 import Pie from "../components/Pie";
-import { Box, Button } from "@mui/material";
+
+// MUI
+import { Box, CircularProgress, Typography } from "@mui/material";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+
+// Contexto del carrito
 import { useCarrito } from "../context/CarritoContext";
 
+// Componente principal
 const ArticuloDetail = () => {
   const { id } = useParams();
   const [articulo, setArticulo] = useState(null);
   const [error, setError] = useState("");
   const { agregarAlCarrito } = useCarrito();
 
+  // Traer datos del artículo al cargar el componente
   useEffect(() => {
     const fetchArticulo = async () => {
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/articulos/${id}/`
+          `${import.meta.env.VITE_API_URL}/articulos/${id}/`,
         );
         setArticulo(response.data);
       } catch (error) {
@@ -28,18 +36,42 @@ const ArticuloDetail = () => {
     fetchArticulo();
   }, [id]);
 
+  // Maneja la acción de agregar al carrito
   const handleAgregar = () => {
     if (articulo) {
       agregarAlCarrito(articulo);
     }
   };
 
-  if (error) return <div>{error}</div>;
-  if (!articulo) return <div>Cargando artículo...</div>;
+  // Estado de error
+  if (error) {
+    return (
+      <Box textAlign="center" mt={4}>
+        <Typography color="error">{error}</Typography>
+      </Box>
+    );
+  }
+
+  // Estado de carga
+  if (!articulo) {
+    return (
+      <Box
+        sx={{
+          minHeight: "80vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <CircularProgress color="primary" />
+      </Box>
+    );
+  }
 
   return (
     <>
       <Navbar />
+
       <Box
         sx={{
           display: "flex",
@@ -47,11 +79,10 @@ const ArticuloDetail = () => {
           alignItems: "center",
           minHeight: "80vh",
           backgroundColor: "#e0f7fa",
-          padding: "16px",
-          gap: 2,
+          padding: 2,
         }}
       >
-        {/* Tu tarjeta actual intacta */}
+        {/* ArticuloCard con el botón incluido como prop */}
         <ArticuloCard
           titulo_articulo={articulo.titulo_articulo}
           descripcion_articulo={articulo.descripcion_articulo}
@@ -60,19 +91,12 @@ const ArticuloDetail = () => {
           id_usuario={articulo.id_usuario}
           id_categoria={articulo.id_categoria}
           imagen={articulo.imagen}
+          // ✅ Añadimos la acción personalizada como prop
+          onAgregarAlCarrito={handleAgregar}
+          mostrarBotonCarrito
         />
-
-        {/* Botón añadir al carrito justo abajo */}
-        <Button
-          variant="contained"
-          color="success"
-          onClick={handleAgregar}
-          startIcon={<ShoppingCartIcon />}
-          sx={{ maxWidth: 345, width: "100%" }} // Ancho igual a la tarjeta
-        >
-          Añadir al carrito
-        </Button>
       </Box>
+
       <Pie />
     </>
   );

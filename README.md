@@ -10,7 +10,6 @@ Udeney es una plataforma de **e-commerce educativo** orientada a promover la reu
 
 ---
 
-````markdown
 ## 📚 Contenido
 
 - Objetivos
@@ -24,12 +23,13 @@ Udeney es una plataforma de **e-commerce educativo** orientada a promover la reu
 - 🤝 Autor
 - 🚧 Estado del Proyecto
 - Calidad del código
+- CI - Integración Continua
 
 ## Objetivo principal
 
-Promover la reutilización de recursos, apoyar a estudiantes con recursos limitados y contribuir al cuidado del medio ambiente
+Promover la reutilización de recursos, apoyar a estudiantes con recursos limitados y contribuir al cuidado del medio ambiente.
 
-## 🎯 Objetivos especificos
+## 🎯 Objetivos específicos
 
 - Ofrecer una solución digital que facilite el acceso a artículos escolares a bajo costo o gratuito.
 - Incentivar la reutilización de productos educativos.
@@ -64,24 +64,20 @@ En muchas comunidades, los estudiantes enfrentan dificultades para acceder a mat
 
 ## 📁 Estructura del Proyecto
 
-Udeney-v1/
-├── ecommerce-backend/ # Backend en Django
-│ ├── eduneyv1/ # App principal de Django
-│ ├── manage.py
-│ ├── requirements.txt
-│ └── .env # Variables de entorno (NO subir al repo)
-├── client/ # Frontend en React + Vite
-│ ├── src/
-│ ├── vite.config.js
-│ └── ...
-└── README.md
+`Udeney-v1/
+├── ecommerce-backend/         # Backend en Django
+│   ├── eduneyv1/              # App principal de Django
+│   ├── manage.py
+│   ├── requirements.txt
+│   └── .env                   # Variables de entorno (NO subir al repo)
+├── client/                    # Frontend en React + Vite
+│   ├── src/
+│   ├── vite.config.js
+└── README.md`
 
 ---
 
 ## ⚙️ Configuración del Entorno
-
-### 📦 Requisitos Previos
-
 
 ### 📦 Requisitos Previos
 
@@ -95,26 +91,19 @@ Udeney-v1/
 ```bash
 git clone https://github.com/Mamm1201/Udeney-v1.git
 cd Udeney-v1
+```
 
-🔙 Configurar y Ejecutar el Backend ( Django)
-Crear entorno virtual:
+### 🔙 Configurar y Ejecutar el Backend (Django)
 
-bash
-Copiar
-Editar
+```bash
 python -m venv env
 source env/bin/activate  # En Windows: env\Scripts\activate
-Instalar dependencias:
-
-bash
-Copiar
-Editar
 pip install -r requirements.txt
+```
 
-Crear archivo .env junto a manage.py:
-ini
-Copiar
-Editar
+Crear archivo `.env` junto a `manage.py`:
+
+```env
 DB_NAME=db_ecommerce
 DB_USER=tu_usuario_mysql
 DB_PASSWORD=tu_contraseña
@@ -122,282 +111,165 @@ DB_HOST=localhost
 DB_PORT=3306
 DEBUG=True
 SECRET_KEY=tu_clave_secreta
-
-Crear base de datos en MySQL:
-sql
-Copiar
-Editar
-CREATE DATABASE db_ecommerce CHARACTER SET UTF8MB4 COLLATE utf8mb4_general_ci;
-
-Migrar modelos:
-bash
-Copiar
-Editar
-python manage.py makemigrations
-python manage.py migrate
-
-Crear superusuario:
-bash
-Copiar
-Editar
-python manage.py createsuperuser
-
-Iniciar servidor:
-bash
-Copiar
-Editar
-python manage.py runserver
-
-🧩 Configurar y Ejecutar el Frontend ( React + Vite)
-Ir a la carpeta client/:
-bash
-Copiar
-Editar
-cd client
-
-Instalar dependencias:
-bash
-Copiar
-Editar
-npm install
-
-Ejecutar la aplicación:
-bash
-Copiar
-Editar
-npm run dev
-
-📂 Archivo .gitignore
-Tu archivo .gitignore debe cubrir:
-
-Backend:
-
-bash
-Copiar
-Editar
-env/
-__pycache__/
- *.pyc
- *.sqlite3
-.env
-Frontend:
-
-bash
-Copiar
-Editar
-node_modules/
-dist/
-.env
 ```
 
+Crear base de datos:
+
+```sql
+CREATE DATABASE db_ecommerce CHARACTER SET UTF8MB4 COLLATE utf8mb4_general_ci;
+```
+
+Aplicar migraciones y crear superusuario:
+
+```bash
+python manage.py makemigrations
+python manage.py migrate
+python manage.py createsuperuser
+python manage.py runserver
+```
+
+### 🧩 Configurar y Ejecutar el Frontend (React + Vite)
+
+```bash
+cd client
+npm install
+npm run dev
+```
+
+## 📂 Archivo .gitignore
+
+### Backend
+
+`env/
+__pycache__/
+*.pyc
+*.sqlite3
+.env`
+
+### Frontend
+
+`node_modules/
+dist/
+.env`
+
+---
+
 ## 🐳 Despliegue con Docker (opcional)
 
-Este proyecto también incluye configuración para ejecutar todo el stack usando Docker y Docker Compose. Se levantan tres servicios:
+Este proyecto también incluye configuración para ejecutar todo el stack usando Docker y Docker Compose.
 
-- 🛢️ **db**: MySQL 5.7 con volumen persistente.
-- 🐍 **backend**: Django REST Framework (modo desarrollo).
-- ⚛️ **frontend**: React + Vite (modo desarrollo).
+Servicios incluidos:
+
+- 🛢️ MySQL 5.7
+- 🐍 Django Backend (modo desarrollo)
+- ⚛️ React Frontend (modo desarrollo)
 
 ### ⚙️ Requisitos Previos
 
-
-## 🐳 Despliegue con Docker (opcional)
-
-Este proyecto también incluye configuración para ejecutar todo el stack usando Docker y Docker Compose. Se levantan tres servicios:
-
-- 🛢️ **db**: MySQL 5.7 con volumen persistente.
-- 🐍 **backend**: Django REST Framework (modo desarrollo).
-- ⚛️ **frontend**: React + Vite (modo desarrollo).
-
-### ⚙️ Requisitos Previos
-
-- [Docker](https://www.docker.com/)
-- [Docker Compose](https://docs.docker.com/compose/)
+- Docker
+- Docker Compose
 
 ### ▶️ Levantar los Contenedores
 
-Desde la raíz del proyecto (`Udeney-v1/`), ejecuta:
-
 ```bash
 docker-compose up --build
-Esto realizará lo siguiente:
+```
 
-Construirá las imágenes de backend y frontend.
+Esto:
 
-Creará la base de datos db en el contenedor de MySQL.
+- Construye imágenes
+- Crea base de datos
+- Monta código con recarga en caliente
+- Expone:
+  - Backend: <http://localhost:8000>
+  - Frontend: <http://localhost:5173>
+  - MySQL: localhost:3307
 
-Montará el código local para permitir desarrollo con recarga en caliente (hot reload).
+Para detener los contenedores:
 
-Expondrá los siguientes puertos:
-
-Backend Django: http://localhost:8000
-
-Frontend Vite: http://localhost:5173
-
-MySQL: localhost:3307
-
-⚠️ Asegúrate de que las variables de entorno en tu archivo .env coincidan con las utilizadas en docker-compose.yml.
-
-🛑 Detener los Contenedores
-bash
-Copiar
-Editar
+```bash
 docker-compose down
-Esto detiene los contenedores, pero conserva los volúmenes de datos (base de datos persistente).
 ```
 
-``
+---
 
-#### 🧾 Gestión de Migraciones
+## 🧾 Gestión de Migraciones
 
-En el proyecto, se recomienda mantener managed = True en los modelos para que Django gestione automáticamente las tablas y cambios en la base de datos mediante migraciones. Aunque es posible trabajar sin migraciones adicionales después de la migración inicial, usar las migraciones (python manage.py makemigrations y python manage.py migrate) garantiza un control más seguro y ordenado de los cambios en el esquema, facilitando el trabajo en equipo y los despliegues futuros.
+Se recomienda mantener `managed = True` en los modelos para permitir a Django gestionar migraciones automáticamente.
 
-### 🛢️ Justificación del motor de base de datos (MySQL)
+---
 
-Se eligió MySQL como motor de base de datos debido a su estabilidad, rendimiento y amplia compatibilidad con Django y otras tecnologías usadas en el proyecto. Además, el equipo tiene experiencia previa con MySQL, lo que facilita la configuración y mantenimiento. MySQL ofrece características sólidas como soporte para transacciones, replicación y seguridad, haciendo que sea una opción sólida para un proyecto de e-commerce como Udeney.
+## 🛢️ Justificación del motor de base de datos (MySQL)
 
-markdown
+MySQL es una opción sólida por su rendimiento, estabilidad, soporte transaccional y compatibilidad con Django.
 
-## 🧼 CALIDAD DEL CÓDIGO
+---
 
-Este proyecto mantiene altos estándares de calidad en el código fuente tanto para el backend (Python) como para el frontend (React).
-
-### 🐍 Backend (Python)
-
-- **flake8**: Se usa para detectar errores de estilo y mantener el código limpio.
-  - Configuración ubicada en `.flake8`.
-  - Comando para ejecutar: `flake8 .`
-````
-
-markdown
-
-## 🧼 CALIDAD DEL CÓDIGO
-
-Este proyecto mantiene altos estándares de calidad en el código fuente tanto para el backend (Python) como para el frontend (React).
+## 🧼 Calidad del Código
 
 ### 🐍 Backend (Python)
 
-- **flake8**: Se usa para detectar errores de estilo y mantener el código limpio.
-  - Configuración ubicada en `.flake8`.
-  - Comando para ejecutar: `flake8 .`
+- `flake8`: verificador de estilo
+- `black`: formateador automático
 
-```bash
+```ini
 # .flake8
 [flake8]
 exclude = migrations,venv,node_modules,__pycache__
 max-line-length = 88
+```
 
+```bash
+# Ejecutar validaciones
+flake8 .
+black --check .
 ```
 
 ### ⚛️ Frontend (JavaScript/React)
 
-ESLint: Verificador de buenas prácticas y errores comunes en JS/JSX.
-
-Stylelint: Verificador para estilos CSS/SCSS.
-
-Prettier (opcional pero recomendado): Formateador automático de código.
+- `ESLint`, `Stylelint`, `Prettier`
 
 ```bash
-
-bash
-Copiar
-Editar
-
-# Ejecutar ESLint
-
+# Lint y formato
 npx eslint "**/*.{js,jsx}"
-
-# Ejecutar Stylelint
-
 npx stylelint "**/*.{css,scss}"
-
-# Ejecutar Prettier (requiere .prettierrc)
-
 npx prettier --write .
-Archivo .prettierrc sugerido ( colócalo en client/):
-json
-Copiar
-Editar
+```
+
+#### .prettierrc sugerido (`client/`)
+
+```json
 {
   "semi": true,
   "singleQuote": true,
   "trailingComma": "all",
   "tabWidth": 2
 }
-🤖 CI - Integración Continua
-El proyecto incluye un flujo de trabajo automatizado en .github/workflows/linters.yml que ejecuta:
-
-ESLint para JS/React
-
-Stylelint para CSS/SCSS
-
-Verificación de que node_modules/ no se haya subido por error
-
-```bash
-# .flake8
-[flake8]
-exclude = migrations,venv,node_modules,__pycache__
-max-line-length = 88
-```
-````
-
-### ⚛️ Frontend (JavaScript/React)
-
-ESLint: Verificador de buenas prácticas y errores comunes en JS/JSX.
-
-Stylelint: Verificador para estilos CSS/SCSS.
-
-Prettier (opcional pero recomendado): Formateador automático de código.
-
-```bash
-
-bash
-Copiar
-Editar
-
-# Ejecutar ESLint
-
-npx eslint "**/*.{js,jsx}"
-
-# Ejecutar Stylelint
-
-npx stylelint "**/*.{css,scss}"
-
-# Ejecutar Prettier (requiere .prettierrc)
-
-npx prettier --write .
-Archivo .prettierrc sugerido ( colócalo en client/):
-json
-Copiar
-Editar
-{
-  "semi": true,
-  "singleQuote": true,
-  "trailingComma": "all",
-  "tabWidth": 2
-}
-🤖 CI - Integración Continua
-El proyecto incluye un flujo de trabajo automatizado en .github/workflows/linters.yml que ejecuta:
-
-ESLint para JS/React
-
-Stylelint para CSS/SCSS
-
-Verificación de que node_modules/ no se haya subido por error
-
 ```
 
-### 📄 Licencia
+---
 
-Este proyecto está licenciado bajo la Licencia MIT. Consulta el archivo LICENSE para más detalles.
+## 🤖 CI - Integración Continua
 
-### 🤝 Autor
+El archivo `.github/workflows/ci.yml` automatiza:
 
-- Desarrollado por Mario Márquez
+- Verificación de formato con `black`
+- Linter y formateo en frontend (`eslint`, `prettier`)
+- Soporte para múltiples versiones de Python (`3.10`, `3.11`)
+- Cache de paquetes Python y Node.js
+- Generación y subida de reporte de cobertura
+
+---
+
+## 📄 Licencia
+
+MIT License
+
+## 🤝 Autor
+
+- Desarrollado por **Mario Márquez**
 - Estudiante de Análisis y Desarrollo de Software – SENA
 
-### 🚧 Estado del Proyecto
+## 🚧 Estado del Proyecto
 
-🔨 En desarrollo activo – nuevas funcionalidades y mejoras están en curso.
-
-``
+🔨 En desarrollo activo – nuevas funcionalidades y mejoras están en curso

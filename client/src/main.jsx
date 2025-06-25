@@ -24,5 +24,5 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <AppRoutes />
       </CarritoProvider>
     </ThemeProvider>
-  </React.StrictMode>
+  </React.StrictMode>,
 );
