@@ -27,7 +27,7 @@ RUN pip install --upgrade pip \
 # Copia todo el código del proyecto
 COPY . .
 
-ENV DJANGO_SETTINGS_MODULE=udeneyv1.settings
+ENV DJANGO_SETTINGS_MODULE=ecommerce.settings
 ENV PYTHONUNBUFFERED=1
 
 EXPOSE 8000
