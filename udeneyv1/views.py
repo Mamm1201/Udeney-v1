@@ -219,6 +219,18 @@ class TransaccionesViewSet(viewsets.ModelViewSet):
         if self.action == "retrieve":
             return DetalleTransaccionAnidadoSerializer  # Reusa el anidado
         return TransaccionesSerializer
+    
+# ====================================
+# CRUD TRANSACCIONES
+# ====================================
+ 
+
+class MisTransaccionesView(APIView):
+    def get(self, request, id_usuario):
+        transacciones = Transacciones.objects.filter(usuario_id=id_usuario)
+        serializer = TransaccionesSerializer(transacciones, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 
 # ====================================

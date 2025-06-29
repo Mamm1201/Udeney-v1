@@ -25,6 +25,7 @@ from .views import (
     crear_con_detalles,
     ResumenCompraAPIView,
     ArticuloDetailAPIView,
+    MisTransaccionesView,
 )
 
 # Configuración del router
@@ -57,6 +58,7 @@ urlpatterns = [
     ),
     # Transacciones y compras
     path("crear-transaccion/", crear_con_detalles, name="crear_transaccion"),
+    path('transacciones/usuario/<int:id_usuario>/', MisTransaccionesView.as_view(), name='mis-transacciones'),
     path(
         "resumen-compra/<int:id_transaccion>/",
         ResumenCompraAPIView.as_view(),
