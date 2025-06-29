@@ -1,14 +1,38 @@
+# Archivos Python compilados
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+
+# Entornos virtuales
 env/
 venv/
+
+# Archivos de base de datos
 *.db
-*.log
 *.sqlite3
+
+# Archivos de logs
+*.log
+
+# Archivos de configuración de entorno
+.env
+
+# Archivos de configuración de IDE
+.vscode/
+.idea/
+
+# Archivos y carpetas de Git
+.git/
+.gitignore
+
+# Archivos de dependencias (solo si los copias selectivamente en Dockerfile)
+Pipfile
+Pipfile.lock
+
+# Archivos y carpetas estáticas (que deberían generarse en tiempo de build o usar bind mount en desarrollo)
 media/
 static/
-.vscode/
-.git/
-.env
+
+# Node modules si alguna vez instalas cosas JS en el backend
+node_modules/
