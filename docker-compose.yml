@@ -5,42 +5,42 @@ services:
     image: mysql:5.7
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD} # 🔐 Contraseña root desde .env
-      MYSQL_DATABASE: ${DB_NAME} # 📂 Nombre real de la BD
+      MYSQL_DATABASE: ${DB_NAME} # 📂 Nombre real de la base de datos
       MYSQL_USER: ${DB_USER} # 👤 Usuario principal desde .env
-      MYSQL_PASSWORD: ${DB_PASSWORD} # 🔐 Contraseña desde .env
+      MYSQL_PASSWORD: ${DB_PASSWORD} # 🔐 Contraseña del usuario desde .env
     volumes:
       - db_data:/var/lib/mysql # 💾 Persistencia de datos
     ports:
-      - "3307:3306" # 🌐 MySQL accesible en host
+      - "3307:3306" # 🌐 Exposición de MySQL en el host
 
   backend:
     build:
-      context: . # 📦 Dockerfile raíz del backend
-    command: python manage.py runserver 0.0.0.0:8000
+      context: . # 📦 Dockerfile ubicado en la raíz del backend
+    command: python manage.py runserver 0.0.0.0:8000 # 🚀 Inicia servidor de desarrollo Django
     volumes:
-      - .:/app # 🔁 Sincroniza código
+      - .:/app # 🔁 Monta el código fuente del host en el contenedor
     ports:
-      - "8000:8000" # 🌍 Django disponible en localhost:8000
+      - "8000:8000" # 🌍 Django accesible desde el host
     environment:
-      DJANGO_SETTINGS_MODULE: ecommerce.settings # ⚙️ Ajustes del proyecto Django
-      PYTHONUNBUFFERED: 1 # 📤 Logs sin buffer
+      DJANGO_SETTINGS_MODULE: ecommerce.settings # ⚙️ Módulo de configuración
+      PYTHONUNBUFFERED: 1 # 🐍 Logs sin buffer
     env_file:
-      - .env # ✅ Usa las variables definidas en .env
+      - .env # 📄 Carga las variables de entorno desde .env
     depends_on:
-      - db # ⏳ Espera a que MySQL esté listo
+      - db # ⏳ Espera a que el contenedor de base de datos esté listo
 
   frontend:
     build:
-      context: ./client # 📁 Ruta del frontend (Vite)
-    command: npm run dev
-    working_dir: /app
+      context: ./client # 📁 Ruta del frontend con Vite
+    command: npm run dev # 🚀 Ejecuta servidor de desarrollo de Vite
+    working_dir: /app # 📌 Directorio de trabajo
     volumes:
-      - ./client:/app # 🔁 Hot reload del frontend
-      - /app/node_modules # ⚠️ Evita sobrescribir node_modules
+      - ./client:/app # 🔁 Sincroniza código del frontend
+      - /app/node_modules # ⚠️ Protege la carpeta node_modules
     ports:
-      - "5173:5173" # 🌐 Vite en este puerto
+      - "5173:5173" # 🌐 Puerto de desarrollo de Vite
     depends_on:
-      - backend # ⏳ Espera a backend
+      - backend # ⏳ Espera al backend
 
 volumes:
-  db_data: # 💽 Volumen persistente MySQL
+  db_data: # 💽 Volumen persistente de la base de datos
