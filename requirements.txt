@@ -41,6 +41,8 @@ mccabe==0.7.0
     # via flake8
 mypy-extensions==1.1.0
     # via black
+mysqlclient==2.2.7
+    # via -r requirements.in
 packaging==25.0
     # via
     #   black
