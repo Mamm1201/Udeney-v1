@@ -2,9 +2,9 @@ name: Python & Frontend CI
 
 on:
   push:
-    branches: ["main", "develop", "mariodev2"]
+    branches: ["main", "develop"]
   pull_request:
-    branches: ["main", "develop", "mariodev2"]
+    branches: ["main", "develop"]
 
 jobs:
   test:
