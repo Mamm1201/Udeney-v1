@@ -5,7 +5,9 @@
 #    pip-compile
 #
 asgiref==3.8.1
-    # via django
+    # via
+    #   django
+    #   django-cors-headers
 black==25.1.0
     # via -r requirements.in
 click==8.2.1
@@ -17,7 +19,10 @@ colorama==0.4.6
 django==5.2.3
     # via
     #   -r requirements.in
+    #   django-cors-headers
     #   djangorestframework
+django-cors-headers==4.7.0
+    # via -r requirements.in
 djangorestframework==3.16.0
     # via -r requirements.in
 flake8==7.3.0

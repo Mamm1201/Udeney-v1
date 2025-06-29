@@ -5,3 +5,5 @@ pytest-django
 flake8
 black
 python-dotenv
+django-cors-headers
+
