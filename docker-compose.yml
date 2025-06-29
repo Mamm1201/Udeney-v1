@@ -1,48 +1,52 @@
 version: "3.8"
 
 services:
+  # 📦 Servicio de base de datos MySQL
   db:
     image: mysql:5.7
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword # 🔐 Reemplaza por una contraseña segura
-      MYSQL_DATABASE: udeney_db
-      MYSQL_USER: udeney_user
-      MYSQL_PASSWORD: userpassword # 🔐 Reemplaza por una contraseña segura
+      MYSQL_ROOT_PASSWORD: rootpassword # 🔐 Contraseña del usuario root
+      MYSQL_DATABASE: udeney_db # 🛢️ Nombre de la base de datos
+      MYSQL_USER: udeney_user # 👤 Usuario personalizado
+      MYSQL_PASSWORD: userpassword # 🔐 Contraseña del usuario personalizado
     volumes:
-      - db_data:/var/lib/mysql # 📁 Persistencia de la base de datos
+      - db_data:/var/lib/mysql # 💾 Volumen para persistencia de datos
     ports:
-      - "3307:3306" # 🌐 Puerto MySQL accesible desde host
+      - "3307:3306" # 🌐 Exposición del puerto MySQL (puerto host:puerto contenedor)
 
+  # ⚙️ Servicio del backend Django
   backend:
     build:
-      context: . # 📦 Dockerfile del backend en raíz
-    command: python manage.py runserver 0.0.0.0:8000
+      context: . # 📁 Ruta donde está el Dockerfile del backend
+    command: python manage.py runserver 0.0.0.0:8000 # 🚀 Inicia el servidor Django
     volumes:
-      - .:/app # 🔁 Monta el proyecto completo dentro del contenedor
+      - .:/app # 🔁 Monta el código del proyecto en el contenedor
     ports:
-      - "8000:8000" # 🌐 Puerto de desarrollo de Django
+      - "8000:8000" # 🌐 Puerto para acceder al backend desde el navegador
     environment:
-      DJANGO_SETTINGS_MODULE: ecommerce.settings
-      PYTHONUNBUFFERED: 1
-      DATABASE_HOST: db
-      DATABASE_NAME: udeney_db
-      DATABASE_USER: udeney_user
-      DATABASE_PASSWORD: userpassword
+      DJANGO_SETTINGS_MODULE: ecommerce.settings # ⚙️ Indica el módulo de configuración de Django
+      PYTHONUNBUFFERED: 1 # 📤 Evita el buffering para ver logs en tiempo real
+      DB_HOST: db # 🔗 Hostname del contenedor de la base de datos
+      DB_NAME: udeney_db # 🛢️ Nombre de la base de datos
+      DB_USER: udeney_user # 👤 Usuario de la base de datos
+      DB_PASSWORD: userpassword # 🔐 Contraseña de la base de datos
     depends_on:
       - db # ⏳ Espera a que la base de datos esté lista
 
+  # 🎨 Servicio del frontend con Vite (React u otro framework)
   frontend:
     build:
-      context: ./client # 📁 Directorio donde está tu frontend con Vite
-    command: npm run dev # 🚀 Lanza Vite en modo desarrollo
-    working_dir: /app
+      context: ./client # 📁 Ruta donde está el código del frontend
+    command: npm run dev # 🚀 Ejecuta Vite en modo desarrollo
+    working_dir: /app # 📂 Directorio de trabajo dentro del contenedor
     volumes:
-      - ./client:/app # 🔁 Monta el código para hot reload
-      - /app/node_modules # ⚠️ Evita sobrescribir node_modules dentro del contenedor
+      - ./client:/app # 🔁 Monta el código del frontend
+      - /app/node_modules # ⚠️ Asegura que node_modules no se sobreescriba
     ports:
-      - "5173:5173" # 🌐 Puerto de desarrollo de Vite
+      - "5173:5173" # 🌐 Puerto para desarrollo del frontend (Vite)
     depends_on:
-      - backend # ⏳ Espera a que el backend esté disponible
+      - backend # ⏳ Espera a que el backend esté listo
 
+# 💾 Volumen persistente para MySQL
 volumes:
-  db_data: # 💾 Volumen para MySQL
+  db_data:
