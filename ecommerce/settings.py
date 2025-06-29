@@ -84,7 +84,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "ecommerce.wsgi.application"
 
-import os
+
 
 DATABASES = {
     "default": {
