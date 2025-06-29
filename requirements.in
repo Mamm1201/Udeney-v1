@@ -7,5 +7,7 @@ black
 python-dotenv
 django-cors-headers
 djangorestframework-simplejwt
+django-filter
+
 
 
