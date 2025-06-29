@@ -4,46 +4,43 @@ services:
   db:
     image: mysql:5.7
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword # 🔐 Reemplaza por una contraseña segura
-      MYSQL_DATABASE: udeney_db
-      MYSQL_USER: udeney_user
-      MYSQL_PASSWORD: userpassword # 🔐 Reemplaza por una contraseña segura
+      MYSQL_ROOT_PASSWORD: Mario1201* # 🔐 Contraseña del usuario root
+      MYSQL_DATABASE: db_ecommerce # 📂 Nombre real de tu base de datos
+      MYSQL_USER: root # 👤 Usuario principal (coincide con tu .env)
+      MYSQL_PASSWORD: Mario1201* # 🔐 Contraseña para el usuario root
     volumes:
-      - db_data:/var/lib/mysql # 📁 Persistencia de la base de datos
+      - db_data:/var/lib/mysql # 💾 Persistencia de datos MySQL
     ports:
-      - "3307:3306" # 🌐 Puerto MySQL accesible desde host
+      - "3307:3306" # 🌐 Puerto expuesto en host:contendor
 
   backend:
     build:
-      context: . # 📦 Dockerfile del backend en raíz
-    command: python manage.py runserver 0.0.0.0:8000
+      context: . # 📦 Dockerfile en la raíz del backend
+    command: python manage.py runserver 0.0.0.0:8000 # 🚀 Corre el servidor de desarrollo
     volumes:
-      - .:/app # 🔁 Monta el proyecto completo dentro del contenedor
+      - .:/app # 🔁 Sincroniza código del host con contenedor
     ports:
-      - "8000:8000" # 🌐 Puerto de desarrollo de Django
+      - "8000:8000" # 🌍 Puerto accesible desde el navegador
     environment:
-      DJANGO_SETTINGS_MODULE: ecommerce.settings
-      PYTHONUNBUFFERED: 1
-      DATABASE_HOST: db
-      DATABASE_NAME: udeney_db
-      DATABASE_USER: udeney_user
-      DATABASE_PASSWORD: userpassword
+      DJANGO_SETTINGS_MODULE: ecommerce.settings # ⚙️ Módulo principal de Django
+      PYTHONUNBUFFERED: 1 # 🐍 Salida sin buffer (útil para logs)
+    env_file:
+      - .env # ✅ Archivo que contiene las variables DB_
     depends_on:
-      - db # ⏳ Espera a que la base de datos esté lista
+      - db # ⏳ Espera que MySQL esté listo
 
   frontend:
     build:
-      context: ./client # 📁 Directorio donde está tu frontend con Vite
-    command: npm run dev # 🚀 Lanza Vite en modo desarrollo
-    working_dir: /app
+      context: ./client # 📁 Directorio del frontend con Vite
+    command: npm run dev # 🚀 Inicia Vite en modo desarrollo
+    working_dir: /app # 📌 Establece el directorio de trabajo
     volumes:
-      - ./client:/app # 🔁 Monta el código para hot reload
-      - /app/node_modules # ⚠️ Evita sobrescribir node_modules dentro del contenedor
+      - ./client:/app # 🔁 Hot reload: monta el código del frontend
+      - /app/node_modules # ⚠️ Evita sobrescribir node_modules
     ports:
-      - "5173:5173" # 🌐 Puerto de desarrollo de Vite
+      - "5173:5173" # 🌐 Puerto donde corre Vite
     depends_on:
       - backend # ⏳ Espera a que el backend esté disponible
 
 volumes:
-  db_data: # 💾 Volumen para MySQL
-
+  db_data: # 💽 Volumen para mantener datos MySQL
