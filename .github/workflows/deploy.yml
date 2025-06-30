@@ -23,6 +23,6 @@ jobs:
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.HOST }} << 'EOF'
             cd ${{ secrets.PROJECT_PATH }}
             git pull origin develop
-            docker compose down
-            docker compose up --build -d
+            docker-compose down
+            docker-compose up --build -d
           EOF
