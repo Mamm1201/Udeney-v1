@@ -17,6 +17,8 @@ venv/
 
 # Archivos de configuración de entorno
 .env
+.env.local
+.env.docker
 
 # Archivos de configuración de IDE
 .vscode/

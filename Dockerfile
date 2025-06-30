@@ -1,36 +1,32 @@
-# Imagen base estable de Python
-FROM python:3.11-slim
+# Usa una imagen base de Python
+FROM python:3.10-slim
 
-# Establece el directorio de trabajo dentro del contenedor
-WORKDIR /app
-
-# Copia el archivo de requerimientos e instala dependencias del sistema necesarias para mysqlclient
-COPY requirements.txt .
-
-# Instalar dependencias necesarias para compilar mysqlclient y otras dependencias del sistema
-RUN apt-get update && apt-get install -y \
-    pkg-config \
-    libmariadb-dev \
-    build-essential \
-    python3-dev \
-    && apt-get clean
-
-# Actualizar pip antes de instalar las dependencias de Python
-RUN pip install --upgrade pip
-
-# Instalar las dependencias de Python desde requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copia todo el contenido del proyecto (asegúrate de tener .dockerignore para evitar copiar carpetas como venv)
-COPY . .
-
-# Variables de entorno
-ENV DJANGO_SETTINGS_MODULE=udeneyv1.settings
+# Establece variables de entorno para Python
+ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# Expone el puerto del servidor de desarrollo de Django
-EXPOSE 8000
+# Establece el directorio de trabajo
+WORKDIR /app
 
-# Comando por defecto al iniciar el contenedor
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# Copia requirements primero para aprovechar cache de Docker
+COPY requirements.txt .
 
+# Instala dependencias del sistema
+RUN apt-get update && apt-get install -y \
+    netcat-openbsd \
+    gcc \
+    default-libmysqlclient-dev \
+    pkg-config \
+    && rm -rf /var/lib/apt/lists/*
+
+# Instala dependencias de Python
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copia el resto del proyecto
+COPY . .
+
+# Da permisos al script
+RUN chmod +x ./wait-for-it.sh
+
+# Comando para iniciar
+CMD ["./wait-for-it.sh", "db:3306", "--", "python", "manage.py", "runserver", "0.0.0.0:8000"]

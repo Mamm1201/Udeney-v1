@@ -1,22 +1,22 @@
-# Dockerfile.dev 🧪
+# Usamos imagen ligera de Node
 FROM node:18-alpine
 
+# Establecemos directorio de trabajo
 WORKDIR /app
 
-# Copia los archivos de dependencias primero
-COPY package*.json ./
+# Copiamos los archivos necesarios para instalar dependencias
+COPY package.json package-lock.json* ./
 
+# Instalamos dependencias
 RUN npm install
 
-# Copia el resto del código
+# Copiamos el resto del código
 COPY . .
 
-# Expone el puerto usado por Vite
+# Exponemos el puerto de desarrollo
 EXPOSE 5173
 
-# Usa el servidor de desarrollo
+RUN rm -rf node_modules/.vite
+
+# Comando por defecto
 CMD ["npm", "run", "dev"]
-
-
-
-

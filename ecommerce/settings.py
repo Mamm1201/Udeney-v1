@@ -3,7 +3,15 @@ from datetime import timedelta
 import os
 from dotenv import load_dotenv
 
-load_dotenv()  # Carga las variables desde el archivo .env
+# load_dotenv("")  # Carga las variables desde el archivo .env
+
+# Cargar .env desde la raíz del proyecto
+BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(os.path.join(BASE_DIR, '.env'))
+
+# Comprobación de carga correcta
+print("DB_HOST cargado:", os.getenv("DB_HOST"))
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -85,20 +93,20 @@ TEMPLATES = [
 WSGI_APPLICATION = "ecommerce.wsgi.application"
 
 
-
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': os.getenv('DB_PORT'),
-        'OPTIONS': {
-            'connect_timeout': 30,  # Aumenta el timeout de conexión
-            'charset': 'utf8mb4',
-        }
-    }
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": os.getenv("DB_NAME"),
+        "USER": os.getenv("DB_USER"),
+        "PASSWORD": os.getenv("DB_PASSWORD"),
+        "HOST": os.getenv("DB_HOST"),
+        "PORT": os.getenv("DB_PORT"),
+        "OPTIONS": {
+            "charset": "utf8mb4",  # Soporte para emojis y caracteres especiales
+            "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",  # Mayor validación
+            "connect_timeout": 5,  # Timeout para conexión
+        },
+    },
 }
 
 

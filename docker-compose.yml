@@ -2,65 +2,55 @@ version: "3.8"
 
 services:
   db:
-    image: mysql:5.7
+    image: mysql:8.0
+    env_file:
+      - .env.docker
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: udeney_db
-      MYSQL_USER: udeney_user
-      MYSQL_PASSWORD: userpassword
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_ROOT_HOST: "%"
     volumes:
       - db_data:/var/lib/mysql
     ports:
-      - "3306:3306"
+      - "3307:3306"
     healthcheck:
-      test:
-        [
-          "CMD",
-          "mysqladmin",
-          "ping",
-          "-h",
-          "localhost",
-          "-u",
-          "root",
-          "-prootpassword",
-        ]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 5s
-      timeout: 30s
+      timeout: 10s
       retries: 10
-    command: --wait_timeout=28800 --interactive_timeout=28800
 
+  # Servicio del backend Django
   backend:
     build:
       context: .
-    command: bash -c "while ! nc -z db 3306; do sleep 2; done && python manage.py runserver 0.0.0.0:8000"
+      dockerfile: Dockerfile
+    command: sh -c "./wait-for-it.sh db 3306 -- python manage.py runserver 0.0.0.0:8000"
     volumes:
       - .:/app
     ports:
       - "8000:8000"
-    environment:
-      DJANGO_SETTINGS_MODULE: ecommerce.settings
-      PYTHONUNBUFFERED: 1
-      DB_HOST: db
-      DB_NAME: udeney_db
-      DB_USER: udeney_user
-      DB_PASSWORD: userpassword
-      DB_PORT: "3306"
     depends_on:
       db:
         condition: service_healthy
+    env_file:
+      - .env.docker
+    restart: unless-stopped
 
+  # Servicio del frontend Vite (React)
   frontend:
     build:
       context: ./client
-    command: npm run dev
+      dockerfile: Dockerfile
     working_dir: /app
-    volumes:
-      - ./client:/app
-      - /app/node_modules
+    # volumes:
+    #   - ./client:/app
+    #   - /app/node_modules
     ports:
       - "5173:5173"
     depends_on:
       - backend
+    stdin_open: true
+    tty: true
 
 volumes:
   db_data:

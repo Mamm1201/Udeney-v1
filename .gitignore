@@ -65,8 +65,10 @@ __pycache__/
 # =========================
 
 *.env
+.env.local
 .env.prod
 .env.prod.db
+.env.docker
 
 
 
