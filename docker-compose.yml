@@ -4,7 +4,7 @@ services:
   db:
     image: mysql:8.0
     env_file:
-      - .env.vm
+      - .env
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
       MYSQL_DATABASE: ${DB_NAME}
@@ -33,7 +33,7 @@ services:
       db:
         condition: service_healthy
     env_file:
-      - .env.vm
+      - .env
     restart: unless-stopped
 
   # Servicio del frontend Vite (React)
