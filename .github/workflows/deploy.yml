@@ -23,14 +23,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.HOST }} << 'EOF'
             cd ${{ secrets.PROJECT_PATH }}
             git pull origin develop
-
-            echo "🚫 Deteniendo contenedores..."
-            docker-compose down --remove-orphans --volumes
-
-            echo "🚧 Construyendo y levantando nuevamente..."
-            docker-compose up --build -d
-
-            echo "✅ Verificando backend..."
-            curl http://localhost:8000 || echo "⚠️ Backend no responde"
+            docker compose down
+            docker compose up --build -d
 
           EOF
