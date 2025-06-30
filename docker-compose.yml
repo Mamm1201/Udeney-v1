@@ -33,7 +33,7 @@ services:
       db:
         condition: service_healthy
     env_file:
-      - .env.docker
+      - .env.vm
     restart: unless-stopped
 
   # Servicio del frontend Vite (React)
