@@ -21,8 +21,17 @@ jobs:
       - name: Deploy to Azure VM
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.HOST }} << 'EOF'
+            set -e
             sudo apt update
-            sudo apt install -y docker-compose-plugin
+
+            # Instalar Docker Compose V2 manualmente si no existe
+            if ! docker compose version &>/dev/null; then
+              sudo mkdir -p /usr/local/lib/docker/cli-plugins
+              curl -SL https://github.com/docker/compose/releases/download/v2.24.5/docker-compose-linux-x86_64 -o docker-compose
+              chmod +x docker-compose
+              sudo mv docker-compose /usr/local/lib/docker/cli-plugins/docker-compose
+            fi
+
             cd ${{ secrets.PROJECT_PATH }}
             git pull origin develop
             docker compose down
