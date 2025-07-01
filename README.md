@@ -64,7 +64,8 @@ En muchas comunidades, los estudiantes enfrentan dificultades para acceder a mat
 
 ## 📁 Estructura del Proyecto
 
-`Udeney-v1/
+````bash
+Udeney-v1/
 ├── ecommerce-backend/         # Backend en Django
 │   ├── eduneyv1/              # App principal de Django
 │   ├── manage.py
@@ -73,8 +74,7 @@ En muchas comunidades, los estudiantes enfrentan dificultades para acceder a mat
 ├── client/                    # Frontend en React + Vite
 │   ├── src/
 │   ├── vite.config.js
-└── README.md`
-
+└── README.md
 ---
 
 ## ⚙️ Configuración del Entorno
@@ -91,7 +91,7 @@ En muchas comunidades, los estudiantes enfrentan dificultades para acceder a mat
 ```bash
 git clone https://github.com/Mamm1201/Udeney-v1.git
 cd Udeney-v1
-```
+````
 
 ### 🔙 Configurar y Ejecutar el Backend (Django)
 
@@ -120,6 +120,10 @@ CREATE DATABASE db_ecommerce CHARACTER SET UTF8MB4 COLLATE utf8mb4_general_ci;
 ```
 
 Aplicar migraciones y crear superusuario:
+
+Se recomienda mantener `managed = True` en los modelos para que Django pueda crear y actualizar automáticamente las tablas en la base de datos mediante migraciones.
+
+---
 
 ```bash
 python manage.py makemigrations
@@ -154,60 +158,98 @@ dist/
 
 ---
 
-## 🐳 Despliegue con Docker (opcional)
+````md
+## 🐳 Despliegue con Docker (Local o Servidor)
 
-Este proyecto también incluye configuración para ejecutar todo el stack usando Docker y Docker Compose.
-
-Servicios incluidos:
-
-- 🛢️ MySQL 5.7
-- 🐍 Django Backend (modo desarrollo)
-- ⚛️ React Frontend (modo desarrollo)
-
-### ⚙️ Requisitos Previos
+### Requisitos
 
 - Docker
 - Docker Compose
 
-### ▶️ Levantar los Contenedores
+### Servicios en Docker
+
+| Servicio    | Imagen         | Puerto |
+| ----------- | -------------- | ------ |
+| MySQL       | mysql:5.7      | 3307   |
+| Backend API | python:3.10    | 8000   |
+| Frontend    | node:18-alpine | 5173   |
+
+### Levantar entorno con Docker
 
 ```bash
 docker-compose up --build
 ```
+````
 
 Esto:
 
-- Construye imágenes
-- Crea base de datos
-- Monta código con recarga en caliente
-- Expone:
-  - Backend: <http://localhost:8000>
-  - Frontend: <http://localhost:5173>
-  - MySQL: localhost:3307
+Instala dependencias
 
-Para detener los contenedores:
+Usa wait-for-it.sh para esperar que MySQL esté listo
+
+Ejecuta Django y React (modo desarrollo)
+
+Frontend queda en <http://localhost:5173/>.
+Para exponerlo a la red, se usa:
+command: npm run dev -- --host 0.0.0.0
+
+Para detener:
 
 ```bash
 docker-compose down
 ```
 
----
+Esto:
 
-## 🧾 Gestión de Migraciones
+Instala dependencias
 
-Se recomienda mantener `managed = True` en los modelos para permitir a Django gestionar migraciones automáticamente.
+Usa wait-for-it.sh para esperar que MySQL esté listo
 
----
+Ejecuta Django y React en modo desarrollo
 
-## 🛢️ Justificación del motor de base de datos (MySQL)
+Frontend disponible en: <http://localhost:5173>
 
-MySQL es una opción sólida por su rendimiento, estabilidad, soporte transaccional y compatibilidad con Django.
+Para exponer a red local:
 
----
+```bash
+Para exponer a red local:
+npm run dev -- --host 0.0.0.0
+
+Para detener:
+docker-compose down
+```
+
+`````md
+## 🔁 CI/CD Automático con GitHub Actions
+
+### ✔️ CI – `.github/workflows/ci.yml`
+
+Se ejecuta en cada `push`:
+
+- `black`, `flake8` para backend
+- `eslint`, `prettier` para frontend
+- Pruebas automáticas
+- Cache de dependencias
+
+### 🚀 CD – `.github/workflows/deploy.yml`
+
+Cada `push` a `develop` o `main`:
+
+- Se conecta a la VM en Azure (vía SSH)
+- Ejecuta `git pull`
+- Reinicia contenedores con Docker
+
+### 🔐 Secrets usados
+
+````env
+VM_HOST=IP pública de la VM
+VM_USER=azureuser
+SSH_PRIVATE_KEY=clave SSH privada
+### 🔁 CI/CD Automático con GitHub Actions
 
 ## 🧼 Calidad del Código
 
-### 🐍 Backend (Python)
+🐍 Backend (Python)
 
 - `flake8`: verificador de estilo
 - `black`: formateador automático
@@ -217,12 +259,13 @@ MySQL es una opción sólida por su rendimiento, estabilidad, soporte transaccio
 [flake8]
 exclude = migrations,venv,node_modules,__pycache__
 max-line-length = 88
-```
+````
+`````
 
 ```bash
 # Ejecutar validaciones
 flake8 .
-black --check .
+black  .
 ```
 
 ### ⚛️ Frontend (JavaScript/React)
@@ -247,29 +290,53 @@ npx prettier --write .
 }
 ```
 
----
+🤝 Cómo Contribuir
+¡Gracias por tu interés en contribuir a Udeney!
 
-## 🤖 CI - Integración Continua
+Sigue estos pasos para colaborar:
 
-El archivo `.github/workflows/ci.yml` automatiza:
+Haz un fork del repositorio.
 
-- Verificación de formato con `black`
-- Linter y formateo en frontend (`eslint`, `prettier`)
-- Soporte para múltiples versiones de Python (`3.10`, `3.11`)
-- Cache de paquetes Python y Node.js
-- Generación y subida de reporte de cobertura
+Crea una nueva rama con tu funcionalidad o corrección:
 
----
+bash
+Copiar
+Editar
+git checkout -b nombre-de-tu-rama
+Realiza tus cambios, asegurándote de seguir las normas de estilo del código.
+
+Haz commit de tus cambios:
+
+bash
+Copiar
+Editar
+git commit -m "Agrega nueva funcionalidad"
+Haz push a tu rama:
+
+bash
+Copiar
+Editar
+git push origin nombre-de-tu-rama
+Abre un pull request desde tu fork hacia la rama develop.
+
+📄 Para más detalles, consulta CONTRIBUTING.md
 
 ## 📄 Licencia
 
 MIT License
 
-## 🤝 Autor
+```md
+## 🤝 Autoría
 
-- Desarrollado por **Mario Márquez**
-- Estudiante de Análisis y Desarrollo de Software – SENA
+Desarrollado por el equipo **Udeney**:
+
+- **Mario Márquez**
+- **Julieth Funez**
+- **Jairo Cardenas**
+
+Estudiantes de Análisis y Desarrollo de Software – SENA
 
 ## 🚧 Estado del Proyecto
 
 🔨 En desarrollo activo – nuevas funcionalidades y mejoras están en curso
+```
