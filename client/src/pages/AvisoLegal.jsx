@@ -1,3 +1,4 @@
+// src/pages/AvisoLegal.jsx
 import Navbar from '../components/Navbar';
 import Pie from '../components/Pie';
 
@@ -17,6 +18,7 @@ const AvisoLegal = () => {
           </p>
         </div>
       </header>
+
       {/* Contenido del Aviso Legal */}
       <main className="max-w-4xl mx-auto px-4 py-8 text-justify text-sm leading-relaxed flex-grow">
         <h2 className="text-xl font-bold mb-4">Aviso Legal</h2>
@@ -25,8 +27,8 @@ const AvisoLegal = () => {
           En cumplimiento con las obligaciones establecidas por las leyes
           aplicables en materia de servicios de la sociedad de la información y
           comercio electrónico, se informa que el sitio web{' '}
-          <strong>Eduney</strong> (en adelante, "la Plataforma") es propiedad de
-          Mi Empresa (en adelante, "el Titular").
+          <strong>Eduney</strong> (en adelante, &quot;la Plataforma&quot;) es
+          propiedad de Mi Empresa (en adelante, &quot;el Titular&quot;).
         </p>
 
         <h3 className="text-lg font-semibold mt-6">
@@ -42,6 +44,7 @@ const AvisoLegal = () => {
           <strong>Actividad:</strong> Plataforma de compraventa de artículos
           escolares de segunda mano.
         </p>
+
         <h3 className="text-lg font-semibold mt-6">2. Usuarios</h3>
         <p>
           El acceso y/o uso de este sitio web atribuye la condición de Usuario,
