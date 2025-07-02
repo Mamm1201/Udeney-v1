@@ -1,44 +1,44 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 // Páginas públicas
-import Home from "./pages/Home";
-import Nosotros from "./pages/Nosotros";
-import Contacto from "./pages/Contacto";
-import PoliticaCookies from "./pages/PoliticaCookies";
-import PoliticaPrivacidad from "./pages/PoliticaPrivacidad";
-import AvisoLegal from "./pages/AvisoLegal";
-import ResumenVenta from "./pages/ResumenVenta";
+import Home from './pages/Home';
+import Nosotros from './pages/Nosotros';
+import Contacto from './pages/Contacto';
+import PoliticaCookies from './pages/PoliticaCookies';
+import PoliticaPrivacidad from './pages/PoliticaPrivacidad';
+import AvisoLegal from './pages/AvisoLegal';
+import ResumenVenta from './pages/ResumenVenta';
 
 // Autenticación
-import Login from "./pages/Login";
-import Registro from "./pages/Registro";
+import Login from './pages/Login';
+import Registro from './pages/Registro';
 
 // Artículos
-import Articulos from "./pages/Articulos";
-import ArticuloDetail from "./pages/ArticuloDetail";
-import CrearArticulo from "./pages/CrearArticulo";
-import EditarArticulo from "./pages/EditarArticulo";
-import MisArticulos from "./pages/MisArticulos";
+import Articulos from './pages/Articulos';
+import ArticuloDetail from './pages/ArticuloDetail';
+import CrearArticulo from './pages/CrearArticulo';
+import EditarArticulo from './pages/EditarArticulo';
+import MisArticulos from './pages/MisArticulos';
 
 // Compra
-import Carrito from "./pages/Carrito";
-import Comprar from "./pages/Comprar";
-import ResumenCompra from "./pages/ResumenCompra";
-import DetalleTransaccion from "./pages/DetalleTransaccion";
+import Carrito from './pages/Carrito';
+import Comprar from './pages/Comprar';
+import ResumenCompra from './pages/ResumenCompra';
+import DetalleTransaccion from './pages/DetalleTransaccion';
 
 // Perfil de usuario
-import UserProfile from "./pages/UserProfile";
-import ActualizarDatos from "./pages/ActualizarDatos";
-import HistorialTransacciones from "./pages/HistorialTransacciones";
-import MisTransacciones from "./pages/MisTransacciones";
-import Calificar from "./pages/Calificar";
+import UserProfile from './pages/UserProfile';
+import ActualizarDatos from './pages/ActualizarDatos';
+import HistorialTransacciones from './pages/HistorialTransacciones';
+import MisTransacciones from './pages/MisTransacciones';
+import Calificar from './pages/Calificar';
 
 // Administración
-import Rol from "./pages/Rol";
-import PqrsAdmin from "./components/admin/PqrsAdmin";
+import Rol from './pages/Rol';
+import PqrsAdmin from './components/admin/PqrsAdmin';
 
 // Página base o futura app interna
-import App from "./pages/App";
+import App from './pages/App';
 
 const AppRoutes = () => {
   return (
@@ -69,14 +69,23 @@ const AppRoutes = () => {
         {/* --- Gestión de artículos del usuario --- */}
         <Route path="/mis-articulos" element={<MisArticulos />} />
         <Route path="/crear-articulo" element={<CrearArticulo />} />
-        <Route path="/editar-articulo/:id_articulo" element={<EditarArticulo />} />
+        <Route
+          path="/editar-articulo/:id_articulo"
+          element={<EditarArticulo />}
+        />
         <Route path="/mis-transacciones" element={<MisTransacciones />} />
 
         {/* --- Perfil de usuario --- */}
         <Route path="/user" element={<UserProfile />} />
         <Route path="/actualizar-datos" element={<ActualizarDatos />} />
-        <Route path="/historial-transacciones" element={<HistorialTransacciones />} />
-        <Route path="/detalle-transaccion/:id" element={<DetalleTransaccion />} />
+        <Route
+          path="/historial-transacciones"
+          element={<HistorialTransacciones />}
+        />
+        <Route
+          path="/detalle-transaccion/:id"
+          element={<DetalleTransaccion />}
+        />
         <Route path="/calificar/:id" element={<Calificar />} />
 
         {/* --- Administración --- */}

@@ -1,12 +1,12 @@
-import Boton from "../components/Boton";
+import Boton from '../components/Boton';
 
 function compra() {
   const manejarClic = () => {
-    console.log("clic");
+    console.log('clic');
   };
 
   const reiniciarContador = () => {
-    console.log("reiniciar");
+    console.log('reiniciar');
   };
   return (
     <div className="venta- principal">

@@ -1,6 +1,6 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { loginUser } from "../api/auth";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { loginUser } from '../api/auth';
 import {
   Box,
   Button,
@@ -14,22 +14,22 @@ import {
   CircularProgress,
   Snackbar,
   Alert,
-} from "@mui/material";
-import { LockOutlined, Visibility, VisibilityOff } from "@mui/icons-material";
+} from '@mui/material';
+import { LockOutlined, Visibility, VisibilityOff } from '@mui/icons-material';
 
 const Login = () => {
-  const [form, setForm] = useState({ email: "", password: "" });
+  const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
-    message: "",
-    severity: "info",
+    message: '',
+    severity: 'info',
   });
 
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
+  const handleChange = e => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
@@ -37,10 +37,10 @@ const Login = () => {
     setShowPassword(!showPassword);
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
     setLoading(true);
-    setSnackbar({ open: false, message: "", severity: "info" });
+    setSnackbar({ open: false, message: '', severity: 'info' });
 
     try {
       const response = await loginUser({
@@ -57,26 +57,26 @@ const Login = () => {
         nombres_usuario,
       } = response.data;
 
-      localStorage.setItem("access_token", access_token);
-      localStorage.setItem("refresh_token", refresh_token);
-      localStorage.setItem("email_usuario", email);
-      localStorage.setItem("id_usuario", id_usuario);
-      localStorage.setItem("nombres_usuario", nombres_usuario);
+      localStorage.setItem('access_token', access_token);
+      localStorage.setItem('refresh_token', refresh_token);
+      localStorage.setItem('email_usuario', email);
+      localStorage.setItem('id_usuario', id_usuario);
+      localStorage.setItem('nombres_usuario', nombres_usuario);
 
       setSnackbar({
         open: true,
-        message: message || "Inicio de sesión exitoso",
-        severity: "success",
+        message: message || 'Inicio de sesión exitoso',
+        severity: 'success',
       });
 
       setTimeout(() => {
-        navigate("/");
+        navigate('/');
       }, 2000);
     } catch (err) {
       const msg =
         err.response?.data?.error ||
-        "Error al iniciar sesión. Intenta de nuevo.";
-      setSnackbar({ open: true, message: msg, severity: "error" });
+        'Error al iniciar sesión. Intenta de nuevo.';
+      setSnackbar({ open: true, message: msg, severity: 'error' });
     } finally {
       setLoading(false);
     }
@@ -86,7 +86,7 @@ const Login = () => {
     <Container maxWidth="xs">
       <Paper elevation={6} sx={{ padding: 4, mt: 8, borderRadius: 3 }}>
         <Box display="flex" flexDirection="column" alignItems="center">
-          <Avatar sx={{ m: 1, bgcolor: "primary.main" }}>
+          <Avatar sx={{ m: 1, bgcolor: 'primary.main' }}>
             <LockOutlined />
           </Avatar>
 
@@ -106,7 +106,7 @@ const Login = () => {
           <Box
             component="form"
             onSubmit={handleSubmit}
-            sx={{ mt: 3, display: "flex", flexDirection: "column", gap: 2 }}
+            sx={{ mt: 3, display: 'flex', flexDirection: 'column', gap: 2 }}
           >
             <TextField
               name="email"
@@ -122,7 +122,7 @@ const Login = () => {
               label="Contraseña"
               fullWidth
               variant="outlined"
-              type={showPassword ? "text" : "password"}
+              type={showPassword ? 'text' : 'password'}
               required
               value={form.password}
               onChange={handleChange}
@@ -151,24 +151,24 @@ const Login = () => {
               sx={{
                 mt: 2,
                 mb: 1,
-                borderRadius: "12px",
-                fontWeight: "bold",
-                textTransform: "none",
+                borderRadius: '12px',
+                fontWeight: 'bold',
+                textTransform: 'none',
                 py: 1.5,
               }}
             >
-              {loading ? <CircularProgress size={24} /> : "Ingresar"}
+              {loading ? <CircularProgress size={24} /> : 'Ingresar'}
             </Button>
           </Box>
 
           {/* Botón de redirección a registro */}
           <Typography variant="body2" sx={{ mt: 2 }}>
-            ¿No tienes una cuenta?{" "}
+            ¿No tienes una cuenta?{' '}
             <Button
               variant="text"
               size="small"
-              onClick={() => navigate("/registro")}
-              sx={{ textTransform: "none", padding: 0, minWidth: 0 }}
+              onClick={() => navigate('/registro')}
+              sx={{ textTransform: 'none', padding: 0, minWidth: 0 }}
             >
               Regístrate
             </Button>
@@ -180,12 +180,12 @@ const Login = () => {
         open={snackbar.open}
         autoHideDuration={4000}
         onClose={() => setSnackbar({ ...snackbar, open: false })}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
         <Alert
           onClose={() => setSnackbar({ ...snackbar, open: false })}
           severity={snackbar.severity}
-          sx={{ width: "100%" }}
+          sx={{ width: '100%' }}
         >
           {snackbar.message}
         </Alert>

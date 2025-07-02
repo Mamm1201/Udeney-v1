@@ -3,8 +3,8 @@
 // Versión con diseño visual moderno, emojis y fondo con imagen
 // ======================================================
 
-import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   Box,
   Button,
@@ -14,15 +14,15 @@ import {
   Alert,
   Paper,
   Stack,
-} from "@mui/material";
-import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
-import api from "../api/axiosConfig"; // Reemplaza si tu ruta cambia
+} from '@mui/material';
+import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
+import api from '../api/axiosConfig'; // Reemplaza si tu ruta cambia
 
 // Opciones de calificación con texto y emojis
 const opcionesCalificacion = [
-  { label: "😄 Excelente", value: "excelente" },
-  { label: "😊 Buena", value: "buena" },
-  { label: "😞 Mala", value: "mala" },
+  { label: '😄 Excelente', value: 'excelente' },
+  { label: '😊 Buena', value: 'buena' },
+  { label: '😞 Mala', value: 'mala' },
 ];
 
 const Calificar = () => {
@@ -30,35 +30,35 @@ const Calificar = () => {
   const { id } = useParams(); // ID de transacción desde la URL
 
   // Estados locales
-  const [tipoCalificacion, setTipoCalificacion] = useState("");
-  const [comentario, setComentario] = useState("");
-  const [mensaje, setMensaje] = useState({ texto: "", tipo: "success" });
+  const [tipoCalificacion, setTipoCalificacion] = useState('');
+  const [comentario, setComentario] = useState('');
+  const [mensaje, setMensaje] = useState({ texto: '', tipo: 'success' });
   const [mostrarAlerta, setMostrarAlerta] = useState(false);
 
   // Enviar calificación al backend
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
 
     try {
-      await api.post("/calificaciones/", {
+      await api.post('/calificaciones/', {
         id_transaccion: id,
         tipo_calificacion: tipoCalificacion,
         comentario: comentario || null,
       });
 
       setMensaje({
-        texto: "✅ Calificación enviada exitosamente",
-        tipo: "success",
+        texto: '✅ Calificación enviada exitosamente',
+        tipo: 'success',
       });
       setMostrarAlerta(true);
 
       // Volver atrás luego de unos segundos
-      setTimeout(() => navigate("/articulos"), 1000);
+      setTimeout(() => navigate('/articulos'), 1000);
     } catch (error) {
-      console.error("❌ Error al enviar calificación:", error);
+      console.error('❌ Error al enviar calificación:', error);
       setMensaje({
-        texto: "Ocurrió un error al enviar la calificación",
-        tipo: "error",
+        texto: 'Ocurrió un error al enviar la calificación',
+        tipo: 'error',
       });
       setMostrarAlerta(true);
     }
@@ -67,14 +67,14 @@ const Calificar = () => {
   return (
     <Box
       sx={{
-        minHeight: "100vh",
+        minHeight: '100vh',
         backgroundImage:
           "linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(0,0,0,0.8)), url('/otoño1.jpg')",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
         p: 2,
       }}
     >
@@ -83,9 +83,9 @@ const Calificar = () => {
         sx={{
           p: 4,
           maxWidth: 500,
-          width: "100%",
+          width: '100%',
           borderRadius: 4,
-          backgroundColor: "#ffffffee",
+          backgroundColor: '#ffffffee',
         }}
       >
         {/* Título e ícono */}
@@ -104,18 +104,18 @@ const Calificar = () => {
 
           {/* Opciones visuales de calificación */}
           <Stack direction="row" spacing={2} mb={3}>
-            {opcionesCalificacion.map((opcion) => (
+            {opcionesCalificacion.map(opcion => (
               <Button
                 key={opcion.value}
                 variant={
-                  tipoCalificacion === opcion.value ? "contained" : "outlined"
+                  tipoCalificacion === opcion.value ? 'contained' : 'outlined'
                 }
                 onClick={() => setTipoCalificacion(opcion.value)}
                 sx={{
                   flex: 1,
-                  textTransform: "none",
-                  fontSize: "1.1rem",
-                  whiteSpace: "nowrap",
+                  textTransform: 'none',
+                  fontSize: '1.1rem',
+                  whiteSpace: 'nowrap',
                   borderRadius: 2,
                 }}
               >
@@ -131,7 +131,7 @@ const Calificar = () => {
             rows={4}
             fullWidth
             value={comentario}
-            onChange={(e) => setComentario(e.target.value)}
+            onChange={e => setComentario(e.target.value)}
             placeholder="¿Qué te gustaría contarnos sobre esta transacción?"
             sx={{ mb: 3 }}
           />
@@ -155,7 +155,7 @@ const Calificar = () => {
         open={mostrarAlerta}
         autoHideDuration={4000}
         onClose={() => setMostrarAlerta(false)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         <Alert
           severity={mensaje.tipo}

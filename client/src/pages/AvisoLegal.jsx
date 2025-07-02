@@ -1,6 +1,6 @@
-import React from "react";
-import Navbar from "../components/Navbar";
-import Pie from "../components/Pie";
+import React from 'react';
+import Navbar from '../components/Navbar';
+import Pie from '../components/Pie';
 
 const AvisoLegal = () => {
   return (
@@ -25,7 +25,7 @@ const AvisoLegal = () => {
         <p>
           En cumplimiento con las obligaciones establecidas por las leyes
           aplicables en materia de servicios de la sociedad de la información y
-          comercio electrónico, se informa que el sitio web{" "}
+          comercio electrónico, se informa que el sitio web{' '}
           <strong>Eduney</strong> (en adelante, "la Plataforma") es propiedad de
           Mi Empresa (en adelante, "el Titular").
         </p>

@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   TextField,
@@ -9,8 +9,8 @@ import {
   CircularProgress,
   Snackbar,
   Alert,
-} from "@mui/material";
-import axios from "axios";
+} from '@mui/material';
+import axios from 'axios';
 
 const ActualizarDatos = () => {
   // Hook para navegación entre rutas
@@ -18,11 +18,11 @@ const ActualizarDatos = () => {
 
   // Estado para almacenar los datos del formulario
   const [formData, setFormData] = useState({
-    nombres_usuario: "",
-    apellidos_usuario: "",
-    email_usuario: "",
-    telefono_usuario: "",
-    direccion_usuario: "",
+    nombres_usuario: '',
+    apellidos_usuario: '',
+    email_usuario: '',
+    telefono_usuario: '',
+    direccion_usuario: '',
   });
 
   // Estado para indicar si está cargando datos o enviando actualización
@@ -31,18 +31,18 @@ const ActualizarDatos = () => {
   // Estado para manejar mensajes de éxito o error con Snackbar
   const [snackbar, setSnackbar] = useState({
     open: false,
-    message: "",
-    severity: "info", // puede ser 'success', 'error', 'warning', 'info'
+    message: '',
+    severity: 'info', // puede ser 'success', 'error', 'warning', 'info'
   });
 
   // Obtener el id del usuario desde el localStorage
-  const id_usuario = localStorage.getItem("id_usuario");
+  const id_usuario = localStorage.getItem('id_usuario');
 
   // Función para unir correctamente la URL base con el endpoint,
   // evitando errores con '/' repetidas o faltantes
   const joinUrl = (base, path) => {
-    if (!base.endsWith("/")) base += "/";
-    if (path.startsWith("/")) path = path.substring(1);
+    if (!base.endsWith('/')) base += '/';
+    if (path.startsWith('/')) path = path.substring(1);
     return base + path;
   };
 
@@ -52,8 +52,8 @@ const ActualizarDatos = () => {
       // Mostrar error si no hay id de usuario
       setSnackbar({
         open: true,
-        message: "No se encontró el ID del usuario",
-        severity: "error",
+        message: 'No se encontró el ID del usuario',
+        severity: 'error',
       });
       return;
     }
@@ -73,8 +73,8 @@ const ActualizarDatos = () => {
         // Mostrar mensaje de error si falla la carga
         setSnackbar({
           open: true,
-          message: "Error al cargar los datos del usuario",
-          severity: "error",
+          message: 'Error al cargar los datos del usuario',
+          severity: 'error',
         });
       }
     };
@@ -83,12 +83,12 @@ const ActualizarDatos = () => {
   }, [id_usuario]);
 
   // Manejador para actualizar el estado cuando el usuario cambia un campo
-  const handleChange = (e) => {
+  const handleChange = e => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   // Función que se ejecuta al enviar el formulario para actualizar datos
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
     setLoading(true);
 
@@ -103,25 +103,25 @@ const ActualizarDatos = () => {
       // Mostrar mensaje de éxito en Snackbar
       setSnackbar({
         open: true,
-        message: "Datos actualizados correctamente",
-        severity: "success",
+        message: 'Datos actualizados correctamente',
+        severity: 'success',
       });
 
       // Redirigir a la página principal después de 2 segundos
       setTimeout(() => {
-        navigate("/");
+        navigate('/');
       }, 2000);
     } catch (error) {
       console.error(
-        "Error al actualizar:",
-        error.response?.data || error.message,
+        'Error al actualizar:',
+        error.response?.data || error.message
       );
 
       // Mostrar mensaje de error en Snackbar si la actualización falla
       setSnackbar({
         open: true,
-        message: "Error al actualizar datos",
-        severity: "error",
+        message: 'Error al actualizar datos',
+        severity: 'error',
       });
     } finally {
       setLoading(false);
@@ -136,7 +136,7 @@ const ActualizarDatos = () => {
       minHeight="100vh"
       bgcolor="#f4f6f8"
     >
-      <Paper sx={{ p: 4, width: "100%", maxWidth: 500 }}>
+      <Paper sx={{ p: 4, width: '100%', maxWidth: 500 }}>
         <Typography variant="h5" gutterBottom>
           Actualizar mis datos
         </Typography>
@@ -197,7 +197,7 @@ const ActualizarDatos = () => {
             sx={{ mt: 2 }}
             disabled={loading}
           >
-            {loading ? <CircularProgress size={24} /> : "Actualizar"}
+            {loading ? <CircularProgress size={24} /> : 'Actualizar'}
           </Button>
         </Box>
       </Paper>
@@ -207,12 +207,12 @@ const ActualizarDatos = () => {
         open={snackbar.open}
         autoHideDuration={4000}
         onClose={() => setSnackbar({ ...snackbar, open: false })}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
         <Alert
           severity={snackbar.severity}
           onClose={() => setSnackbar({ ...snackbar, open: false })}
-          sx={{ width: "100%" }}
+          sx={{ width: '100%' }}
         >
           {snackbar.message}
         </Alert>

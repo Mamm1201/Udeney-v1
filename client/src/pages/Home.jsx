@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   Box,
   Typography,
@@ -7,40 +7,40 @@ import {
   CardContent,
   CardMedia,
   Button,
-} from "@mui/material";
-import { useNavigate } from "react-router-dom";
-import Navbar from "../components/Navbar";
-import Pie from "../components/Pie";
+} from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import Navbar from '../components/Navbar';
+import Pie from '../components/Pie';
 
 // Lista de categorías para mostrar en tarjetas
 const categorias = [
   {
-    nombre: "Útiles",
-    imagen: "/colores.jpg",
+    nombre: 'Útiles',
+    imagen: '/colores.jpg',
     descripcion:
-      "Artículos escolares en excelente estado: cuadernos, lápices, colores y más.",
-    ruta: "/articulos",
+      'Artículos escolares en excelente estado: cuadernos, lápices, colores y más.',
+    ruta: '/articulos',
   },
   {
-    nombre: "Herramientas",
-    imagen: "/calculate.jpg",
+    nombre: 'Herramientas',
+    imagen: '/calculate.jpg',
     descripcion:
-      "Herramientas tecnológicas y de aprendizaje para diferentes niveles educativos.",
-    ruta: "/articulos",
+      'Herramientas tecnológicas y de aprendizaje para diferentes niveles educativos.',
+    ruta: '/articulos',
   },
   {
-    nombre: "Libros",
-    imagen: "/libro.jpg",
+    nombre: 'Libros',
+    imagen: '/libro.jpg',
     descripcion:
-      "Libros de texto, literatura y consulta para todas las edades.",
-    ruta: "/articulos",
+      'Libros de texto, literatura y consulta para todas las edades.',
+    ruta: '/articulos',
   },
   {
-    nombre: "Prendas",
-    imagen: "/prenda.jpg",
+    nombre: 'Prendas',
+    imagen: '/prenda.jpg',
     descripcion:
-      "Uniformes y prendas escolares listas para reutilizar con amor.",
-    ruta: "/articulos",
+      'Uniformes y prendas escolares listas para reutilizar con amor.',
+    ruta: '/articulos',
   },
 ];
 
@@ -48,44 +48,44 @@ const Home = () => {
   const navigate = useNavigate();
 
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: "white" }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: 'white' }}>
       <Navbar />
 
       {/* Hero section con imagen de fondo responsive */}
       <Box
         sx={{
-          position: "relative",
-          height: { xs: "70vh", md: "70vh" },
-          width: "100%",
-          backgroundImage: "url(/nosotros.png)",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          textAlign: "center",
+          position: 'relative',
+          height: { xs: '70vh', md: '70vh' },
+          width: '100%',
+          backgroundImage: 'url(/nosotros.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          textAlign: 'center',
         }}
       >
         <Box
           sx={{
-            position: "absolute",
+            position: 'absolute',
             top: 0,
             left: 0,
-            height: "100%",
-            width: "100%",
-            bgcolor: "rgba(0, 0, 0, 0.65)",
+            height: '100%',
+            width: '100%',
+            bgcolor: 'rgba(0, 0, 0, 0.65)',
             zIndex: 1,
           }}
         />
 
-        <Box sx={{ position: "relative", zIndex: 2, px: 2 }}>
+        <Box sx={{ position: 'relative', zIndex: 2, px: 2 }}>
           <Typography
             variant="h3"
             sx={{
-              color: "white",
-              fontWeight: "bold",
-              fontSize: { xs: "1.8rem", md: "3rem" },
+              color: 'white',
+              fontWeight: 'bold',
+              fontSize: { xs: '1.8rem', md: '3rem' },
               mb: 2,
             }}
           >
@@ -94,10 +94,10 @@ const Home = () => {
           <Typography
             variant="body1"
             sx={{
-              color: "white",
-              maxWidth: "800px",
-              mx: "auto",
-              fontSize: { xs: "1rem", md: "1.2rem" },
+              color: 'white',
+              maxWidth: '800px',
+              mx: 'auto',
+              fontSize: { xs: '1rem', md: '1.2rem' },
             }}
           >
             En EduNey creemos en darle una nueva vida a las prendas y elementos
@@ -114,15 +114,15 @@ const Home = () => {
             <Grid item xs={12} sm={6} md={3} key={index}>
               <Card
                 sx={{
-                  height: "100%",
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "space-between",
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
                   borderRadius: 3,
                   boxShadow: 4,
-                  transition: "transform 0.3s",
-                  "&:hover": {
-                    transform: "scale(1.03)",
+                  transition: 'transform 0.3s',
+                  '&:hover': {
+                    transform: 'scale(1.03)',
                   },
                 }}
               >
@@ -145,9 +145,9 @@ const Home = () => {
                     variant="contained"
                     onClick={() => navigate(cat.ruta)}
                     sx={{
-                      backgroundColor: "#8B8C69",
-                      "&:hover": {
-                        backgroundColor: "#BBBF4E",
+                      backgroundColor: '#8B8C69',
+                      '&:hover': {
+                        backgroundColor: '#BBBF4E',
                       },
                     }}
                   >
@@ -161,7 +161,7 @@ const Home = () => {
       </Box>
 
       {/* Sección informativa blanco */}
-      <Box sx={{ backgroundColor: "white", py: 6, px: { xs: 2, md: 4 } }}>
+      <Box sx={{ backgroundColor: 'white', py: 6, px: { xs: 2, md: 4 } }}>
         <Grid container spacing={4} alignItems="stretch">
           {/* Texto */}
           <Grid
@@ -169,9 +169,9 @@ const Home = () => {
             xs={12}
             md={6}
             sx={{
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
             }}
           >
             <Box>
@@ -181,7 +181,7 @@ const Home = () => {
               <Typography
                 variant="body1"
                 color="text.secondary"
-                sx={{ textAlign: "justify" }}
+                sx={{ textAlign: 'justify' }}
               >
                 El modelo lineal tradicional —basado en extraer, usar y
                 desechar— contribuye a la degradación del medio ambiente y a la
@@ -198,7 +198,7 @@ const Home = () => {
                 <br />
                 <br />
                 Como explica Edson Grandisoli, Magíster en Ecología y Doctor en
-                Educación y Sostenibilidad, en una entrevista con{" "}
+                Educación y Sostenibilidad, en una entrevista con{' '}
                 <strong>National Geographic</strong>, “al usar menos recursos,
                 también se reduce la necesidad de transportarlos”.
               </Typography>
@@ -210,15 +210,15 @@ const Home = () => {
             item
             xs={12}
             md={6}
-            sx={{ display: "flex", alignItems: "center" }}
+            sx={{ display: 'flex', alignItems: 'center' }}
           >
             <Box
               component="img"
               src="/school.jpg"
               alt="Economía Circular"
               sx={{
-                width: "100%",
-                height: "100%",
+                width: '100%',
+                height: '100%',
                 borderRadius: 2,
                 boxShadow: 3,
               }}
@@ -232,18 +232,18 @@ const Home = () => {
         sx={{
           px: 3,
           py: { xs: 6, md: 8 },
-          bgcolor: "#BBBF4E",
-          color: "#1a1a1a",
-          textAlign: "center",
-          position: "relative",
+          bgcolor: '#BBBF4E',
+          color: '#1a1a1a',
+          textAlign: 'center',
+          position: 'relative',
         }}
       >
         <Box
           sx={{
             maxWidth: 700,
-            mx: "auto",
-            display: "flex",
-            flexDirection: "column",
+            mx: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
             gap: 3,
           }}
         >
@@ -251,8 +251,8 @@ const Home = () => {
             variant="h4"
             fontWeight="bold"
             sx={{
-              color: "#1a1a1a",
-              textTransform: "uppercase",
+              color: '#1a1a1a',
+              textTransform: 'uppercase',
             }}
           >
             ¡Haz la diferencia hoy!
@@ -261,9 +261,9 @@ const Home = () => {
           <Typography
             variant="body1"
             sx={{
-              fontSize: "1.1rem",
+              fontSize: '1.1rem',
               lineHeight: 1.6,
-              color: "#333",
+              color: '#333',
             }}
           >
             Al donar o reutilizar artículos escolares, no solo apoyas la
@@ -276,14 +276,14 @@ const Home = () => {
             variant="contained"
             size="large"
             sx={{
-              alignSelf: "center",
-              bgcolor: "#45858C",
-              color: "white",
+              alignSelf: 'center',
+              bgcolor: '#45858C',
+              color: 'white',
               px: 4,
               py: 1.5,
-              fontWeight: "bold",
-              "&:hover": {
-                bgcolor: "#376c70",
+              fontWeight: 'bold',
+              '&:hover': {
+                bgcolor: '#376c70',
               },
             }}
           >

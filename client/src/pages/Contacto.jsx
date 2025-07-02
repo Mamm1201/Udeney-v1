@@ -1,6 +1,6 @@
-import Navbar from "../components/Navbar";
-import Pie from "../components/Pie";
-import Contact from "../components/Contact";
+import Navbar from '../components/Navbar';
+import Pie from '../components/Pie';
+import Contact from '../components/Contact';
 import {
   Box,
   Container,
@@ -8,17 +8,17 @@ import {
   Card,
   CardContent,
   Avatar,
-} from "@mui/material";
-import ContactSupportIcon from "@mui/icons-material/ContactSupport";
+} from '@mui/material';
+import ContactSupportIcon from '@mui/icons-material/ContactSupport';
 
 const Contacto = () => {
   return (
     <Box
       sx={{
-        backgroundColor: "#E8F5E9", // Verde claro ecológico como fondo general
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
+        backgroundColor: '#E8F5E9', // Verde claro ecológico como fondo general
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
       {/* Navbar superior del sitio */}
@@ -33,10 +33,10 @@ const Contacto = () => {
               {/* Ícono central representativo */}
               <Avatar
                 sx={{
-                  bgcolor: "green.600",
+                  bgcolor: 'green.600',
                   width: 64,
                   height: 64,
-                  mx: "auto",
+                  mx: 'auto',
                   mb: 2,
                 }}
               >

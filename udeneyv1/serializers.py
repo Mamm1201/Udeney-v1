@@ -242,13 +242,12 @@ class ResumenCompraSerializer(serializers.Serializer):
     cantidad_articulos = serializers.IntegerField()
     articulos = ArticuloDetalleTransaccionAnidadoSerializer(many=True)
     total = serializers.DecimalField(max_digits=10, decimal_places=2)
-    
-    
+
+
 # ====================================
-# SERIALIZADOR DE MIS TRANSACCIOMES
+# SERIALIZADOR DE MIS TRANSACCIONES
 # ====================================
-class TransaccionesSerializer(serializers.ModelSerializer):
+class TransaccionesUsuarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transacciones
-        fields = ['id_transaccion', 'fecha_transaccion', 'usuario']
-
+        fields = ["id_transaccion", "fecha_transaccion", "usuario"]

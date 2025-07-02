@@ -2,7 +2,7 @@
 // CONFIGURACIÓN DE AXIOS PARA API
 // =====================================
 
-import axios from "axios";
+import axios from 'axios';
 
 // ✅ Crear instancia base de Axios con la URL del backend
 const api = axios.create({
@@ -14,21 +14,19 @@ const api = axios.create({
 // =====================================
 
 // ✅ Solo añade el token JWT si la ruta lo requiere
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("access_token");
+api.interceptors.request.use(config => {
+  const token = localStorage.getItem('access_token');
 
   // Lista de rutas protegidas que requieren autenticación
   const rutasProtegidas = [
-    "/mis-transacciones",
-    "/crear-con-detalles",
-    "/api/v1/pagos/",
-    "/api/v1/pqrs/",
+    '/mis-transacciones',
+    '/crear-con-detalles',
+    '/api/v1/pagos/',
+    '/api/v1/pqrs/',
   ];
 
   // Verifica si la URL actual es una de las protegidas
-  const requiereToken = rutasProtegidas.some((ruta) =>
-    config.url.includes(ruta),
-  );
+  const requiereToken = rutasProtegidas.some(ruta => config.url.includes(ruta));
 
   // Añadir encabezado Authorization solo si es necesario
   if (token && requiereToken) {
@@ -44,14 +42,14 @@ api.interceptors.request.use((config) => {
 
 // ✅ Maneja errores comunes, como token expirado
 api.interceptors.response.use(
-  (response) => response,
-  (error) => {
+  response => response,
+  error => {
     if (error.response?.status === 401) {
-      console.warn("Token inválido o sesión expirada");
+      console.warn('Token inválido o sesión expirada');
       // Aquí puedes redirigir al login o limpiar el token si quieres
     }
     return Promise.reject(error);
-  },
+  }
 );
 
 export default api;

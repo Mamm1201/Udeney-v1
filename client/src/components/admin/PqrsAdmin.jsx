@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 import {
   Box,
   Grid,
@@ -8,16 +8,16 @@ import {
   CircularProgress,
   MenuItem,
   TextField,
-} from "@mui/material";
-import { getPQRS } from "../../api";
+} from '@mui/material';
+import { getPQRS } from '../../api';
 
-const tipos = ["", "peticion", "queja", "reclamo"];
+const tipos = ['', 'peticion', 'queja', 'reclamo'];
 
 const PqrsAdmin = () => {
   const [pqrs, setPqrs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [tipoFiltro, setTipoFiltro] = useState("");
-  const [usuarioFiltro, setUsuarioFiltro] = useState("");
+  const [tipoFiltro, setTipoFiltro] = useState('');
+  const [usuarioFiltro, setUsuarioFiltro] = useState('');
 
   const fetchPQRS = async () => {
     setLoading(true);
@@ -29,7 +29,7 @@ const PqrsAdmin = () => {
       const data = await getPQRS(filtros);
       setPqrs(data);
     } catch (error) {
-      console.error("Error al obtener PQRS:", error);
+      console.error('Error al obtener PQRS:', error);
     } finally {
       setLoading(false);
     }
@@ -46,17 +46,17 @@ const PqrsAdmin = () => {
       </Typography>
 
       {/* Filtros */}
-      <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
+      <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
         <TextField
           label="Tipo de PQR"
           select
           value={tipoFiltro}
-          onChange={(e) => setTipoFiltro(e.target.value)}
+          onChange={e => setTipoFiltro(e.target.value)}
           sx={{ minWidth: 200 }}
         >
-          {tipos.map((tipo) => (
+          {tipos.map(tipo => (
             <MenuItem key={tipo} value={tipo}>
-              {tipo || "Todos"}
+              {tipo || 'Todos'}
             </MenuItem>
           ))}
         </TextField>
@@ -65,7 +65,7 @@ const PqrsAdmin = () => {
           label="ID Usuario"
           type="number"
           value={usuarioFiltro}
-          onChange={(e) => setUsuarioFiltro(e.target.value)}
+          onChange={e => setUsuarioFiltro(e.target.value)}
         />
       </Box>
 
@@ -76,7 +76,7 @@ const PqrsAdmin = () => {
         </Box>
       ) : (
         <Grid container spacing={2}>
-          {pqrs.map((item) => (
+          {pqrs.map(item => (
             <Grid item xs={12} md={6} key={item.id_pqr}>
               <Card>
                 <CardContent>

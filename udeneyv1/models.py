@@ -4,6 +4,10 @@
 from django.db import models
 from django.contrib.auth.hashers import make_password, check_password
 
+# ====================================
+# MODELO USUARIOS
+# ====================================
+
 
 class Usuarios(models.Model):
     id_usuario = models.AutoField(primary_key=True)
@@ -32,7 +36,7 @@ class Usuarios(models.Model):
 
 
 # ====================================
-# MODELO PARA ROLES
+# MODELO ROLES
 # ====================================
 class Roles(models.Model):
     id_rol = models.AutoField(primary_key=True)
@@ -53,7 +57,7 @@ class Roles(models.Model):
 
 
 # ====================================
-# MODELO PARA USUARIO-ROL
+# MODELO USUARIO-ROL (Relaciona usuarios con sus roles)
 # ====================================
 class UsuarioRol(models.Model):
     ROL_CHOICES = [
@@ -74,7 +78,7 @@ class UsuarioRol(models.Model):
 
 
 # ====================================
-# MODELO PARA CATEGORIAS
+# MODELO CATEGORIAS
 # ====================================
 class Categorias(models.Model):
     id_categoria = models.AutoField(primary_key=True)
@@ -82,7 +86,7 @@ class Categorias(models.Model):
         max_length=20,
         choices=[
             ("prenda", "Prenda"),
-            ("utiles", "Utiles"),
+            ("utiles", "Útiles"),
             ("libros", "Libros"),
             ("herramientas", "Herramientas"),
         ],
@@ -94,7 +98,7 @@ class Categorias(models.Model):
 
 
 # ====================================
-# MODELO PARA ARTÍCULOS
+# MODELO ARTÍCULOS
 # ====================================
 class Articulos(models.Model):
     id_articulo = models.AutoField(primary_key=True)
@@ -117,7 +121,7 @@ class Articulos(models.Model):
 
 
 # ====================================
-# MODELO PARA DETALLE-TRANSACCIÓN
+# MODELO DETALLE TRANSACCIÓN
 # ====================================
 class DetalleTransaccion(models.Model):
     id_detalle_transaccion = models.AutoField(primary_key=True)
@@ -128,7 +132,7 @@ class DetalleTransaccion(models.Model):
         max_length=20,
         choices=[
             ("domicilio", "Domicilio"),
-            ("retiro_punto_fisico", "Retiro_Punto_Fisico"),
+            ("retiro_punto_fisico", "Retiro Punto Físico"),
         ],
     )
     cantidad_articulos = models.IntegerField(null=True, blank=True)
@@ -142,7 +146,7 @@ class DetalleTransaccion(models.Model):
 
 
 # ====================================
-# MODELO PARA ARTICULO-DETALLE
+# MODELO ARTICULO - DETALLE TRANSACCIÓN (relación muchos a muchos)
 # ====================================
 class ArticuloDetalleTransaccion(models.Model):
     id = models.AutoField(primary_key=True)
@@ -160,7 +164,7 @@ class ArticuloDetalleTransaccion(models.Model):
 
 
 # ====================================
-# MODELO PARA TRANSACCIONES
+# MODELO TRANSACCIONES
 # ====================================
 class Transacciones(models.Model):
     id_transaccion = models.AutoField(primary_key=True)
@@ -175,7 +179,7 @@ class Transacciones(models.Model):
 
 
 # ====================================
-# MODELO PARA CALIFICACIONES
+# MODELO CALIFICACIONES
 # ====================================
 class Calificaciones(models.Model):
     id_calificacion = models.AutoField(primary_key=True)
@@ -198,7 +202,7 @@ class Calificaciones(models.Model):
 
 
 # ====================================
-# MODELO PARA PAGOS
+# MODELO PAGOS
 # ====================================
 class Pagos(models.Model):
     id_pago = models.AutoField(primary_key=True)
@@ -217,14 +221,14 @@ class Pagos(models.Model):
 
 
 # ====================================
-# MODELO PARA PQRS
+# MODELO PQRS (Peticiones, Quejas, Reclamos)
 # ====================================
 class Pqrs(models.Model):
     id_pqr = models.AutoField(primary_key=True)
     tipo_pqr = models.CharField(
         max_length=20,
         choices=[
-            ("peticion", "Peticion"),
+            ("peticion", "Petición"),
             ("queja", "Queja"),
             ("reclamo", "Reclamo"),
         ],

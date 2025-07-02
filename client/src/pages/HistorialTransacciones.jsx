@@ -1,6 +1,6 @@
 // src/pages/HistorialTransacciones.jsx
-import { useEffect, useState } from "react";
-import { getTransacciones } from "../api/transacciones.api";
+import { useEffect, useState } from 'react';
+import { getTransacciones } from '../api/transacciones.api';
 import {
   Box,
   Typography,
@@ -10,7 +10,7 @@ import {
   TableHead,
   TableRow,
   Paper,
-} from "@mui/material";
+} from '@mui/material';
 
 const HistorialTransacciones = () => {
   const [transacciones, setTransacciones] = useState([]);
@@ -21,7 +21,7 @@ const HistorialTransacciones = () => {
         const response = await getTransacciones();
         setTransacciones(response.data);
       } catch (error) {
-        console.error("Error al obtener transacciones:", error);
+        console.error('Error al obtener transacciones:', error);
       }
     };
 
@@ -43,7 +43,7 @@ const HistorialTransacciones = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {transacciones.map((tx) => (
+            {transacciones.map(tx => (
               <TableRow key={tx.id_transaccion}>
                 <TableCell>{tx.id_transaccion}</TableCell>
                 <TableCell>{tx.id_usuario}</TableCell>

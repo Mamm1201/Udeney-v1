@@ -15,14 +15,14 @@
 //   return response.data;
 // };
 
-import axios from "axios";
+import axios from 'axios';
 
 // Usar la variable de entorno
 const API_URL = import.meta.env.VITE_API_URL;
 
 export const getPQRS = async (filtros = {}) => {
   const params = new URLSearchParams(filtros).toString();
-  const url = `${API_URL}/pqrs/${params ? "?" + params : ""}`;
+  const url = `${API_URL}/pqrs/${params ? '?' + params : ''}`;
   const response = await axios.get(url);
   return response.data;
 };

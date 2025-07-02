@@ -1,42 +1,42 @@
-import { Box, Typography, IconButton, Link as MuiLink } from "@mui/material";
-import FacebookIcon from "@mui/icons-material/Facebook";
-import TwitterIcon from "@mui/icons-material/Twitter";
-import InstagramIcon from "@mui/icons-material/Instagram";
-import LinkedInIcon from "@mui/icons-material/LinkedIn";
-import { Link } from "react-router-dom";
+import { Box, Typography, IconButton, Link as MuiLink } from '@mui/material';
+import FacebookIcon from '@mui/icons-material/Facebook';
+import TwitterIcon from '@mui/icons-material/Twitter';
+import InstagramIcon from '@mui/icons-material/Instagram';
+import LinkedInIcon from '@mui/icons-material/LinkedIn';
+import { Link } from 'react-router-dom';
 
 const Pie = () => {
   return (
     <Box
       component="footer"
       sx={{
-        backgroundColor: "#45858C", // tono ecológico
-        color: "white",
+        backgroundColor: '#45858C', // tono ecológico
+        color: 'white',
         padding: 2,
-        textAlign: "center",
+        textAlign: 'center',
         mt: 4,
       }}
     >
       {/* Texto de enlaces legales */}
       <Typography variant="body1">
-        &copy; Eduney {new Date().getFullYear()} |{" "}
+        &copy; Eduney {new Date().getFullYear()} |{' '}
         <Link
           to="/aviso-legal"
-          style={{ color: "white", textDecoration: "underline" }}
+          style={{ color: 'white', textDecoration: 'underline' }}
         >
           Aviso legal
-        </Link>{" "}
-        |{" "}
+        </Link>{' '}
+        |{' '}
         <Link
           to="/politica-privacidad"
-          style={{ color: "white", textDecoration: "underline" }}
+          style={{ color: 'white', textDecoration: 'underline' }}
         >
           Política de privacidad
-        </Link>{" "}
-        |{" "}
+        </Link>{' '}
+        |{' '}
         <Link
           to="/politica-cookies"
-          style={{ color: "white", textDecoration: "underline" }}
+          style={{ color: 'white', textDecoration: 'underline' }}
         >
           Política de cookies
         </Link>
