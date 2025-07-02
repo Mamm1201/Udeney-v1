@@ -1,4 +1,6 @@
-import { useEffect, useState } from 'react';
+// src/components/admin/PqrsAdmin.jsx
+
+import { useEffect, useState, useCallback } from 'react';
 import {
   Box,
   Grid,
@@ -19,7 +21,8 @@ const PqrsAdmin = () => {
   const [tipoFiltro, setTipoFiltro] = useState('');
   const [usuarioFiltro, setUsuarioFiltro] = useState('');
 
-  const fetchPQRS = async () => {
+  // Callback para evitar advertencia en useEffect por dependencia
+  const fetchPQRS = useCallback(async () => {
     setLoading(true);
     try {
       const filtros = {};
@@ -33,11 +36,12 @@ const PqrsAdmin = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [tipoFiltro, usuarioFiltro]);
 
+  // Llamar a la función cada vez que cambian los filtros
   useEffect(() => {
     fetchPQRS();
-  }, [tipoFiltro, usuarioFiltro]);
+  }, [fetchPQRS]);
 
   return (
     <Box sx={{ p: 3 }}>
@@ -45,7 +49,7 @@ const PqrsAdmin = () => {
         Administración de PQRS
       </Typography>
 
-      {/* Filtros */}
+      {/* Filtros de búsqueda */}
       <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
         <TextField
           label="Tipo de PQR"
@@ -69,7 +73,7 @@ const PqrsAdmin = () => {
         />
       </Box>
 
-      {/* Lista PQRS */}
+      {/* Resultados de PQRS */}
       {loading ? (
         <Box display="flex" justifyContent="center" mt={4}>
           <CircularProgress />
