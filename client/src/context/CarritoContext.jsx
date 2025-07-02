@@ -1,5 +1,5 @@
 // src/context/CarritoContext.jsx
-import React, { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState } from 'react';
 
 // 1️⃣ Crear contexto global para el carrito
 const CarritoContext = createContext();

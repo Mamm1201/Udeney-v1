@@ -1,5 +1,5 @@
 // src/components/LogoutButton.jsx
-import React, { useState } from 'react';
+import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Button, Snackbar, Alert } from '@mui/material';
 import LogoutIcon from '@mui/icons-material/Logout';

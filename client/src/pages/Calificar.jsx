@@ -1,6 +1,5 @@
 // ======================================================
 // Calificar.jsx - Componente para calificar una transacción
-// Versión con diseño visual moderno, emojis y fondo con imagen
 // ======================================================
 
 import { useState } from 'react';

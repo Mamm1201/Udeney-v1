@@ -1,5 +1,5 @@
 // src/components/DetalleTransaccionUsuario.jsx
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Paper, Typography, CircularProgress, Box } from '@mui/material';
 import api from '../api/axiosConfig';
 

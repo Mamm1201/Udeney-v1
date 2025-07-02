@@ -1,4 +1,4 @@
-import React from 'react';
+// src/components/Articulos/ArticuloCard.jsx
 import PropTypes from 'prop-types';
 import {
   Box,
@@ -27,11 +27,14 @@ const ArticuloCard = ({
   onAgregarAlCarrito = () => {},
 }) => {
   const fallbackImage = '/images/articulo-placeholder.jpg';
+
+  // Validamos si la imagen es válida, si no, usamos la imagen de respaldo
   const imagenValida =
     imagen && typeof imagen === 'string' && imagen.trim() !== ''
       ? imagen
       : fallbackImage;
 
+  // Obtenemos el nombre de la categoría
   const nombreCategoria = categoriasMap[id_categoria] || 'Sin categoría';
 
   return (
@@ -115,6 +118,7 @@ const ArticuloCard = ({
   );
 };
 
+// Validación de tipos de props
 ArticuloCard.propTypes = {
   titulo_articulo: PropTypes.string.isRequired,
   descripcion_articulo: PropTypes.string.isRequired,
