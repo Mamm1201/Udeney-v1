@@ -22,7 +22,7 @@ import {
   AppBar,
   Toolbar,
 } from '@mui/material';
-import { DeleteOutline, ShoppingCartCheckout, Home } from '@mui/icons-material';
+import { DeleteOutline, ShoppingCartCheckout } from '@mui/icons-material';
 import { useCarrito } from '../context/CarritoContext';
 import api from '../api/axiosConfig';
 import { useNavigate } from 'react-router-dom';
@@ -55,17 +55,6 @@ const Carrito = () => {
     );
     setTotal(totalCalculado);
   }, [carrito]);
-
-  const disminuirCantidad = id_articulo => {
-    const articulo = carrito.find(item => item.id_articulo === id_articulo);
-    if (!articulo) return;
-
-    if (articulo.cantidad > 1) {
-      agregarAlCarrito({ ...articulo, cantidad: articulo.cantidad - 1 });
-    } else {
-      eliminarDelCarrito(id_articulo);
-    }
-  };
 
   const handleAbrirConfirmacion = () => setOpenConfirmDialog(true);
   const handleCerrarConfirmacion = () => setOpenConfirmDialog(false);

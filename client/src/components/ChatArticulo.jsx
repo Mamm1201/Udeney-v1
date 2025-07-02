@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import { API_URL } from '../api'; // Asegúrate de que la ruta sea correcta
@@ -7,14 +8,6 @@ const ChatArticulo = ({ remitenteId, destinatarioId }) => {
   const { articuloId } = useParams();
   const [mensajes, setMensajes] = useState([]);
   const [nuevoMensaje, setNuevoMensaje] = useState('');
-
-  useEffect(() => {
-    if (!articuloId || !remitenteId || !destinatarioId) {
-      console.warn('Faltan datos necesarios para obtener mensajes');
-      return;
-    }
-    obtenerMensajes();
-  }, [remitenteId, destinatarioId, articuloId]);
 
   const obtenerMensajes = async () => {
     try {
@@ -30,6 +23,15 @@ const ChatArticulo = ({ remitenteId, destinatarioId }) => {
       console.error('Error al obtener mensajes:', error);
     }
   };
+
+  useEffect(() => {
+    if (!articuloId || !remitenteId || !destinatarioId) {
+      console.warn('Faltan datos necesarios para obtener mensajes');
+      return;
+    }
+    obtenerMensajes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [remitenteId, destinatarioId, articuloId]);
 
   const enviarMensaje = async () => {
     if (nuevoMensaje.trim() === '') return;
@@ -75,6 +77,13 @@ const ChatArticulo = ({ remitenteId, destinatarioId }) => {
       <button onClick={enviarMensaje}>Enviar</button>
     </div>
   );
+};
+
+ChatArticulo.propTypes = {
+  remitenteId: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+    .isRequired,
+  destinatarioId: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+    .isRequired,
 };
 
 export default ChatArticulo;

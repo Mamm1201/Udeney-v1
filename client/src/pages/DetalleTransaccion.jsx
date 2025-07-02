@@ -1,6 +1,6 @@
-// src/components/DetalleTransaccion.jsx
-import React, { useEffect } from 'react';
-// import api from "../api/transacciones.api"; // Asegúrate que la instancia esté bien configurada
+import { useEffect } from 'react';
+import PropTypes from 'prop-types';
+import api from '../api/transacciones.api'; // Asegúrate que esta ruta sea correcta
 
 const DetalleTransaccion = ({ item, tipoEntrega, onDetalleCreado }) => {
   useEffect(() => {
@@ -30,6 +30,15 @@ const DetalleTransaccion = ({ item, tipoEntrega, onDetalleCreado }) => {
   }, [item, tipoEntrega, onDetalleCreado]);
 
   return null; // Este componente no renderiza nada en pantalla
+};
+
+DetalleTransaccion.propTypes = {
+  item: PropTypes.shape({
+    cantidad: PropTypes.number.isRequired,
+    id_articulo: PropTypes.number.isRequired,
+  }).isRequired,
+  tipoEntrega: PropTypes.string.isRequired,
+  onDetalleCreado: PropTypes.func.isRequired,
 };
 
 export default DetalleTransaccion;

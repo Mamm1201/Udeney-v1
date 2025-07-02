@@ -1,4 +1,6 @@
+// src/components/LogoutButton.jsx
 import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 import { Button, Snackbar, Alert } from '@mui/material';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useNavigate } from 'react-router-dom';
@@ -31,12 +33,12 @@ const LogoutButton = ({
           transition: 'all 0.3s ease',
           '&:hover': {
             opacity: 0.75,
-            backgroundColor: 'rgba(255, 255, 255, 0.08)', // fondo sutil (ajustable)
-            boxShadow: '0 0 8px rgba(0,0,0,0.2)', // sombra suave
+            backgroundColor: 'rgba(255, 255, 255, 0.08)',
+            boxShadow: '0 0 8px rgba(0,0,0,0.2)',
           },
         }}
       >
-        Cerrar sesión
+        {label}
       </Button>
 
       <Snackbar
@@ -56,6 +58,12 @@ const LogoutButton = ({
       </Snackbar>
     </>
   );
+};
+
+LogoutButton.propTypes = {
+  variant: PropTypes.string,
+  size: PropTypes.string,
+  label: PropTypes.string,
 };
 
 export default LogoutButton;

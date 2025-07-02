@@ -1,5 +1,5 @@
-// src/components/LoginButton.jsx
 import React from 'react';
+import PropTypes from 'prop-types';
 import { Button } from '@mui/material';
 import LoginIcon from '@mui/icons-material/Login';
 import { useNavigate } from 'react-router-dom';
@@ -22,6 +22,12 @@ const LoginButton = ({
       {label}
     </Button>
   );
+};
+
+LoginButton.propTypes = {
+  variant: PropTypes.string,
+  size: PropTypes.string,
+  label: PropTypes.string,
 };
 
 export default LoginButton;

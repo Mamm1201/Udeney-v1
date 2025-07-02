@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import {
   Box,
   Typography,
@@ -7,7 +8,6 @@ import {
   CardContent,
   Tooltip,
   IconButton,
-  Grid,
 } from '@mui/material';
 
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
@@ -113,6 +113,17 @@ const ArticuloCard = ({
       </CardContent>
     </Card>
   );
+};
+
+ArticuloCard.propTypes = {
+  titulo_articulo: PropTypes.string.isRequired,
+  descripcion_articulo: PropTypes.string.isRequired,
+  institucion_articulo: PropTypes.string,
+  precio_articulo: PropTypes.number,
+  id_categoria: PropTypes.number,
+  imagen: PropTypes.string,
+  mostrarBotonCarrito: PropTypes.bool,
+  onAgregarAlCarrito: PropTypes.func,
 };
 
 export default ArticuloCard;
