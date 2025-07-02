@@ -1,4 +1,6 @@
-import { useEffect, useState } from "react";
+// src/components/admin/PqrsAdmin.jsx
+
+import { useEffect, useState, useCallback } from 'react';
 import {
   Box,
   Grid,
@@ -8,18 +10,19 @@ import {
   CircularProgress,
   MenuItem,
   TextField,
-} from "@mui/material";
-import { getPQRS } from "../../api";
+} from '@mui/material';
+import { getPQRS } from '../../api';
 
-const tipos = ["", "peticion", "queja", "reclamo"];
+const tipos = ['', 'peticion', 'queja', 'reclamo'];
 
 const PqrsAdmin = () => {
   const [pqrs, setPqrs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [tipoFiltro, setTipoFiltro] = useState("");
-  const [usuarioFiltro, setUsuarioFiltro] = useState("");
+  const [tipoFiltro, setTipoFiltro] = useState('');
+  const [usuarioFiltro, setUsuarioFiltro] = useState('');
 
-  const fetchPQRS = async () => {
+  // Callback para evitar advertencia en useEffect por dependencia
+  const fetchPQRS = useCallback(async () => {
     setLoading(true);
     try {
       const filtros = {};
@@ -29,15 +32,16 @@ const PqrsAdmin = () => {
       const data = await getPQRS(filtros);
       setPqrs(data);
     } catch (error) {
-      console.error("Error al obtener PQRS:", error);
+      console.error('Error al obtener PQRS:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [tipoFiltro, usuarioFiltro]);
 
+  // Llamar a la función cada vez que cambian los filtros
   useEffect(() => {
     fetchPQRS();
-  }, [tipoFiltro, usuarioFiltro]);
+  }, [fetchPQRS]);
 
   return (
     <Box sx={{ p: 3 }}>
@@ -45,18 +49,18 @@ const PqrsAdmin = () => {
         Administración de PQRS
       </Typography>
 
-      {/* Filtros */}
-      <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
+      {/* Filtros de búsqueda */}
+      <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
         <TextField
           label="Tipo de PQR"
           select
           value={tipoFiltro}
-          onChange={(e) => setTipoFiltro(e.target.value)}
+          onChange={e => setTipoFiltro(e.target.value)}
           sx={{ minWidth: 200 }}
         >
-          {tipos.map((tipo) => (
+          {tipos.map(tipo => (
             <MenuItem key={tipo} value={tipo}>
-              {tipo || "Todos"}
+              {tipo || 'Todos'}
             </MenuItem>
           ))}
         </TextField>
@@ -65,18 +69,18 @@ const PqrsAdmin = () => {
           label="ID Usuario"
           type="number"
           value={usuarioFiltro}
-          onChange={(e) => setUsuarioFiltro(e.target.value)}
+          onChange={e => setUsuarioFiltro(e.target.value)}
         />
       </Box>
 
-      {/* Lista PQRS */}
+      {/* Resultados de PQRS */}
       {loading ? (
         <Box display="flex" justifyContent="center" mt={4}>
           <CircularProgress />
         </Box>
       ) : (
         <Grid container spacing={2}>
-          {pqrs.map((item) => (
+          {pqrs.map(item => (
             <Grid item xs={12} md={6} key={item.id_pqr}>
               <Card>
                 <CardContent>

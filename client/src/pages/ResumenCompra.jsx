@@ -1,7 +1,7 @@
 // src/pages/ResumenCompra.jsx
 
-import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box,
   Paper,
@@ -14,31 +14,30 @@ import {
   Button,
   Avatar,
   Grid,
-} from "@mui/material";
-import { getResumenCompraByTransaccionId } from "../api/transacciones.api";
+} from '@mui/material';
+import { getResumenCompraByTransaccionId } from '../api/transacciones.api';
 
 const ResumenCompra = () => {
-  const { id } = useParams(); // ID de la transacción desde la URL
+  const { id } = useParams(); // ID desde la URL
   const navigate = useNavigate();
 
   const [resumen, setResumen] = useState(null); // Datos de la transacción
-  const [loading, setLoading] = useState(true); // Cargando resumen
-  const [error, setError] = useState(null); // Errores
-  const fallbackImage = "/estudiantes.jpg"; // Imagen por defecto
+  const [loading, setLoading] = useState(true); // Estado de carga
+  const [error, setError] = useState(null); // Estado de error
+  const fallbackImage = '/estudiantes.jpg'; // Imagen por defecto
 
-  // Cargar resumen desde el backend
+  // Petición al backend para obtener resumen por ID
   useEffect(() => {
     const fetchResumen = async () => {
       try {
         setLoading(true);
         const response = await getResumenCompraByTransaccionId(id);
-        console.log("🧾 Resumen recibido:", response.data);
-        console.log("📦 Artículos completos:", response.data.articulos);
+        console.log('🧾 Resumen recibido:', response.data);
+        console.log('📦 Artículos completos:', response.data.articulos);
         setResumen(response.data);
-        console.log("Artículos:", response.data.articulos);
       } catch (err) {
         console.error(err);
-        setError("No se pudo cargar el resumen de compra.");
+        setError('No se pudo cargar el resumen de transacción.');
       } finally {
         setLoading(false);
       }
@@ -47,26 +46,26 @@ const ResumenCompra = () => {
     fetchResumen();
   }, [id]);
 
-  // Mostrar loader
+  // Mostrar loader si está cargando
   if (loading) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
         <CircularProgress />
       </Box>
     );
   }
 
-  // Mostrar error
+  // Mostrar error si ocurre
   if (error || !resumen) {
     return (
-      <Box sx={{ textAlign: "center", mt: 8 }}>
+      <Box sx={{ textAlign: 'center', mt: 8 }}>
         <Typography color="error" variant="h6">
           {error}
         </Typography>
         <Button
           variant="contained"
           sx={{ mt: 2 }}
-          onClick={() => navigate("/historial-transacciones")}
+          onClick={() => navigate('/historial-transacciones')}
         >
           Volver al Historial
         </Button>
@@ -78,10 +77,10 @@ const ResumenCompra = () => {
     <Box
       sx={{
         maxWidth: 1000,
-        mx: "auto",
+        mx: 'auto',
         p: 3,
-        backgroundColor: "#0D0D0D", // Fondo
-        minHeight: "100vh",
+        backgroundColor: '#0D0D0D', // Fondo oscuro
+        minHeight: '100vh',
       }}
     >
       <Paper
@@ -89,12 +88,13 @@ const ResumenCompra = () => {
         sx={{
           p: 4,
           borderRadius: 4,
-          backgroundColor: "#ffffff", // Tarjeta blanca sobre fondo azul
+          backgroundColor: '#ffffff', // Tarjeta blanca
         }}
       >
-        {/* Título */}
+        {/* Título dinámico según el tipo de transacción */}
         <Typography variant="h4" gutterBottom color="primary">
-          🧾 Resumen de Compra
+          🧾 Resumen de{' '}
+          {resumen.tipo_transaccion === 'venta' ? 'Venta' : 'Compra'}
         </Typography>
 
         <Divider sx={{ mb: 3 }} />
@@ -108,7 +108,7 @@ const ResumenCompra = () => {
 
         {resumen.fecha_transaccion ? (
           <Typography variant="subtitle1" sx={{ mb: 1 }}>
-            <strong>Fecha:</strong>{" "}
+            <strong>Fecha:</strong>{' '}
             {new Date(resumen.fecha_transaccion).toLocaleString()}
           </Typography>
         ) : (
@@ -118,105 +118,112 @@ const ResumenCompra = () => {
         )}
 
         <Typography variant="subtitle1" sx={{ mt: 2 }}>
-          <strong>Entrega:</strong>{" "}
-          {resumen.tipo_entrega === "domicilio"
-            ? "🚚 Domicilio a tu dirección"
-            : "🏬 Retiro en punto físico"}
+          <strong>Tipo de entrega:</strong>{' '}
+          {resumen.tipo_entrega === 'domicilio'
+            ? '🚚 Domicilio a tu dirección'
+            : '🏬 Retiro en punto físico'}
         </Typography>
 
         <Divider sx={{ my: 3 }} />
 
         {/* Lista de artículos */}
-        <List>
-          {resumen.articulos.map((item, index) => (
-            <ListItem key={index} divider alignItems="flex-start">
-              <Grid container spacing={2} alignItems="center">
-                {/* Imagen */}
-                <Grid item>
-                  <Avatar
-                    variant="rounded"
-                    src={item.imagen || fallbackImage}
-                    alt={item.titulo_articulo}
-                    sx={{ width: 64, height: 64 }}
-                    onError={(e) => {
-                      e.target.src = fallbackImage;
-                      e.target.style.opacity = 1;
-                    }}
-                  />
-                </Grid>
+        {resumen.articulos?.length > 0 ? (
+          <List>
+            {resumen.articulos.map((item, index) => (
+              <ListItem key={index} divider alignItems="flex-start">
+                <Grid container spacing={2} alignItems="center">
+                  {/* Imagen del artículo */}
+                  <Grid item>
+                    <Avatar
+                      variant="rounded"
+                      src={item.imagen || fallbackImage}
+                      alt={item.titulo_articulo}
+                      sx={{ width: 64, height: 64 }}
+                      onError={e => {
+                        e.target.src = fallbackImage;
+                        e.target.style.opacity = 1;
+                      }}
+                    />
+                  </Grid>
 
-                {/* Detalle artículo */}
-                <Grid item xs>
-                  <ListItemText
-                    primary={
-                      <Typography
-                        variant="subtitle1"
-                        fontWeight="bold"
-                        component="span"
-                      >
-                        {item.titulo_articulo} × {item.cantidad}
-                      </Typography>
-                    }
-                    secondary={
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        component="span"
-                      >
-                        Precio unitario: $
-                        {item.precio_unitario.toLocaleString("es-CO")} <br />
-                        Subtotal: ${item.subtotal.toLocaleString("es-CO")}
-                      </Typography>
-                    }
-                  />
+                  {/* Detalle del artículo */}
+                  <Grid item xs>
+                    <ListItemText
+                      primary={
+                        <Typography
+                          variant="subtitle1"
+                          fontWeight="bold"
+                          component="span"
+                        >
+                          {item.titulo_articulo} × {item.cantidad}
+                        </Typography>
+                      }
+                      secondary={
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          component="span"
+                        >
+                          Precio unitario: $
+                          {item.precio_unitario.toLocaleString('es-CO')} <br />
+                          Subtotal: ${item.subtotal.toLocaleString('es-CO')}
+                        </Typography>
+                      }
+                    />
+                  </Grid>
                 </Grid>
-              </Grid>
-            </ListItem>
-          ))}
-        </List>
+              </ListItem>
+            ))}
+          </List>
+        ) : (
+          <Typography variant="body2" textAlign="center" color="text.secondary">
+            No hay artículos para mostrar en esta transacción.
+          </Typography>
+        )}
 
         <Divider sx={{ my: 3 }} />
 
-        {/* Total */}
+        {/* Total de la transacción */}
         <Typography variant="h5" textAlign="right" color="primary">
-          Total: <strong>${resumen.total.toLocaleString("es-CO")}</strong>
+          Total: <strong>${resumen.total.toLocaleString('es-CO')}</strong>
         </Typography>
 
-        {/* Mensaje estado */}
+        {/* Mensaje informativo */}
         <Typography
           variant="body2"
           textAlign="center"
           color="text.secondary"
           sx={{ mt: 2 }}
         >
-          📦 Tu compra está en trámite. Recibirás confirmación pronto. Gracias
-          por hacer parte del cambio.
+          📦 Esta transacción está en trámite. Recibirás confirmación pronto.
+          Gracias por hacer parte del cambio.
         </Typography>
 
-        {/* Botón volver */}
-        <Box sx={{ mt: 4, textAlign: "center" }}>
+        {/* Botón para volver al inicio */}
+        <Box sx={{ mt: 4, textAlign: 'center' }}>
           <Button
             variant="contained"
-            onClick={() => navigate("/")}
+            onClick={() => navigate('/')}
             sx={{
-              backgroundColor: "#0593A2", // Verde
-              "&:hover": { backgroundColor: "#038C7F" }, // Verde oscuro al pasar el mouse
-              color: "white",
+              backgroundColor: '#0593A2',
+              '&:hover': { backgroundColor: '#038C7F' },
+              color: 'white',
             }}
           >
             Volver
           </Button>
-          {/* Botón para calificar transacción */}
-          <Box sx={{ mt: 2, textAlign: "center" }}>
+
+          {/* Botón para calificar la transacción */}
+          <Box sx={{ mt: 2, textAlign: 'center' }}>
             <Button
               variant="outlined"
               onClick={() => navigate(`/calificar/${resumen.id_transaccion}`)}
               sx={{
-                borderColor: "#1976d2",
-                color: "#1976d2",
-                "&:hover": {
-                  backgroundColor: "#1976d2",
-                  color: "white",
+                borderColor: '#1976d2',
+                color: '#1976d2',
+                '&:hover': {
+                  backgroundColor: '#1976d2',
+                  color: 'white',
                 },
                 mb: 2,
               }}

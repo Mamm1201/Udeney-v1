@@ -1,5 +1,5 @@
 // src/context/CarritoContext.jsx
-import React, { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState } from 'react';
 
 // 1️⃣ Crear contexto global para el carrito
 const CarritoContext = createContext();
@@ -8,7 +8,7 @@ const CarritoContext = createContext();
 export const useCarrito = () => {
   const context = useContext(CarritoContext);
   if (!context) {
-    console.error("⚠️ useCarrito debe usarse dentro de un <CarritoProvider>");
+    console.error('⚠️ useCarrito debe usarse dentro de un <CarritoProvider>');
     return {
       carrito: [],
       agregarAlCarrito: () => {},
@@ -24,14 +24,14 @@ export const CarritoProvider = ({ children }) => {
   const [carrito, setCarrito] = useState([]);
 
   // Agregar artículo al carrito (aumenta cantidad si ya existe)
-  const agregarAlCarrito = (item) => {
-    setCarrito((prev) => {
-      const existente = prev.find((i) => i.id_articulo === item.id_articulo);
+  const agregarAlCarrito = item => {
+    setCarrito(prev => {
+      const existente = prev.find(i => i.id_articulo === item.id_articulo);
       if (existente) {
-        return prev.map((i) =>
+        return prev.map(i =>
           i.id_articulo === item.id_articulo
             ? { ...i, cantidad: i.cantidad + 1 }
-            : i,
+            : i
         );
       }
       return [...prev, { ...item, cantidad: 1 }];
@@ -39,8 +39,8 @@ export const CarritoProvider = ({ children }) => {
   };
 
   // Eliminar artículo del carrito
-  const eliminarDelCarrito = (id_articulo) => {
-    setCarrito((prev) => prev.filter((i) => i.id_articulo !== id_articulo));
+  const eliminarDelCarrito = id_articulo => {
+    setCarrito(prev => prev.filter(i => i.id_articulo !== id_articulo));
   };
 
   // Vaciar todo el carrito

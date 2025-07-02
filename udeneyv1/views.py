@@ -47,7 +47,6 @@ from .serializers import (
     DetalleTransaccionAnidadoSerializer,
 )
 
-
 # ====================================
 # AUTENTICACIÓN
 # ====================================
@@ -144,16 +143,14 @@ class ArticulosViewSet(viewsets.ModelViewSet):
             return Articulos.objects.all()
         return Articulos.objects.filter(disponible=True)
 
-
-@action(detail=False, methods=["get"], url_path="mis-articulos")
-def mis_articulos(self, request):
-    id_usuario = request.query_params.get("id_usuario")
-    if not id_usuario:
-        return Response({"error": "id_usuario requerido"}, status=400)
-
-    articulos = Articulos.objects.filter(id_usuario=id_usuario)
-    serializer = self.get_serializer(articulos, many=True)
-    return Response(serializer.data)
+    @action(detail=False, methods=["get"], url_path="mis-articulos")
+    def mis_articulos(self, request):
+        id_usuario = request.query_params.get("id_usuario")
+        if not id_usuario:
+            return Response({"error": "id_usuario requerido"}, status=400)
+        articulos = Articulos.objects.filter(id_usuario=id_usuario)
+        serializer = self.get_serializer(articulos, many=True)
+        return Response(serializer.data)
 
 
 class TodosArticulosViewSet(viewsets.ModelViewSet):
@@ -217,8 +214,15 @@ class TransaccionesViewSet(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         if self.action == "retrieve":
-            return DetalleTransaccionAnidadoSerializer  # Reusa el anidado
+            return DetalleTransaccionAnidadoSerializer
         return TransaccionesSerializer
+
+
+class MisTransaccionesView(APIView):
+    def get(self, request, id_usuario):
+        transacciones = Transacciones.objects.filter(usuario_id=id_usuario)
+        serializer = TransaccionesSerializer(transacciones, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 # ====================================
@@ -342,6 +346,7 @@ def historial_transacciones_api(request):
         if request.query_params.get("fecha_inicio")
         else None
     )
+
     fecha_fin = (
         parse_date(request.query_params.get("fecha_fin"))
         if request.query_params.get("fecha_fin")
@@ -380,6 +385,7 @@ class ResumenCompraAPIView(APIView):
             detalle = DetalleTransaccion.objects.select_related("id_transaccion").get(
                 id_transaccion_id=id_transaccion
             )
+
             articulos = ArticuloDetalleTransaccion.objects.select_related(
                 "id_articulo"
             ).filter(id_detalle_transaccion=detalle)
@@ -396,6 +402,7 @@ class ResumenCompraAPIView(APIView):
                     if articulo.imagen
                     else None
                 )
+
                 articulos_data.append(
                     {
                         "id_articulo": articulo.id_articulo,
@@ -419,6 +426,7 @@ class ResumenCompraAPIView(APIView):
                 },
                 status=200,
             )
+
         except DetalleTransaccion.DoesNotExist:
             return Response({"error": "Transacción no encontrada"}, status=404)
         except Exception as e:

@@ -1,12 +1,12 @@
 // src/components/DetalleTransaccionUsuario.jsx
-import React, { useEffect, useState } from "react";
-import { Paper, Typography, CircularProgress, Box } from "@mui/material";
-import api from "../api/axiosConfig";
+import { useEffect, useState } from 'react';
+import { Paper, Typography, CircularProgress, Box } from '@mui/material';
+import api from '../api/axiosConfig';
 
 const DetalleTransaccionUsuario = ({ idTransaccion }) => {
   const [detalle, setDetalle] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   // Cargar detalle de transacción por ID
   useEffect(() => {
@@ -16,7 +16,7 @@ const DetalleTransaccionUsuario = ({ idTransaccion }) => {
         setDetalle(res.data);
       } catch (err) {
         console.error(err);
-        setError("Error al cargar el detalle de la transacción.");
+        setError('Error al cargar el detalle de la transacción.');
       } finally {
         setLoading(false);
       }

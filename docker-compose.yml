@@ -1,3 +1,60 @@
+# version: "3.8"
+
+# services:
+#   # 🔹 Servicio de base de datos MySQL
+#   db:
+#     image: mysql:8.0
+#     env_file:
+#       - .env
+#     environment:
+#       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+#       MYSQL_DATABASE: ${DB_NAME}
+#       MYSQL_ROOT_HOST: "%"
+#     volumes:
+#       - db_data:/var/lib/mysql
+#     ports:
+#       - "3307:3306"
+#     healthcheck:
+#       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+#       interval: 5s
+#       timeout: 10s
+#       retries: 10
+
+#   # 🔹 Servicio de backend Django
+#   backend:
+#     build:
+#       context: .
+#       dockerfile: Dockerfile
+#     command: sh -c "./wait-for-it.sh db 3306 -- python manage.py runserver 0.0.0.0:8000"
+#     volumes:
+#       - .:/app
+#     ports:
+#       - "8000:8000"
+#     depends_on:
+#       db:
+#         condition: service_healthy
+#     env_file:
+#       - .env
+#     restart: unless-stopped
+
+#   # 🔹 Servicio de frontend Vite (React, etc.)
+#   frontend:
+#     build:
+#       context: ./client
+#       dockerfile: Dockerfile
+#     working_dir: /app
+#     ports:
+#       - "5173:5173"
+#     depends_on:
+#       - backend
+#     stdin_open: true
+#     tty: true
+
+# # 🔸 Volumen para persistir datos de la base de datos
+# volumes:
+#   db_data:
+
+# DESDE AQUI
 version: "3.8"
 
 services:

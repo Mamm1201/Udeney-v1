@@ -1,5 +1,5 @@
-import Navbar from "../components/Navbar";
-import Pie from "../components/Pie";
+import Navbar from '../components/Navbar';
+import Pie from '../components/Pie';
 
 const PoliticaCookies = () => {
   return (

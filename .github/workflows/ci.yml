@@ -68,7 +68,7 @@ jobs:
       - name: Install frontend dependencies
         run: |
           cd client
-          npm ci
+          npm install
 
       # 🧹 10. Linter y formato en frontend
       - name: Run ESLint
