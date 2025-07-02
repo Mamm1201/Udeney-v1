@@ -1,36 +1,58 @@
-# Imagen base estable de Python
-FROM python:3.11-slim
+# Usa una imagen base oficial de Python ligera
+FROM python:3.10-slim
 
-# Establece el directorio de trabajo dentro del contenedor
-WORKDIR /app
+# -------------------------------------------
+# Configuraciones de entorno para mejorar el comportamiento de Python
+# -------------------------------------------
 
-# Copia el archivo de requerimientos e instala dependencias del sistema necesarias para mysqlclient
-COPY requirements.txt .
+# Evita que Python cree archivos .pyc
+ENV PYTHONDONTWRITEBYTECODE=1
 
-# Instalar dependencias necesarias para compilar mysqlclient y otras dependencias del sistema
-RUN apt-get update && apt-get install -y \
-    pkg-config \
-    libmariadb-dev \
-    build-essential \
-    python3-dev \
-    && apt-get clean
-
-# Actualizar pip antes de instalar las dependencias de Python
-RUN pip install --upgrade pip
-
-# Instalar las dependencias de Python desde requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copia todo el contenido del proyecto (asegúrate de tener .dockerignore para evitar copiar carpetas como venv)
-COPY . .
-
-# Variables de entorno
-ENV DJANGO_SETTINGS_MODULE=udeneyv1.settings
+# Muestra los logs directamente en la salida estándar
 ENV PYTHONUNBUFFERED=1
 
-# Expone el puerto del servidor de desarrollo de Django
-EXPOSE 8000
+# -------------------------------------------
+# Establece el directorio de trabajo dentro del contenedor
+# -------------------------------------------
+WORKDIR /app
 
-# Comando por defecto al iniciar el contenedor
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# -------------------------------------------
+# Copia el archivo de dependencias antes que el resto del código
+# para aprovechar la cache de Docker si no ha cambiado
+# -------------------------------------------
+COPY requirements.txt .
 
+# -------------------------------------------
+# Instala dependencias del sistema necesarias para compilar y conectar con MySQL
+# -------------------------------------------
+RUN apt-get update && apt-get install -y \
+    # Para esperar a que MySQL esté listo (wait-for-it)
+    netcat-openbsd \ 
+    # Para compilar algunos paquetes de Python                        
+    gcc \         
+    # Librerías de desarrollo de MySQL                           
+    default-libmysqlclient-dev \ 
+    # Necesario para la instalación de mysqlclient            
+    pkg-config \  
+    # Limpieza para reducir tamaño del contenedor                           
+    && rm -rf /var/lib/apt/lists/*           
+
+# -------------------------------------------
+# Instala las dependencias de Python especificadas en requirements.txt
+# -------------------------------------------
+RUN pip install --no-cache-dir -r requirements.txt
+
+# -------------------------------------------
+# Copia el resto del proyecto al contenedor
+# -------------------------------------------
+COPY . .
+
+# -------------------------------------------
+# Da permisos de ejecución al script que espera que MySQL esté listo
+# -------------------------------------------
+RUN chmod +x ./wait-for-it.sh
+
+# -------------------------------------------
+# Comando por defecto: espera que MySQL esté disponible y luego inicia Django
+# -------------------------------------------
+CMD ["./wait-for-it.sh", "db:3306", "--", "python", "manage.py", "runserver", "0.0.0.0:8000"]

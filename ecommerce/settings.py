@@ -3,22 +3,55 @@ from datetime import timedelta
 import os
 from dotenv import load_dotenv
 
-load_dotenv()  # Carga las variables desde el archivo .env
+# load_dotenv("")  # Carga las variables desde el archivo .env
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# # Cargar .env desde la raíz del proyecto
+# BASE_DIR = Path(__file__).resolve().parent.parent
+# load_dotenv(os.path.join(BASE_DIR, '.env'))
+
+# # Comprobación de carga correcta
+# print("DB_HOST cargado:", os.getenv("DB_HOST"))
+
+
+# # Build paths inside the project like this: BASE_DIR / 'subdir'.
+# BASE_DIR = Path(__file__).resolve().parent.parent
+
+# # Quick-start development settings - unsuitable for production
+# # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
+
+# # SECURITY WARNING: keep the secret key used in production secret!
+# SECRET_KEY = "django-insecure-y@)ct$if^^&0x4)gg572v)a-^olhv-g9-v&shq_crc_nct9)!%"
+
+# # SECURITY WARNING: don't run with debug turned on in production!
+# DEBUG = True
+
+# BASE_DIR del proyecto
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
+# Usar .env.local si existe, de lo contrario usar .env
+env_path = BASE_DIR / '.env.local'
+if env_path.exists():
+    print("🟢 Cargando configuración desde: .env.local")
+    load_dotenv(dotenv_path=env_path)
+else:
+    print("🟢 Cargando configuración desde: .env")
+    load_dotenv(os.path.join(BASE_DIR, '.env'))
+    
+# ✅ Agrega esto justo después
+SECRET_KEY = os.getenv("SECRET_KEY")
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-y@)ct$if^^&0x4)gg572v)a-^olhv-g9-v&shq_crc_nct9)!%"
+if not SECRET_KEY:
+    raise Exception("❌ SECRET_KEY no está definido en el archivo .env o .env.local")
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Ahora puedes acceder a las variables cargadas
+print("DB_HOST cargado:", os.getenv("DB_HOST"))
 
+DEBUG = os.getenv("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = []
+if DEBUG:
+    ALLOWED_HOSTS = []
+else:
+    ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
 
 # Application definition
 
@@ -99,6 +132,8 @@ DATABASES = {
         },
     },
 }
+
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators

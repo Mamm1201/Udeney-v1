@@ -1,49 +1,108 @@
+# version: "3.8"
+
+# services:
+#   # 🔹 Servicio de base de datos MySQL
+#   db:
+#     image: mysql:8.0
+#     env_file:
+#       - .env
+#     environment:
+#       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+#       MYSQL_DATABASE: ${DB_NAME}
+#       MYSQL_ROOT_HOST: "%"
+#     volumes:
+#       - db_data:/var/lib/mysql
+#     ports:
+#       - "3307:3306"
+#     healthcheck:
+#       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+#       interval: 5s
+#       timeout: 10s
+#       retries: 10
+
+#   # 🔹 Servicio de backend Django
+#   backend:
+#     build:
+#       context: .
+#       dockerfile: Dockerfile
+#     command: sh -c "./wait-for-it.sh db 3306 -- python manage.py runserver 0.0.0.0:8000"
+#     volumes:
+#       - .:/app
+#     ports:
+#       - "8000:8000"
+#     depends_on:
+#       db:
+#         condition: service_healthy
+#     env_file:
+#       - .env
+#     restart: unless-stopped
+
+#   # 🔹 Servicio de frontend Vite (React, etc.)
+#   frontend:
+#     build:
+#       context: ./client
+#       dockerfile: Dockerfile
+#     working_dir: /app
+#     ports:
+#       - "5173:5173"
+#     depends_on:
+#       - backend
+#     stdin_open: true
+#     tty: true
+
+# # 🔸 Volumen para persistir datos de la base de datos
+# volumes:
+#   db_data:
+
+# DESDE AQUI
 version: "3.8"
 
 services:
-  # 🔹 Servicio de base de datos MySQL
   db:
-    image: mysql:5.7
+    image: mysql:8.0
+    env_file:
+      - .env
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword # 🔐 Contraseña del usuario root (admin)
-      MYSQL_DATABASE: db_ecommerce # 🛢 Nombre de la base de datos a crear
-      MYSQL_USER: udeney_user # 👤 Usuario personalizado para Django
-      MYSQL_PASSWORD: userpassword # 🔐 Contraseña del usuario personalizado
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_ROOT_HOST: "%"
     volumes:
-      - db_data:/var/lib/mysql # 💾 Volumen persistente para los datos
+      - db_data:/var/lib/mysql
     ports:
-      - "3307:3306" # 🌐 Mapea el puerto 3306 del contenedor al 3307 del host
+      - "3307:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
 
-  # 🔹 Servicio de backend Django
   backend:
     build:
-      context: . # 📁 Dockerfile ubicado en la raíz del proyecto
-    command: python manage.py runserver 0.0.0.0:8000 # ▶️ Ejecuta el servidor de desarrollo de Django
+      context: .
+      dockerfile: Dockerfile
+    command: sh -c "./wait-for-it.sh db 3306 -- python manage.py runserver 0.0.0.0:8000"
     volumes:
-      - .:/app # 🔁 Monta el código del backend
+      - .:/app
     ports:
-      - "8000:8000" # 🌐 Puerto de Django accesible desde el host
-    env_file:
-      - .env # 📄 Archivo .env para configuración sensible (DB, etc.)
-    environment:
-      DJANGO_SETTINGS_MODULE: ecommerce.settings # 📌 Ruta del módulo de configuración de Django
+      - "8000:8000"
     depends_on:
-      - db # ⏳ Espera a que la base de datos esté lista antes de iniciar
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    restart: unless-stopped
 
-  # 🔹 Servicio de frontend Vite (React, etc.)
   frontend:
     build:
-      context: ./client # 📁 Directorio del frontend con Vite
-    command: npm run dev # ▶️ Lanza Vite en modo desarrollo
-    working_dir: /app # 📂 Directorio de trabajo dentro del contenedor
-    volumes:
-      - ./client:/app # 🔁 Monta el código del frontend para hot reload
-      - /app/node_modules # 🧱 Asegura que node_modules no se sobrescriba
+      context: ./client
+      dockerfile: Dockerfile
+    working_dir: /app
     ports:
-      - "5173:5173" # 🌐 Puerto para acceder al frontend desde el navegador
+      - "5173:5173"
     depends_on:
-      - backend # ⏳ Asegura que el backend esté disponible antes de lanzar el frontend
+      - backend
+    stdin_open: true
+    tty: true
 
-# 🔸 Volumen para persistir datos de la base de datos
 volumes:
   db_data:
