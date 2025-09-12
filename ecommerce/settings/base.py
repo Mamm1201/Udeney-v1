@@ -2,9 +2,10 @@
 Base settings for Eduney project.
 Configuraciones comunes para todos los entornos.
 """
-from pathlib import Path
-from datetime import timedelta
 import os
+from datetime import timedelta
+from pathlib import Path
+
 from dotenv import load_dotenv
 
 # Ruta base del proyecto (ajustada para la nueva estructura)
@@ -144,7 +145,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Configuraciones de seguridad básicas
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
-X_FRAME_OPTIONS = 'DENY'
+X_FRAME_OPTIONS = "DENY"
 
 # Configuración de sesiones
 SESSION_COOKIE_AGE = 3600  # 1 hora
@@ -157,20 +158,20 @@ CORS_PREFLIGHT_MAX_AGE = 86400  # 24 horas
 
 # Configuración de Cache
 CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
-        'LOCATION': 'cache_table',
-        'TIMEOUT': 300,  # 5 minutos por defecto
-        'OPTIONS': {
-            'MAX_ENTRIES': 1000,
-            'CULL_FREQUENCY': 3,
-        }
+    "default": {
+        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+        "LOCATION": "cache_table",
+        "TIMEOUT": 300,  # 5 minutos por defecto
+        "OPTIONS": {
+            "MAX_ENTRIES": 1000,
+            "CULL_FREQUENCY": 3,
+        },
     },
-    'sessions': {
-        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
-        'LOCATION': 'session_cache_table',
-        'TIMEOUT': 3600,  # 1 hora para sesiones
-    }
+    "sessions": {
+        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+        "LOCATION": "session_cache_table",
+        "TIMEOUT": 3600,  # 1 hora para sesiones
+    },
 }
 
 # Configuración de logging estructurado

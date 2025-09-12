@@ -1,47 +1,22 @@
 # ====================================
 # IMPORTACIONES
 # ====================================
-from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-
+from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
-    TokenRefreshView,
-)
-
-# Vistas personalizadas
-from .views import (
-    UsuariosViewSet,
-    ArticulosViewSet,
-    CategoriasViewSet,
-    RolesViewSet,
-    UsuarioRolViewSet,
-    DetalleTransaccionViewSet,
-    TransaccionesViewSet,
-    CalificacionesViewSet,
-    PagosViewSet,
-    PqrsViewSet,
-    LoginView,
-    RegistroUsuarioView,
-    historial_transacciones_api,
-    crear_con_detalles,
-    ResumenCompraAPIView,
-    ArticuloDetailAPIView,
-    MisTransaccionesView,
-    CacheStatsView,
-    WarmupCacheView,
-)
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 # Import metrics views
-from .metrics_views import (
-    MetricsAPIView,
-    HealthCheckAPIView,
-    PerformanceAPIView,
-    MetricsDashboardAPIView,
-    MetricsResetAPIView,
-)
+from .metrics_views import (HealthCheckAPIView, MetricsAPIView, MetricsDashboardAPIView,
+                            MetricsResetAPIView, PerformanceAPIView)
+# Vistas personalizadas
+from .views import (ArticuloDetailAPIView, ArticulosViewSet, CacheStatsView,
+                    CalificacionesViewSet, CategoriasViewSet, DetalleTransaccionViewSet,
+                    LoginView, MisTransaccionesView, PagosViewSet, PqrsViewSet,
+                    RegistroUsuarioView, ResumenCompraAPIView, RolesViewSet,
+                    TransaccionesViewSet, UsuarioRolViewSet, UsuariosViewSet,
+                    WarmupCacheView, crear_con_detalles, historial_transacciones_api)
 
 # ====================================
 # ROUTER DRF (Rutas automáticas para ViewSets)

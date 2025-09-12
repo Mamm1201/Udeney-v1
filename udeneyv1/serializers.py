@@ -2,19 +2,10 @@
 # IMPORTACIONES NECESARIAS
 # ====================================
 from rest_framework import serializers
-from .models import (
-    Usuarios,
-    Articulos,
-    Categorias,
-    Roles,
-    UsuarioRol,
-    DetalleTransaccion,
-    Transacciones,
-    Calificaciones,
-    Pagos,
-    Pqrs,
-    ArticuloDetalleTransaccion,
-)
+
+from .models import (ArticuloDetalleTransaccion, Articulos, Calificaciones, Categorias,
+                     DetalleTransaccion, Pagos, Pqrs, Roles, Transacciones, UsuarioRol,
+                     Usuarios)
 
 
 # ====================================
