@@ -30,6 +30,17 @@ from .views import (
     ResumenCompraAPIView,
     ArticuloDetailAPIView,
     MisTransaccionesView,
+    CacheStatsView,
+    WarmupCacheView,
+)
+
+# Import metrics views
+from .metrics_views import (
+    MetricsAPIView,
+    HealthCheckAPIView,
+    PerformanceAPIView,
+    MetricsDashboardAPIView,
+    MetricsResetAPIView,
 )
 
 # ====================================
@@ -101,6 +112,44 @@ urlpatterns = [
         "historial/",
         historial_transacciones_api,
         name="historial_api",
+    ),
+    # Cache management
+    path(
+        "cache/stats/",
+        CacheStatsView.as_view(),
+        name="cache-stats",
+    ),
+    path(
+        "cache/warmup/",
+        WarmupCacheView.as_view(),
+        name="cache-warmup",
+    ),
+    # Metrics endpoints
+    path(
+        "metrics/",
+        MetricsAPIView.as_view(),
+        name="metrics",
+    ),
+    path(
+        "metrics/performance/",
+        PerformanceAPIView.as_view(),
+        name="metrics-performance",
+    ),
+    path(
+        "metrics/dashboard/",
+        MetricsDashboardAPIView.as_view(),
+        name="metrics-dashboard",
+    ),
+    path(
+        "metrics/reset/",
+        MetricsResetAPIView.as_view(),
+        name="metrics-reset",
+    ),
+    # Health check
+    path(
+        "health/",
+        HealthCheckAPIView.as_view(),
+        name="health-check",
     ),
 ]
 

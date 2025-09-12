@@ -154,3 +154,24 @@ SESSION_SAVE_EVERY_REQUEST = True
 # Configuración de CORS básica
 CORS_ALLOW_CREDENTIALS = True
 CORS_PREFLIGHT_MAX_AGE = 86400  # 24 horas
+
+# Configuración de Cache
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'cache_table',
+        'TIMEOUT': 300,  # 5 minutos por defecto
+        'OPTIONS': {
+            'MAX_ENTRIES': 1000,
+            'CULL_FREQUENCY': 3,
+        }
+    },
+    'sessions': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'session_cache_table',
+        'TIMEOUT': 3600,  # 1 hora para sesiones
+    }
+}
+
+# Configuración de logging estructurado
+from .logging import LOGGING

@@ -5,6 +5,16 @@ Configuraciones específicas para el entorno de producción.
 import os
 from .base import *
 
+# Middleware adicionales para producción
+MIDDLEWARE += [
+    'udeneyv1.middleware.AuthenticationMiddleware',
+    'udeneyv1.middleware.RoleBasedAccessMiddleware',
+    'udeneyv1.middleware.RateLimitMiddleware', 
+    'udeneyv1.middleware.AuditMiddleware',
+    'udeneyv1.middleware.SecurityHeadersMiddleware',
+    'udeneyv1.middleware.PerformanceMonitoringMiddleware',
+]
+
 # Debug SIEMPRE desactivado en producción
 DEBUG = False
 

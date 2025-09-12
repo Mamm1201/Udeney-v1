@@ -5,6 +5,17 @@ Configuraciones específicas para el entorno de desarrollo.
 import os
 from .base import *
 
+# Middleware adicionales para desarrollo
+MIDDLEWARE += [
+    'udeneyv1.metrics.MetricsMiddleware',  # Debe ir primero para capturar todo
+    'udeneyv1.middleware.AuthenticationMiddleware',
+    'udeneyv1.middleware.RoleBasedAccessMiddleware',
+    'udeneyv1.middleware.AuditMiddleware', 
+    'udeneyv1.middleware.SecurityHeadersMiddleware',
+    'udeneyv1.middleware.RateLimitMiddleware',
+    'udeneyv1.middleware.PerformanceMonitoringMiddleware',
+]
+
 # Debug activado en desarrollo
 DEBUG = os.getenv("DEBUG", "True") == "True"
 
