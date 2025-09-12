@@ -23,7 +23,7 @@ class Usuarios(models.Model):
 
     class Meta:
         db_table = "usuarios"
-        managed = False
+        managed = True
 
     def __str__(self):
         return f"{self.nombres_usuario} {self.apellidos_usuario}"
@@ -50,7 +50,7 @@ class Roles(models.Model):
 
     class Meta:
         db_table = "roles"
-        managed = False
+        managed = True
 
     def __str__(self):
         return self.tipo_rol
@@ -74,7 +74,7 @@ class UsuarioRol(models.Model):
     class Meta:
         db_table = "usuario_rol"
         unique_together = ("id_usuario", "id_rol")
-        managed = False
+        managed = True
 
 
 # ====================================
@@ -94,7 +94,7 @@ class Categorias(models.Model):
 
     class Meta:
         db_table = "categorias"
-        managed = False
+        managed = True
 
 
 # ====================================
@@ -117,7 +117,7 @@ class Articulos(models.Model):
 
     class Meta:
         db_table = "articulos"
-        managed = False
+        managed = True
 
 
 # ====================================
@@ -142,7 +142,7 @@ class DetalleTransaccion(models.Model):
 
     class Meta:
         db_table = "detalle_transaccion"
-        managed = False
+        managed = True
 
 
 # ====================================
@@ -175,7 +175,7 @@ class Transacciones(models.Model):
 
     class Meta:
         db_table = "transacciones"
-        managed = False
+        managed = True
 
 
 # ====================================
@@ -198,7 +198,7 @@ class Calificaciones(models.Model):
 
     class Meta:
         db_table = "calificaciones"
-        managed = False
+        managed = True
 
 
 # ====================================
@@ -217,7 +217,7 @@ class Pagos(models.Model):
 
     class Meta:
         db_table = "pagos"
-        managed = False
+        managed = True
 
 
 # ====================================
@@ -244,4 +244,4 @@ class Pqrs(models.Model):
 
     class Meta:
         db_table = "pqrs"
-        managed = False
+        managed = True

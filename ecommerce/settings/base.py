@@ -1,30 +1,28 @@
+"""
+Base settings for Eduney project.
+Configuraciones comunes para todos los entornos.
+"""
 from pathlib import Path
 from datetime import timedelta
 import os
 from dotenv import load_dotenv
 
-# Ruta base del proyecto
-BASE_DIR = Path(__file__).resolve().parent.parent
+# Ruta base del proyecto (ajustada para la nueva estructura)
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 # Carga variables de entorno desde .env.local si existe, de lo contrario desde .env
 env_path = BASE_DIR / ".env.local"
 if env_path.exists():
-    print("🟢 Cargando configuración desde: .env.local")
+    print("Cargando configuracion desde: .env.local")
     load_dotenv(dotenv_path=env_path)
 else:
-    print("🟢 Cargando configuración desde: .env")
+    print("Cargando configuracion desde: .env")
     load_dotenv(os.path.join(BASE_DIR, ".env"))
 
 # Clave secreta de Django
 SECRET_KEY = os.getenv("SECRET_KEY")
 if not SECRET_KEY:
-    raise Exception("❌ SECRET_KEY no está definido en el archivo .env o .env.local")
-
-# Debug (activado solo en desarrollo)
-DEBUG = os.getenv("DEBUG", "False") == "True"
-
-# Hosts permitidos
-ALLOWED_HOSTS = [] if DEBUG else os.getenv("ALLOWED_HOSTS", "").split(",")
+    raise Exception("SECRET_KEY no está definido en el archivo .env o .env.local")
 
 # Comprobación opcional de carga de variable
 print("DB_HOST cargado:", os.getenv("DB_HOST"))
@@ -143,7 +141,16 @@ MEDIA_ROOT = BASE_DIR / "media"
 # Configuración para claves primarias
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Orígenes permitidos para CORS (por ejemplo, React en localhost)
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-]
+# Configuraciones de seguridad básicas
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+
+# Configuración de sesiones
+SESSION_COOKIE_AGE = 3600  # 1 hora
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_SAVE_EVERY_REQUEST = True
+
+# Configuración de CORS básica
+CORS_ALLOW_CREDENTIALS = True
+CORS_PREFLIGHT_MAX_AGE = 86400  # 24 horas

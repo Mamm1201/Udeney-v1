@@ -1,76 +1,181 @@
-# Bytecode de Python
+# ========================================
+# GITIGNORE PARA PROYECTO EDUNEY (Django + React)
+# ========================================
+
+# =================
+# PYTHON / DJANGO
+# =================
+# Bytecode
 __pycache__/
 *.py[cod]
+*$py.class
 *.so
-*.pyd
+*.egg
+*.egg-info/
+dist/
+build/
+*.whl
 
-# Archivos de bases de datos
-*.sqlite3
-db.sqlite3
-
-# Entorno virtual
+# Entornos virtuales
 venv/
 env/
+ENV/
+.venv/
+.ENV/
+.python-version
 
-# Archivos de log
+# Archivos de configuración Django
 *.log
-
-# Archivos de configuración sensibles
-.env
-
-# Archivos generados por Django
-/media/
-staticfiles/
 *.pot
 *.pyc
 *.pyo
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
 
-# Archivos de migración vacíos
-*/migrations/__pycache__/
-*/migrations/*.pyc
-*/migrations/*.pyo
+# Media files
+/media/
+/staticfiles/
+/static/
+/uploads/
 
-# Node.js (frontend)
-client/node_modules/
-client/.env
-
-# VSCode
-.vscode/
-
-# Sistema operativo
-.DS_Store
-Thumbs.db
-
-client/dist/
-
-*.swp
-*.bak
-*.tmp
-
-.idea/
-
+# Coverage reports
 htmlcov/
-.coverage
 .tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
 
-*/migrations/*.py
-!*/migrations/__init__.py
-
-*.pyc
-*.pyo
-__pycache__/
-
-# =========================
-# Entornos para Producción
-# =========================
-
-*.env
+# =================
+# VARIABLES DE ENTORNO Y SECRETOS
+# =================
+.env
+.env.*
+!.env.example
 .env.local
+.env.development.local
+.env.test.local
+.env.production.local
 .env.prod
+.env.dev
+.env.test
 .env.docker
 
+# Archivos de configuración sensibles
+config.ini
+secrets.json
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt
+*.cer
+*.der
 
+# =================
+# NODE.JS / FRONTEND
+# =================
+client/node_modules/
+client/.env
+client/.env.local
+client/.env.development.local
+client/.env.test.local
+client/.env.production.local
+client/dist/
+client/build/
+client/coverage/
+client/.nyc_output
+client/.cache/
+client/.parcel-cache/
 
+# Logs npm
+client/npm-debug.log*
+client/yarn-debug.log*
+client/yarn-error.log*
+client/lerna-debug.log*
 
+# =================
+# BASES DE DATOS
+# =================
+*.sqlite3
+*.db
+*.sqlite
+*.sqlite3-journal
+dump.rdb
 
+# =================
+# LOGS Y TEMPORALES
+# =================
+logs/
+*.log
+*.tmp
+*.temp
+*.swp
+*.bak
+*~
 
+# =================
+# HERRAMIENTAS DE DESARROLLO
+# =================
+# IDEs
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# =================
+# DOCKER
+# =================
+.docker/
+docker-compose.override.yml
+
+# =================
+# ARCHIVOS ESPECÍFICOS DEL PROYECTO
+# =================
+# Backups
+*.backup
+*_backup.*
+settings_old.py
+manage.py.backup
+
+# Test coverage
+.coverage.*
+coverage/
+
+# Archivos grandes
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# =================
+# MIGRACIONES (opcional, descomenta si prefieres no versionar)
+# =================
+# */migrations/*.py
+# !*/migrations/__init__.py
+
+# =================
+# ARCHIVOS DE PRODUCCIÓN
+# =================
+staticfiles/
+collected-static/
+assets/
+.sass-cache/
