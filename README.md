@@ -4,15 +4,8 @@ Udeney es una plataforma de **e-commerce educativo** orientada a promover la reu
 
 ## 🚀 **Versión 2.0 - Sistema de Autenticación Profesional**
 
-Nueva versión con **migración completa a Django User** y **sistema JWT avanzado**:
+Nueva versión con **sistema JWT avanzado** que permite:
 
-### 🔄 **Migración Arquitectural**
-- ✅ **Migración de modelo Usuarios a Django User** - Arquitectura estándar
-- ✅ **Refactorización completa del backend** - Código más mantenible
-- ✅ **Sistema híbrido** - Django User + modelo Usuarios para datos de negocio
-- ✅ **Compatibilidad total** - Sin pérdida de funcionalidad
-
-### 🔐 **Sistema JWT Avanzado**
 - ✅ **Renovación automática de tokens** - Sin interrupciones para el usuario
 - ✅ **Actualización de perfil sin re-login** - Experiencia fluida y profesional
 - ✅ **Endpoints dinámicos** - `/usuarios/me/` para operaciones seguras
@@ -62,7 +55,7 @@ En muchas comunidades, los estudiantes enfrentan dificultades para acceder a mat
 ### 🔧 Backend
 
 - **Python 3.x** - Lenguaje de programación principal
-- **Django 5.1** - Framework web robusto y escalable  
+- **Django 5.1** - Framework web robusto y escalable
 - **Django REST Framework** - API REST potente y flexible
 - **Simple JWT** - Autenticación JWT con renovación automática 🔥
 - **MySQL 8.x** - Base de datos relacional optimizada
@@ -72,7 +65,7 @@ En muchas comunidades, los estudiantes enfrentan dificultades para acceder a mat
 ### 💻 Frontend
 
 - **React 18** - Librería de UI moderna y reactiva
-- **Vite** - Build tool rápido y eficiente  
+- **Vite** - Build tool rápido y eficiente
 - **Axios** - Cliente HTTP con interceptores inteligentes 🔥
 - **Material UI (MUI)** - Componentes de diseño profesional
 - **React Router** - Navegación SPA fluida
@@ -342,7 +335,7 @@ Abre un pull request desde tu fork hacia la rama develop.
 
 MIT License
 
-```md
+````md
 ## 🤝 Autoría
 
 Desarrollado por el equipo **Udeney**:
@@ -359,21 +352,16 @@ Estudiantes de Análisis y Desarrollo de Software – SENA
 
 ### 🎯 **Funcionalidades Principales Completadas**
 
-#### 🏗️ **Arquitectura y Autenticación**
-- ✅ **Migración completa a Django User** - Arquitectura estándar profesional
-- ✅ **Sistema JWT con renovación automática** - Tokens se renuevan transparentemente
-- ✅ **Refactorización de permisos y serializers** - Código limpio y mantenible
-- ✅ **Endpoints dinámicos** - `/usuarios/me/` sin hardcoding de IDs
-
-#### 🛒 **Funcionalidades de E-commerce**
-- ✅ **Gestión completa de usuarios y perfiles** - CRUD completo
-- ✅ **Catálogo de artículos con categorías** - Sistema organizado
-- ✅ **Carrito de compras y transacciones** - Flujo completo de compra
-- ✅ **Panel de vendedor** - Gestión de productos por usuario
-- ✅ **Historial de transacciones** - Seguimiento de compras y ventas
-- ✅ **API REST completa** - Documentada y escalable
+- ✅ Sistema de autenticación JWT con renovación automática
+- ✅ Gestión completa de usuarios y perfiles
+- ✅ Catálogo de artículos con categorías
+- ✅ Carrito de compras y transacciones
+- ✅ Panel de vendedor para gestión de productos
+- ✅ Historial de transacciones y compras
+- ✅ API REST completa y documentada
 
 ### 🔄 **En Desarrollo Continuo**
+
 - 🔨 Optimizaciones de performance
 - 🔨 Mejoras en la experiencia de usuario
 - 🔨 Funcionalidades administrativas avanzadas
@@ -383,39 +371,36 @@ Estudiantes de Análisis y Desarrollo de Software – SENA
 ## 🔐 **Características de Seguridad v2.0**
 
 ### **Autenticación JWT Profesional**
+
 ```javascript
 // Renovación automática transparente
 axiosInstance.interceptors.response.use(
-  response => response,
-  async error => {
+  (response) => response,
+  async (error) => {
     if (error.response?.status === 401) {
       // Renovación automática de token
       return refreshTokenAndRetry(originalRequest);
     }
-  }
+  },
 );
 ```
+````
 
 ### **Endpoints Dinámicos Seguros**
+
 - `GET /api/v1/usuarios/me/` - Perfil del usuario autenticado
-- `PATCH /api/v1/usuarios/me/` - Actualización parcial de perfil  
+- `PATCH /api/v1/usuarios/me/` - Actualización parcial de perfil
 - `POST /api/v1/token/refresh/` - Renovación automática de tokens
 
 ---
 
 ## 📈 **Changelog y Versiones**
 
-- **v2.0.0** (2025-01-09) - **Migración a Django User + Sistema JWT profesional**
-  - 🔄 Migración completa de modelo Usuarios a Django User
-  - 🔐 Sistema JWT con renovación automática de tokens
-  - 🛠️ Refactorización completa de backend y frontend
-  - 📱 Endpoints dinámicos sin hardcoding de IDs
-  - 🎯 Solución del problema de re-login en actualización de perfil
-
+- **v2.0.0** (2025-01-09) - Sistema de autenticación profesional
 - **v1.x** - Implementación base del e-commerce
-  - Modelo Usuarios personalizado
-  - Sistema básico de autenticación
-  - Funcionalidades core del e-commerce
 
-Ver [`CHANGELOG-v2.0.0.md`](./CHANGELOG-v2.0.0.md) para detalles técnicos completos de la migración.
+Ver [`CHANGELOG-v2.0.0.md`](./CHANGELOG-v2.0.0.md) para detalles completos.
+
+```/
+
 ```
