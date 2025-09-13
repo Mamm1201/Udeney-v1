@@ -59,6 +59,11 @@ const Login = () => {
 
       localStorage.setItem('access_token', access_token);
       localStorage.setItem('refresh_token', refresh_token);
+      localStorage.setItem('user_data', JSON.stringify({
+        email_usuario: email,
+        id_usuario,
+        nombres_usuario
+      }));
       localStorage.setItem('email_usuario', email);
       localStorage.setItem('id_usuario', id_usuario);
       localStorage.setItem('nombres_usuario', nombres_usuario);

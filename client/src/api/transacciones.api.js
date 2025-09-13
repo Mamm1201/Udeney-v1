@@ -30,8 +30,8 @@ export const getResumenCompraByTransaccionId = async id => {
   return await api.get(`/resumen-compra/${id}/`);
 };
 
-export const getMisTransacciones = id_usuario => {
-  return api.get(`/transacciones/usuario/${id_usuario}/`);
+export const getMisTransacciones = () => {
+  return api.get(`/mis-transacciones/`);
 };
 
 // Obtener transacciones del usuario autenticado con filtros

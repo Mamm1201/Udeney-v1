@@ -21,11 +21,9 @@ const MisTransacciones = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  const id_usuario = localStorage.getItem('id_usuario');
-
   const fetchTransacciones = useCallback(async () => {
     try {
-      const response = await getMisTransacciones(id_usuario);
+      const response = await getMisTransacciones();
       setTransacciones(response.data);
     } catch (err) {
       console.error('Error al obtener las transacciones:', err);
@@ -33,7 +31,7 @@ const MisTransacciones = () => {
     } finally {
       setCargando(false);
     }
-  }, [id_usuario]);
+  }, []);
 
   useEffect(() => {
     fetchTransacciones();

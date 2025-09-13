@@ -1,6 +1,14 @@
-# 🧠 Udeney v1 – E-commerce Educativo
+# 🧠 Udeney v2.0 – E-commerce Educativo Profesional
 
 Udeney es una plataforma de **e-commerce educativo** orientada a promover la reutilización de artículos escolares y tecnológicos. Permite a los usuarios **comprar y vender** útiles, uniformes, herramientas y libros, con el objetivo de fomentar una economía circular que beneficie a estudiantes, docentes y familias.
+
+## 🚀 **Versión 2.0 - Sistema de Autenticación Profesional**
+
+Nueva versión con **sistema JWT avanzado** que permite:
+- ✅ **Renovación automática de tokens** - Sin interrupciones para el usuario
+- ✅ **Actualización de perfil sin re-login** - Experiencia fluida y profesional
+- ✅ **Endpoints dinámicos** - `/usuarios/me/` para operaciones seguras
+- ✅ **Manejo robusto de errores** - Experiencia de usuario mejorada
 
 ## 👥 Equipo de Desarrollo
 
@@ -45,20 +53,21 @@ En muchas comunidades, los estudiantes enfrentan dificultades para acceder a mat
 
 ### 🔧 Backend
 
-- Python 3.x
-- Django 5.1
-- Django REST Framework
-- MySQL
-- Pillow
-- Django CORS Headers
-- Simple JWT
+- **Python 3.x** - Lenguaje de programación principal
+- **Django 5.1** - Framework web robusto y escalable  
+- **Django REST Framework** - API REST potente y flexible
+- **Simple JWT** - Autenticación JWT con renovación automática 🔥
+- **MySQL 8.x** - Base de datos relacional optimizada
+- **Pillow** - Procesamiento de imágenes
+- **Django CORS Headers** - Configuración CORS para frontend
 
 ### 💻 Frontend
 
-- React
-- Vite
-- Axios
-- Material UI
+- **React 18** - Librería de UI moderna y reactiva
+- **Vite** - Build tool rápido y eficiente  
+- **Axios** - Cliente HTTP con interceptores inteligentes 🔥
+- **Material UI (MUI)** - Componentes de diseño profesional
+- **React Router** - Navegación SPA fluida
 
 ---
 
@@ -338,5 +347,51 @@ Estudiantes de Análisis y Desarrollo de Software – SENA
 
 ## 🚧 Estado del Proyecto
 
-🔨 En desarrollo activo – nuevas funcionalidades y mejoras están en curso
+🚀 **Versión 2.0 - ESTABLE** - Sistema de autenticación profesional implementado
+
+### 🎯 **Funcionalidades Principales Completadas**
+- ✅ Sistema de autenticación JWT con renovación automática
+- ✅ Gestión completa de usuarios y perfiles  
+- ✅ Catálogo de artículos con categorías
+- ✅ Carrito de compras y transacciones
+- ✅ Panel de vendedor para gestión de productos
+- ✅ Historial de transacciones y compras
+- ✅ API REST completa y documentada
+
+### 🔄 **En Desarrollo Continuo**
+- 🔨 Optimizaciones de performance
+- 🔨 Mejoras en la experiencia de usuario
+- 🔨 Funcionalidades administrativas avanzadas
+
+---
+
+## 🔐 **Características de Seguridad v2.0**
+
+### **Autenticación JWT Profesional**
+```javascript
+// Renovación automática transparente
+axiosInstance.interceptors.response.use(
+  response => response,
+  async error => {
+    if (error.response?.status === 401) {
+      // Renovación automática de token
+      return refreshTokenAndRetry(originalRequest);
+    }
+  }
+);
+```
+
+### **Endpoints Dinámicos Seguros**
+- `GET /api/v1/usuarios/me/` - Perfil del usuario autenticado
+- `PATCH /api/v1/usuarios/me/` - Actualización parcial de perfil  
+- `POST /api/v1/token/refresh/` - Renovación automática de tokens
+
+---
+
+## 📈 **Changelog y Versiones**
+
+- **v2.0.0** (2025-01-09) - Sistema de autenticación profesional
+- **v1.x** - Implementación base del e-commerce
+
+Ver [`CHANGELOG-v2.0.0.md`](./CHANGELOG-v2.0.0.md) para detalles completos.
 ```

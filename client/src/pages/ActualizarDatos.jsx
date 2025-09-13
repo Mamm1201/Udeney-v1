@@ -10,9 +10,16 @@ import {
   Snackbar,
   Alert,
 } from '@mui/material';
-import axios from 'axios';
+import axiosInstance from '../api/axiosConfig';
 
 const ActualizarDatos = () => {
+  // ============================================================================
+  // COMPONENTE ACTUALIZADO: Usa endpoint dinámico /usuarios/me/ 
+  // - NO requiere id_usuario hardcodeado
+  // - Maneja automáticamente renovación de tokens JWT
+  // - Funciona sin necesidad de re-login del usuario
+  // ============================================================================
+  
   // Hook para navegación entre rutas
   const navigate = useNavigate();
 
@@ -35,52 +42,42 @@ const ActualizarDatos = () => {
     severity: 'info', // puede ser 'success', 'error', 'warning', 'info'
   });
 
-  // Obtener el id del usuario desde el localStorage
-  const id_usuario = localStorage.getItem('id_usuario');
-
-  // Función para unir correctamente la URL base con el endpoint,
-  // evitando errores con '/' repetidas o faltantes
-  const joinUrl = (base, path) => {
-    if (!base.endsWith('/')) base += '/';
-    if (path.startsWith('/')) path = path.substring(1);
-    return base + path;
-  };
-
   // useEffect para cargar datos del usuario al montar el componente
   useEffect(() => {
-    if (!id_usuario) {
-      // Mostrar error si no hay id de usuario
-      setSnackbar({
-        open: true,
-        message: 'No se encontró el ID del usuario',
-        severity: 'error',
-      });
-      return;
-    }
-
     const fetchDatos = async () => {
       try {
-        // Construir la URL correcta usando la función joinUrl
-        const apiUrl = import.meta.env.VITE_API_URL;
-        const url = joinUrl(apiUrl, `usuarios/${id_usuario}/`);
-
-        // Petición GET para obtener datos del usuario
-        const res = await axios.get(url);
+        // Usar el nuevo endpoint dinámico que obtiene datos del usuario autenticado
+        // Este endpoint maneja automáticamente la renovación de tokens si es necesario
+        const res = await axiosInstance.get('/usuarios/me/');
 
         // Guardar datos recibidos en el estado del formulario
         setFormData(res.data);
+        
+        console.log('✅ Datos del perfil cargados correctamente');
       } catch (error) {
-        // Mostrar mensaje de error si falla la carga
+        console.error('❌ Error al cargar datos del perfil:', error);
+        
+        // Mostrar mensaje de error específico según el tipo
+        let errorMessage = 'Error al cargar los datos del usuario';
+        
+        if (error.response?.status === 401) {
+          errorMessage = 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.';
+          // Opcional: redirigir al login después de unos segundos
+          setTimeout(() => navigate('/login'), 3000);
+        } else if (error.response?.status === 404) {
+          errorMessage = 'No se encontraron los datos del usuario.';
+        }
+        
         setSnackbar({
           open: true,
-          message: 'Error al cargar los datos del usuario',
+          message: errorMessage,
           severity: 'error',
         });
       }
     };
 
     fetchDatos();
-  }, [id_usuario]);
+  }, []); // Ya no depende de id_usuario
 
   // Manejador para actualizar el estado cuando el usuario cambia un campo
   const handleChange = e => {
@@ -93,17 +90,16 @@ const ActualizarDatos = () => {
     setLoading(true);
 
     try {
-      // Construir URL de actualización con joinUrl para evitar problemas
-      const apiUrl = import.meta.env.VITE_API_URL;
-      const url = joinUrl(apiUrl, `usuarios/${id_usuario}/`);
+      // Usar el endpoint dinámico para actualización con PATCH (actualización parcial)
+      // Este endpoint maneja automáticamente la renovación de tokens si es necesario
+      await axiosInstance.patch('/usuarios/me/', formData);
 
-      // Petición PUT para actualizar datos en backend
-      await axios.put(url, formData);
+      console.log('✅ Datos actualizados correctamente');
 
       // Mostrar mensaje de éxito en Snackbar
       setSnackbar({
         open: true,
-        message: 'Datos actualizados correctamente',
+        message: '✅ Datos actualizados correctamente',
         severity: 'success',
       });
 
@@ -112,15 +108,31 @@ const ActualizarDatos = () => {
         navigate('/');
       }, 2000);
     } catch (error) {
-      console.error(
-        'Error al actualizar:',
-        error.response?.data || error.message
-      );
+      console.error('❌ Error al actualizar:', error);
 
-      // Mostrar mensaje de error en Snackbar si la actualización falla
+      // Manejar diferentes tipos de errores
+      let errorMessage = 'Error al actualizar datos';
+      
+      if (error.response?.status === 401) {
+        errorMessage = 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.';
+        setTimeout(() => navigate('/login'), 3000);
+      } else if (error.response?.status === 400) {
+        // Error de validación
+        const validationErrors = error.response.data;
+        if (typeof validationErrors === 'object') {
+          const firstError = Object.values(validationErrors)[0];
+          errorMessage = Array.isArray(firstError) ? firstError[0] : firstError;
+        } else {
+          errorMessage = 'Datos inválidos. Revisa los campos e intenta nuevamente.';
+        }
+      } else if (error.response?.status === 404) {
+        errorMessage = 'Usuario no encontrado.';
+      }
+
+      // Mostrar mensaje de error en Snackbar
       setSnackbar({
         open: true,
-        message: 'Error al actualizar datos',
+        message: errorMessage,
         severity: 'error',
       });
     } finally {
@@ -139,6 +151,10 @@ const ActualizarDatos = () => {
       <Paper sx={{ p: 4, width: '100%', maxWidth: 500 }}>
         <Typography variant="h5" gutterBottom>
           Actualizar mis datos
+        </Typography>
+        
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+          🔐 Sesión segura con renovación automática de tokens
         </Typography>
 
         <Box component="form" onSubmit={handleSubmit}>

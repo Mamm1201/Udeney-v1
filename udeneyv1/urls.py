@@ -15,7 +15,7 @@ from .views import (ArticuloDetailAPIView, ArticulosViewSet, CacheStatsView,
                     CalificacionesViewSet, CategoriasViewSet, DetalleTransaccionViewSet,
                     LoginView, MisTransaccionesView, PagosViewSet, PqrsViewSet,
                     RegistroUsuarioView, ResumenCompraAPIView, RolesViewSet,
-                    TransaccionesViewSet, UsuarioRolViewSet, UsuariosViewSet,
+                    TokenRefreshView, TransaccionesViewSet, UsuarioRolViewSet, UsuariosViewSet,
                     WarmupCacheView, crear_con_detalles, historial_transacciones_api)
 
 # ====================================
@@ -60,6 +60,12 @@ urlpatterns = [
         "login/",
         LoginView.as_view(),
         name="login",
+    ),
+    # Refresh de tokens
+    path(
+        "token/refresh/",
+        TokenRefreshView.as_view(),
+        name="token_refresh_custom",
     ),
     # Artículos
     path(

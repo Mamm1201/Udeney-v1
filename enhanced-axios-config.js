@@ -6,7 +6,7 @@ import axios from 'axios';
 
 // Configuración base de axios
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: 'http://localhost:8000/api/v1',
   timeout: 10000,
 });
 
@@ -26,10 +26,7 @@ const processQueue = (error, token = null) => {
   failedQueue = [];
 };
 
-// =====================================
-// INTERCEPTOR DE SOLICITUDES (REQUEST)
-// =====================================
-
+// Interceptor de request - agrega token automáticamente
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('access_token');
@@ -44,10 +41,7 @@ axiosInstance.interceptors.request.use(
   }
 );
 
-// =====================================
-// INTERCEPTOR DE RESPUESTAS (RESPONSE) - CON RENOVACIÓN AUTOMÁTICA
-// =====================================
-
+// Interceptor de response - maneja renovación automática de tokens
 axiosInstance.interceptors.response.use(
   (response) => {
     return response;
@@ -83,7 +77,7 @@ axiosInstance.interceptors.response.use(
         console.log('🔄 AXIOS: Renovando token automáticamente...');
         
         // Llamar al endpoint de refresh
-        const response = await axios.post(`${import.meta.env.VITE_API_URL}/token/refresh/`, {
+        const response = await axios.post('http://localhost:8000/api/v1/token/refresh/', {
           refresh_token: refreshToken
         });
 
@@ -104,14 +98,15 @@ axiosInstance.interceptors.response.use(
       } catch (refreshError) {
         console.log('❌ AXIOS: Error al renovar token:', refreshError);
         
-        // Limpiar tokens y procesar cola con error
+        // Limpiar tokens y redirigir al login
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
-        localStorage.removeItem('user_data');
         
         processQueue(refreshError, null);
         
-        // El error se propaga para que el componente lo maneje
+        // Opcional: redirigir al login o mostrar modal
+        // window.location.href = '/login';
+        
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
@@ -121,5 +116,80 @@ axiosInstance.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// ============================================================================
+// FUNCIONES ESPECÍFICAS PARA GESTIÓN DE PERFIL
+// ============================================================================
+
+export const perfilAPI = {
+  // Obtener datos del perfil actual
+  obtenerPerfil: () => {
+    return axiosInstance.get('/usuarios/me/');
+  },
+
+  // Actualizar perfil (actualización parcial)
+  actualizarPerfil: (data) => {
+    return axiosInstance.patch('/usuarios/me/', data);
+  },
+
+  // Actualizar perfil completo
+  actualizarPerfilCompleto: (data) => {
+    return axiosInstance.put('/usuarios/me/', data);
+  },
+
+  // Actualizar solo campos específicos
+  actualizarCampo: (campo, valor) => {
+    return axiosInstance.patch('/usuarios/me/', { [campo]: valor });
+  }
+};
+
+// ============================================================================
+// FUNCIONES DE AUTENTICACIÓN
+// ============================================================================
+
+export const authAPI = {
+  // Login mejorado con manejo automático de tokens
+  login: async (email, password) => {
+    try {
+      const response = await axios.post('http://localhost:8000/api/v1/login/', {
+        email,
+        password
+      });
+
+      const { access_token, refresh_token, ...userData } = response.data;
+
+      // Guardar tokens automáticamente
+      localStorage.setItem('access_token', access_token);
+      localStorage.setItem('refresh_token', refresh_token);
+      localStorage.setItem('user_data', JSON.stringify(userData));
+
+      console.log('✅ LOGIN: Tokens guardados automáticamente');
+      
+      return response.data;
+    } catch (error) {
+      console.log('❌ LOGIN: Error en autenticación:', error);
+      throw error;
+    }
+  },
+
+  // Logout mejorado
+  logout: () => {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('user_data');
+    console.log('🔓 LOGOUT: Tokens eliminados');
+  },
+
+  // Verificar si el usuario está autenticado
+  isAuthenticated: () => {
+    return !!localStorage.getItem('access_token');
+  },
+
+  // Obtener datos del usuario guardados
+  getUserData: () => {
+    const userData = localStorage.getItem('user_data');
+    return userData ? JSON.parse(userData) : null;
+  }
+};
 
 export default axiosInstance;
