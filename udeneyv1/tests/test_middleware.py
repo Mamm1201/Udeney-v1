@@ -1,6 +1,7 @@
 """
 Tests para el middleware personalizado de Eduney
 """
+
 import time
 from unittest.mock import Mock, patch
 

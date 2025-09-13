@@ -2,6 +2,7 @@
 Production settings for Eduney project.
 Configuraciones específicas para el entorno de producción.
 """
+
 import os
 
 from .base import *

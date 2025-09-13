@@ -1,6 +1,7 @@
 # ====================================
 # IMPORTACIONES NECESARIAS
 # ====================================
+from django.contrib.auth.models import User
 from rest_framework import serializers
 
 from .models import (ArticuloDetalleTransaccion, Articulos, Calificaciones, Categorias,
@@ -63,8 +64,8 @@ class RolesSerializer(serializers.ModelSerializer):
 class UsuarioRolSerializer(serializers.ModelSerializer):
     id_rol = serializers.ChoiceField(choices=UsuarioRol.ROL_CHOICES)
     id_usuario = serializers.SlugRelatedField(
-        queryset=Usuarios.objects.all(),
-        slug_field="nombres_usuario",
+        queryset=User.objects.all(),
+        slug_field="username",
     )
 
     class Meta:
@@ -86,7 +87,7 @@ class CategoriasSerializer(serializers.ModelSerializer):
 # ====================================
 class ArticulosSerializer(serializers.ModelSerializer):
     imagen = serializers.ImageField(use_url=True, required=False)
-    id_usuario = serializers.PrimaryKeyRelatedField(queryset=Usuarios.objects.all())
+    id_usuario = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     id_categoria = serializers.PrimaryKeyRelatedField(queryset=Categorias.objects.all())
 
     class Meta:

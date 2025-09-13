@@ -1,6 +1,7 @@
 """
 Tests para el sistema de cache de Eduney
 """
+
 from unittest.mock import Mock, patch
 
 from django.core.cache import cache

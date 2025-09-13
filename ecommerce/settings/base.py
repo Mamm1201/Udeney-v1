@@ -2,6 +2,7 @@
 Base settings for Eduney project.
 Configuraciones comunes para todos los entornos.
 """
+
 import os
 from datetime import timedelta
 from pathlib import Path
@@ -55,7 +56,7 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
     "AUTH_HEADER_TYPES": ("Bearer",),
-    "USER_ID_FIELD": "id_usuario",
+    "USER_ID_FIELD": "id",
     "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
 }
 
@@ -67,8 +68,12 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    # "udeneyv1.middleware.AuthenticationMiddleware",  # Deshabilitado temporalmente
+    # "udeneyv1.middleware.RoleBasedAccessMiddleware",  # Deshabilitado temporalmente
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # "udeneyv1.middleware.AuditMiddleware",  # Deshabilitado temporalmente
+    # "udeneyv1.middleware.SecurityHeadersMiddleware",  # Deshabilitado temporalmente
 ]
 
 # Rutas y plantillas

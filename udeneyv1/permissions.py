@@ -2,6 +2,7 @@
 Sistema de permisos personalizado para Eduney
 Basado en los roles: vendedor y comprador
 """
+
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.permissions import BasePermission
 
@@ -14,7 +15,7 @@ class IsAuthenticated(BasePermission):
     """
 
     def has_permission(self, request, view):
-        return bool(request.user and hasattr(request.user, "id_usuario"))
+        return bool(request.user and request.user.is_authenticated)
 
 
 class IsVendedor(BasePermission):
@@ -23,7 +24,7 @@ class IsVendedor(BasePermission):
     """
 
     def has_permission(self, request, view):
-        if not (request.user and hasattr(request.user, "id_usuario")):
+        if not (request.user and request.user.is_authenticated):
             return False
 
         try:
@@ -39,7 +40,7 @@ class IsComprador(BasePermission):
     """
 
     def has_permission(self, request, view):
-        if not (request.user and hasattr(request.user, "id_usuario")):
+        if not (request.user and request.user.is_authenticated):
             return False
 
         try:
@@ -59,10 +60,10 @@ class IsVendedorOrReadOnly(BasePermission):
     def has_permission(self, request, view):
         # Lectura permitida para usuarios autenticados
         if request.method in ["GET", "HEAD", "OPTIONS"]:
-            return bool(request.user and hasattr(request.user, "id_usuario"))
+            return bool(request.user and request.user.is_authenticated)
 
         # Escritura solo para vendedores
-        if not (request.user and hasattr(request.user, "id_usuario")):
+        if not (request.user and request.user.is_authenticated):
             return False
 
         try:
@@ -81,7 +82,7 @@ class IsOwnerOrReadOnly(BasePermission):
 
     def has_permission(self, request, view):
         # Permitir acceso básico a usuarios autenticados
-        return bool(request.user and hasattr(request.user, "id_usuario"))
+        return bool(request.user and request.user.is_authenticated)
 
     def has_object_permission(self, request, view, obj):
         # Permisos de lectura para usuarios autenticados
@@ -105,7 +106,7 @@ class ArticuloPermissions(BasePermission):
 
     def has_permission(self, request, view):
         # Debe estar autenticado
-        if not (request.user and hasattr(request.user, "id_usuario")):
+        if not (request.user and request.user.is_authenticated):
             return False
 
         # Para crear artículos, debe ser vendedor
@@ -141,7 +142,7 @@ class TransaccionPermissions(BasePermission):
 
     def has_permission(self, request, view):
         # Debe estar autenticado
-        if not (request.user and hasattr(request.user, "id_usuario")):
+        if not (request.user and request.user.is_authenticated):
             return False
 
         # Para crear transacciones, debe ser comprador
@@ -168,7 +169,7 @@ class AdminPermissions(BasePermission):
     def has_permission(self, request, view):
         return bool(
             request.user
-            and hasattr(request.user, "id_usuario")
+            and request.user.is_authenticated
             and getattr(request.user, "is_staff", False)
         )
 
@@ -178,7 +179,7 @@ def user_has_role(user, role):
     """
     Función utilitaria para verificar si un usuario tiene un rol específico
     """
-    if not user or not hasattr(user, "id_usuario"):
+    if not user or not user.is_authenticated:
         return False
 
     try:
@@ -192,7 +193,7 @@ def get_user_roles(user):
     """
     Obtener todos los roles de un usuario
     """
-    if not user or not hasattr(user, "id_usuario"):
+    if not user or not user.is_authenticated:
         return []
 
     roles = UsuarioRol.objects.filter(id_usuario=user).values_list("id_rol", flat=True)

@@ -1,6 +1,7 @@
 """
 Utilidades de logging estructurado para Eduney
 """
+
 import functools
 import json
 import logging

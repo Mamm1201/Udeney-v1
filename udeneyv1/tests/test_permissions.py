@@ -1,6 +1,7 @@
 """
 Tests para el sistema de permisos personalizado de Eduney
 """
+
 from unittest.mock import Mock
 
 from django.contrib.auth.models import AnonymousUser

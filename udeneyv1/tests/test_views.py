@@ -1,6 +1,7 @@
 """
 Tests para las views de la aplicación udeneyv1
 """
+
 from decimal import Decimal
 
 from django.test import Client, TestCase

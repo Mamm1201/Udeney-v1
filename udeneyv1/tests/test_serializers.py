@@ -1,6 +1,7 @@
 """
 Tests para los serializers de la aplicación udeneyv1
 """
+
 from decimal import Decimal
 
 from django.test import TestCase

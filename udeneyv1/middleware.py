@@ -1,6 +1,7 @@
 """
 Middleware personalizado para autorización y auditoría
 """
+
 import logging
 import time
 
@@ -38,18 +39,28 @@ class AuthenticationMiddleware(MiddlewareMixin):
             return None
 
         # Extraer información del usuario JWT si existe
-        if hasattr(request, "user") and hasattr(request.user, "id_usuario"):
+        if hasattr(request, "user") and hasattr(request.user, "id"):
+            print(f"🔍 MIDDLEWARE DEBUG: User type: {type(request.user)}")
+            print(f"🔍 MIDDLEWARE DEBUG: User ID: {request.user.id}")
+            print(
+                f"🔍 MIDDLEWARE DEBUG: User authenticated: {request.user.is_authenticated}"
+            )
+
             try:
-                # Cargar el usuario completo de Eduney
-                usuario = Usuarios.objects.get(id_usuario=request.user.id_usuario)
+                # El usuario Django ya está autenticado por JWT
+                # Ahora buscar el usuario de Eduney correspondiente
+                usuario = Usuarios.objects.get(id_usuario=request.user.id)
                 request.eduney_user = usuario
 
                 # Cargar roles del usuario
-                roles = UsuarioRol.objects.filter(id_usuario=usuario).values_list(
+                roles = UsuarioRol.objects.filter(id_usuario=request.user).values_list(
                     "id_rol", flat=True
                 )
                 request.user_roles = list(roles)
 
+                print(
+                    f"✅ MIDDLEWARE: Usuario {usuario.email_usuario} con roles: {request.user_roles}"
+                )
                 middleware_logger.info(
                     f"Usuario autenticado: {usuario.email_usuario} con roles: {request.user_roles}"
                 )

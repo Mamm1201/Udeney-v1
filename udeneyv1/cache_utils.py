@@ -1,6 +1,7 @@
 """
 Utilidades de cache para optimizar el rendimiento de Eduney
 """
+
 import hashlib
 import json
 import logging

@@ -1,6 +1,7 @@
 """
 Views para exposición de métricas de rendimiento
 """
+
 import json
 from datetime import datetime, timedelta
 

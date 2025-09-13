@@ -1,6 +1,7 @@
 """
 Utilidades de optimización de base de datos para Eduney
 """
+
 import logging
 import time
 from functools import wraps

@@ -1,6 +1,7 @@
 """
 Tests para los modelos de la aplicación udeneyv1
 """
+
 from decimal import Decimal
 
 from django.core.exceptions import ValidationError

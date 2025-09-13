@@ -1,6 +1,7 @@
 """
 Configuración de logging estructurado para Eduney
 """
+
 import os
 from pathlib import Path
 

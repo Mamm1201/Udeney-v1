@@ -1,6 +1,7 @@
 """
 Sistema de métricas de rendimiento para Eduney
 """
+
 import json
 import threading
 import time
@@ -342,9 +343,11 @@ class SystemMetrics:
 
             health_status["checks"]["cache"] = {
                 "status": "ok" if cache_result == "ok" else "error",
-                "message": "Cache operations working"
-                if cache_result == "ok"
-                else "Cache error",
+                "message": (
+                    "Cache operations working"
+                    if cache_result == "ok"
+                    else "Cache error"
+                ),
             }
 
         except Exception as e:

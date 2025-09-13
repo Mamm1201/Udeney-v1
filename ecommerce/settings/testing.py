@@ -2,6 +2,7 @@
 Testing settings for Eduney project.
 Configuraciones específicas para ejecutar tests.
 """
+
 from .base import *
 
 # Debug desactivado en tests
