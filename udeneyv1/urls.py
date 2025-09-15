@@ -7,6 +7,9 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
+# Admin views (nuevos endpoints para roles administrativos)
+from .admin_views import (ContentModerationViewSet, MonitorViewSet, PromotionsViewSet,
+                          ReportsViewSet, UserManagementViewSet, system_configuration)
 # Import metrics views
 from .metrics_views import (HealthCheckAPIView, MetricsAPIView, MetricsDashboardAPIView,
                             MetricsResetAPIView, PerformanceAPIView)
@@ -17,9 +20,6 @@ from .views import (ArticuloDetailAPIView, ArticulosViewSet, CacheStatsView,
                     RegistroUsuarioView, ResumenCompraAPIView, RolesViewSet,
                     TransaccionesViewSet, UsuarioRolViewSet, UsuariosViewSet,
                     WarmupCacheView, crear_con_detalles, historial_transacciones_api)
-# Admin views (nuevos endpoints para roles administrativos)
-from .admin_views import (UserManagementViewSet, ReportsViewSet, ContentModerationViewSet,
-                          MonitorViewSet, PromotionsViewSet, system_configuration)
 
 # ====================================
 # ROUTER DRF (Rutas automáticas para ViewSets)
@@ -39,7 +39,9 @@ router.register(r"articulos", ArticulosViewSet, basename="articulos")
 # Rutas administrativas (solo para roles específicos)
 router.register(r"admin/users", UserManagementViewSet, basename="admin-users")
 router.register(r"admin/reports", ReportsViewSet, basename="admin-reports")
-router.register(r"admin/moderation", ContentModerationViewSet, basename="admin-moderation")
+router.register(
+    r"admin/moderation", ContentModerationViewSet, basename="admin-moderation"
+)
 router.register(r"admin/promotions", PromotionsViewSet, basename="admin-promotions")
 router.register(r"monitor", MonitorViewSet, basename="monitor")
 

@@ -9,11 +9,11 @@ from django.utils.dateparse import parse_date
 from django_filters.rest_framework import DjangoFilterBackend
 # DRF
 from rest_framework import filters, status, viewsets
+from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import action, api_view
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.authentication import SessionAuthentication
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -21,6 +21,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 # Cache utilities
 from .cache_utils import (ArticulosCache, CategoriasCache, UsuariosCache, ViewCache,
                           cache_result)
+# JWT utilities
+from .jwt_utils import get_tokens_for_user, get_user_permissions_summary
 # Logging utilities
 from .logging_utils import AuditLogger, SecurityLogger, log_api_call
 # Metrics utilities
@@ -30,11 +32,9 @@ from .models import (ArticuloDetalleTransaccion, Articulos, Calificaciones, Cate
                      DetalleTransaccion, Pagos, Pqrs, Roles, Transacciones, UsuarioRol,
                      Usuarios)
 # Permisos personalizados (nuevo sistema basado en Groups)
-from .permissions_new import (AdminPermissions, ArticuloPermissions, IsComprador, 
+from .permissions_new import (AdminPermissions, ArticuloPermissions, IsComprador,
                               IsOwnerOrReadOnly, IsVendedor, IsVendedorOrReadOnly,
-                              TransaccionPermissions, RoleBasedViewMixin)
-# JWT utilities
-from .jwt_utils import get_tokens_for_user, get_user_permissions_summary
+                              RoleBasedViewMixin, TransaccionPermissions)
 # Serializadores
 from .serializers import (ArticulosSerializer, CalificacionesSerializer,
                           CategoriasSerializer, DetalleTransaccionAnidadoSerializer,
@@ -104,11 +104,11 @@ class LoginView(APIView):
 
         SecurityLogger.log_authentication_attempt(request, email, True)
         ApplicationMetrics.track_authentication(email, True)
-        
+
         # Generar tokens personalizados con información de roles
         tokens = get_tokens_for_user(user_django)
         permissions_summary = get_user_permissions_summary(user_django)
-        
+
         return Response(
             {
                 "message": f"Bienvenido {usuario_eduney.nombres_usuario}",
@@ -117,12 +117,12 @@ class LoginView(APIView):
                     "email": usuario_eduney.email_usuario,
                     "nombres_usuario": usuario_eduney.nombres_usuario,
                     "apellidos_usuario": usuario_eduney.apellidos_usuario,
-                    "groups": list(user_django.groups.values_list('name', flat=True)),
+                    "groups": list(user_django.groups.values_list("name", flat=True)),
                     "permissions": permissions_summary,
-                    "dashboard_route": permissions_summary['dashboard_route']
+                    "dashboard_route": permissions_summary["dashboard_route"],
                 },
-                "access_token": tokens['access'],
-                "refresh_token": tokens['refresh'],
+                "access_token": tokens["access"],
+                "refresh_token": tokens["refresh"],
             }
         )
 
@@ -151,34 +151,36 @@ class UsuariosViewSet(viewsets.ModelViewSet):
         if self.request.user and self.request.user.is_authenticated:
             return Usuarios.objects.filter(id_usuario=self.request.user.id)
         return Usuarios.objects.none()
-    
+
     def get_permissions(self):
         """
         Instantiates and returns the list of permissions that this view requires.
         """
-        if self.action == 'me':
+        if self.action == "me":
             permission_classes = [IsAuthenticated]
         else:
             permission_classes = [IsAuthenticated]
         return [permission() for permission in permission_classes]
-    
-    @action(detail=False, methods=['get', 'put', 'patch'])
+
+    @action(detail=False, methods=["get", "put", "patch"])
     def me(self, request):
         """Get or update current user's information"""
         try:
             usuario = Usuarios.objects.get(id_usuario=request.user.id)
         except Usuarios.DoesNotExist:
             return Response({"error": "Usuario no encontrado"}, status=404)
-        
-        if request.method == 'GET':
+
+        if request.method == "GET":
             serializer = self.get_serializer(usuario)
             return Response(serializer.data)
-        
-        elif request.method in ['PUT', 'PATCH']:
+
+        elif request.method in ["PUT", "PATCH"]:
             # Permitir actualización parcial con PATCH y completa con PUT
-            partial = request.method == 'PATCH'
-            serializer = self.get_serializer(usuario, data=request.data, partial=partial)
-            
+            partial = request.method == "PATCH"
+            serializer = self.get_serializer(
+                usuario, data=request.data, partial=partial
+            )
+
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data)
@@ -190,8 +192,6 @@ class UsuariosViewSet(viewsets.ModelViewSet):
 # ====================================
 
 
-
-
 # ====================================
 # CRUD ARTICULOS
 # ====================================
@@ -201,12 +201,12 @@ class ArticulosViewSet(viewsets.ModelViewSet):
     serializer_class = ArticulosSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ["id_categoria"]
-    
+
     def get_permissions(self):
         """
         Instantiates and returns the list of permissions that this view requires.
         """
-        if self.action in ['list', 'retrieve']:
+        if self.action in ["list", "retrieve"]:
             permission_classes = [AllowAny]
         else:
             permission_classes = [IsAuthenticated]
@@ -225,7 +225,7 @@ class ArticulosViewSet(viewsets.ModelViewSet):
             usuario_eduney = Usuarios.objects.get(id_usuario=self.request.user.id)
         except Usuarios.DoesNotExist:
             raise ValidationError("Usuario de Eduney no encontrado")
-        
+
         # Usar el usuario de Eduney
         articulo = serializer.save(id_usuario=usuario_eduney)
         # Audit log
@@ -384,7 +384,7 @@ class TransaccionesViewSet(viewsets.ModelViewSet):
             usuario_eduney = Usuarios.objects.get(id_usuario=self.request.user.id)
         except Usuarios.DoesNotExist:
             raise ValidationError("Usuario de Eduney no encontrado")
-        
+
         # Asignar automáticamente el usuario de Eduney
         transaccion = serializer.save(usuario=usuario_eduney)
         # Audit log
@@ -529,7 +529,7 @@ def crear_con_detalles(request):
     # Verificar autenticación
     if not request.user or not request.user.is_authenticated:
         return Response({"error": "Autenticación requerida"}, status=401)
-    
+
     data = request.data
     tipo_transaccion = data.get("tipo_transaccion")
     tipo_entrega = data.get("tipo_entrega")
@@ -543,7 +543,7 @@ def crear_con_detalles(request):
         usuario_eduney = Usuarios.objects.get(id_usuario=request.user.id)
     except Usuarios.DoesNotExist:
         return Response({"error": "Usuario de Eduney no encontrado"}, status=404)
-    
+
     # Crear la transacción con el usuario de Eduney
     transaccion = Transacciones.objects.create(usuario=usuario_eduney)
 
@@ -590,7 +590,7 @@ def historial_transacciones_api(request):
     # Verificar autenticación
     if not request.user or not request.user.is_authenticated:
         return Response({"error": "Autenticación requerida"}, status=401)
-    
+
     # Usar el ID del usuario autenticado
     id_usuario = request.user.id
 
