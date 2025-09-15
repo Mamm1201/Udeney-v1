@@ -87,13 +87,13 @@ class CategoriasSerializer(serializers.ModelSerializer):
 # ====================================
 class ArticulosSerializer(serializers.ModelSerializer):
     imagen = serializers.ImageField(use_url=True, required=False)
-    id_usuario = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    id_usuario = serializers.PrimaryKeyRelatedField(read_only=True)
     id_categoria = serializers.PrimaryKeyRelatedField(queryset=Categorias.objects.all())
 
     class Meta:
         model = Articulos
         fields = "__all__"
-        read_only_fields = ["disponible"]
+        read_only_fields = ["disponible", "id_usuario"]
 
     def create(self, validated_data):
         validated_data["disponible"] = True

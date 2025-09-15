@@ -52,21 +52,28 @@ const Login = () => {
         access_token,
         refresh_token,
         message,
-        id_usuario,
-        email,
-        nombres_usuario,
+        user
       } = response.data;
 
+      // Guardar tokens
       localStorage.setItem('access_token', access_token);
       localStorage.setItem('refresh_token', refresh_token);
+      
+      // Guardar información del usuario (nuevo formato)
+      localStorage.setItem('user', JSON.stringify(user));
+      
+      // Mantener compatibilidad con el formato anterior
       localStorage.setItem('user_data', JSON.stringify({
-        email_usuario: email,
-        id_usuario,
-        nombres_usuario
+        email_usuario: user.email,
+        id_usuario: user.id_usuario,
+        nombres_usuario: user.nombres_usuario,
+        apellidos_usuario: user.apellidos_usuario,
+        groups: user.groups,
+        permissions: user.permissions
       }));
-      localStorage.setItem('email_usuario', email);
-      localStorage.setItem('id_usuario', id_usuario);
-      localStorage.setItem('nombres_usuario', nombres_usuario);
+      localStorage.setItem('email_usuario', user.email);
+      localStorage.setItem('id_usuario', user.id_usuario);
+      localStorage.setItem('nombres_usuario', user.nombres_usuario);
 
       setSnackbar({
         open: true,
@@ -75,7 +82,8 @@ const Login = () => {
       });
 
       setTimeout(() => {
-        navigate('/');
+        // Redirigir al dashboard específico del usuario
+        navigate(user.dashboard_route || '/dashboard');
       }, 2000);
     } catch (err) {
       const msg =

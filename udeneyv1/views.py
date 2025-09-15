@@ -29,10 +29,12 @@ from .metrics import ApplicationMetrics
 from .models import (ArticuloDetalleTransaccion, Articulos, Calificaciones, Categorias,
                      DetalleTransaccion, Pagos, Pqrs, Roles, Transacciones, UsuarioRol,
                      Usuarios)
-# Permisos personalizados
-from .permissions import (AdminPermissions, ArticuloPermissions, IsComprador,
-                          IsOwnerOrReadOnly, IsVendedor, IsVendedorOrReadOnly,
-                          TransaccionPermissions, user_has_role)
+# Permisos personalizados (nuevo sistema basado en Groups)
+from .permissions_new import (AdminPermissions, ArticuloPermissions, IsComprador, 
+                              IsOwnerOrReadOnly, IsVendedor, IsVendedorOrReadOnly,
+                              TransaccionPermissions, RoleBasedViewMixin)
+# JWT utilities
+from .jwt_utils import get_tokens_for_user, get_user_permissions_summary
 # Serializadores
 from .serializers import (ArticulosSerializer, CalificacionesSerializer,
                           CategoriasSerializer, DetalleTransaccionAnidadoSerializer,
@@ -102,15 +104,25 @@ class LoginView(APIView):
 
         SecurityLogger.log_authentication_attempt(request, email, True)
         ApplicationMetrics.track_authentication(email, True)
-        refresh = RefreshToken.for_user(user_django)  # Usar usuario Django para JWT
+        
+        # Generar tokens personalizados con información de roles
+        tokens = get_tokens_for_user(user_django)
+        permissions_summary = get_user_permissions_summary(user_django)
+        
         return Response(
             {
                 "message": f"Bienvenido {usuario_eduney.nombres_usuario}",
-                "id_usuario": usuario_eduney.id_usuario,
-                "email": usuario_eduney.email_usuario,
-                "nombres_usuario": usuario_eduney.nombres_usuario,
-                "access_token": str(refresh.access_token),
-                "refresh_token": str(refresh),
+                "user": {
+                    "id_usuario": usuario_eduney.id_usuario,
+                    "email": usuario_eduney.email_usuario,
+                    "nombres_usuario": usuario_eduney.nombres_usuario,
+                    "apellidos_usuario": usuario_eduney.apellidos_usuario,
+                    "groups": list(user_django.groups.values_list('name', flat=True)),
+                    "permissions": permissions_summary,
+                    "dashboard_route": permissions_summary['dashboard_route']
+                },
+                "access_token": tokens['access'],
+                "refresh_token": tokens['refresh'],
             }
         )
 
@@ -178,32 +190,6 @@ class UsuariosViewSet(viewsets.ModelViewSet):
 # ====================================
 
 
-class TokenRefreshView(APIView):
-    """
-    Endpoint para renovar tokens automáticamente sin requerir login
-    """
-    permission_classes = [AllowAny]
-    
-    def post(self, request):
-        refresh_token = request.data.get('refresh_token')
-        if not refresh_token:
-            return Response({'error': 'Refresh token requerido'}, status=400)
-        
-        try:
-            from rest_framework_simplejwt.tokens import RefreshToken
-            refresh = RefreshToken(refresh_token)
-            
-            # Generar nuevo access token
-            access_token = str(refresh.access_token)
-            
-            return Response({
-                'access_token': access_token,
-                'token_type': 'Bearer',
-                'expires_in': 86400  # 24 horas
-            })
-            
-        except Exception as e:
-            return Response({'error': 'Token inválido o expirado'}, status=401)
 
 
 # ====================================

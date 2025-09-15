@@ -1,0 +1,442 @@
+"""
+Views administrativas para los nuevos roles del sistema.
+Endpoints específicos para Admin_Negocio, Monitor y Superadmin.
+"""
+
+from django.contrib.auth.models import User, Group
+from django.db.models import Count, Sum, Q, Avg
+from django.utils import timezone
+from datetime import timedelta
+from rest_framework import status, viewsets
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+# Importaciones locales
+from .models import (
+    Usuarios, Articulos, Transacciones, Calificaciones, 
+    DetalleTransaccion, Pagos, Pqrs
+)
+from .permissions_new import (
+    AdminPermissions, MonitorPermissions, IsAdminNegocio, 
+    IsMonitor, user_has_group
+)
+from .serializers import (
+    UsuariosSerializer, ArticulosSerializer, TransaccionesSerializer,
+    CalificacionesSerializer, PqrsSerializer
+)
+from .logging_utils import AuditLogger
+
+
+# ====================================
+# GESTIÓN DE USUARIOS (Admin_Negocio)
+# ====================================
+
+class UserManagementViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet para gestión de usuarios por parte de Admin_Negocio
+    """
+    queryset = Usuarios.objects.all()
+    serializer_class = UsuariosSerializer
+    permission_classes = [AdminPermissions]
+    
+    def get_queryset(self):
+        """Filtrar usuarios según permisos"""
+        if self.request.user.is_superuser:
+            return Usuarios.objects.all()
+        elif user_has_group(self.request.user, 'Admin_Negocio'):
+            # Admin negocio no puede gestionar superusers
+            excluded_ids = User.objects.filter(is_superuser=True).values_list('id', flat=True)
+            return Usuarios.objects.exclude(id_usuario__in=excluded_ids)
+        return Usuarios.objects.none()
+    
+    @action(detail=True, methods=['post'])
+    def block_user(self, request, pk=None):
+        """Bloquear un usuario"""
+        usuario = self.get_object()
+        usuario.is_active = False
+        usuario.save()
+        
+        # Audit log
+        AuditLogger.log_model_change(
+            request.user, 
+            "Usuario", 
+            usuario.id_usuario,
+            "BLOCKED",
+            {"reason": request.data.get("reason", "Sin motivo especificado")}
+        )
+        
+        return Response({"message": "Usuario bloqueado exitosamente"})
+    
+    @action(detail=True, methods=['post'])
+    def unblock_user(self, request, pk=None):
+        """Desbloquear un usuario"""
+        usuario = self.get_object()
+        usuario.is_active = True
+        usuario.save()
+        
+        # Audit log
+        AuditLogger.log_model_change(
+            request.user, 
+            "Usuario", 
+            usuario.id_usuario,
+            "UNBLOCKED",
+            {}
+        )
+        
+        return Response({"message": "Usuario desbloqueado exitosamente"})
+    
+    @action(detail=True, methods=['get'])
+    def user_activity(self, request, pk=None):
+        """Obtener actividad de un usuario específico"""
+        usuario = self.get_object()
+        
+        # Estadísticas del usuario
+        total_transactions = Transacciones.objects.filter(usuario=usuario).count()
+        total_articles = Articulos.objects.filter(id_usuario=usuario).count()
+        avg_rating = Calificaciones.objects.filter(
+            id_transaccion__usuario=usuario
+        ).aggregate(avg_rating=Avg('tipo_calificacion'))
+        
+        activity_data = {
+            "user_info": UsuariosSerializer(usuario).data,
+            "statistics": {
+                "total_transactions": total_transactions,
+                "total_articles": total_articles,
+                "average_rating": avg_rating.get('avg_rating') or 0,
+                "last_login": None  # Se puede obtener del sistema de Django
+            }
+        }
+        
+        return Response(activity_data)
+
+
+# ====================================
+# REPORTES Y ANALYTICS
+# ====================================
+
+class ReportsViewSet(viewsets.ViewSet):
+    """
+    ViewSet para reportes del negocio (Admin_Negocio y Monitor)
+    """
+    permission_classes = [AdminPermissions]  # Admin_Negocio o superior
+    
+    @action(detail=False, methods=['get'])
+    def business_overview(self, request):
+        """Resumen general del negocio"""
+        # Fechas para el análisis
+        today = timezone.now().date()
+        last_month = today - timedelta(days=30)
+        last_week = today - timedelta(days=7)
+        
+        # Métricas principales
+        total_users = Usuarios.objects.filter(is_active=True).count()
+        total_articles = Articulos.objects.filter(disponible=True).count()
+        total_transactions = Transacciones.objects.count()
+        
+        # Transacciones recientes
+        recent_transactions = Transacciones.objects.filter(
+            fecha_transaccion__gte=last_month
+        ).count()
+        
+        weekly_transactions = Transacciones.objects.filter(
+            fecha_transaccion__gte=last_week
+        ).count()
+        
+        # Usuarios por rol
+        users_by_role = {}
+        for group in Group.objects.all():
+            users_by_role[group.name] = group.user_set.count()
+        
+        # Artículos por categoría
+        articles_by_category = Articulos.objects.values(
+            'id_categoria__nombre_categoria'
+        ).annotate(count=Count('id_articulo'))
+        
+        overview_data = {
+            "summary": {
+                "total_users": total_users,
+                "total_articles": total_articles,
+                "total_transactions": total_transactions,
+                "recent_transactions": recent_transactions,
+                "weekly_transactions": weekly_transactions
+            },
+            "users_by_role": users_by_role,
+            "articles_by_category": list(articles_by_category),
+            "generated_at": timezone.now()
+        }
+        
+        return Response(overview_data)
+    
+    @action(detail=False, methods=['get'])
+    def transaction_report(self, request):
+        """Reporte detallado de transacciones"""
+        # Parámetros de filtro
+        start_date = request.query_params.get('start_date')
+        end_date = request.query_params.get('end_date')
+        transaction_type = request.query_params.get('type')
+        
+        # Query base
+        queryset = Transacciones.objects.all()
+        
+        # Aplicar filtros
+        if start_date:
+            queryset = queryset.filter(fecha_transaccion__gte=start_date)
+        if end_date:
+            queryset = queryset.filter(fecha_transaccion__lte=end_date)
+        
+        # Estadísticas
+        total_transactions = queryset.count()
+        transactions_by_type = DetalleTransaccion.objects.filter(
+            id_transaccion__in=queryset
+        ).values('tipo_transaccion').annotate(count=Count('id_detalle_transaccion'))
+        
+        # Transacciones por mes
+        monthly_stats = queryset.extra(
+            select={'month': 'MONTH(fecha_transaccion)', 'year': 'YEAR(fecha_transaccion)'}
+        ).values('month', 'year').annotate(count=Count('id_transaccion'))
+        
+        report_data = {
+            "total_transactions": total_transactions,
+            "transactions_by_type": list(transactions_by_type),
+            "monthly_statistics": list(monthly_stats),
+            "filters_applied": {
+                "start_date": start_date,
+                "end_date": end_date,
+                "transaction_type": transaction_type
+            }
+        }
+        
+        return Response(report_data)
+    
+    @action(detail=False, methods=['get'])
+    def user_engagement(self, request):
+        """Reporte de engagement de usuarios"""
+        # Usuarios activos
+        active_users = Usuarios.objects.filter(is_active=True).count()
+        inactive_users = Usuarios.objects.filter(is_active=False).count()
+        
+        # Usuarios con transacciones recientes (últimos 30 días)
+        last_month = timezone.now().date() - timedelta(days=30)
+        engaged_users = Usuarios.objects.filter(
+            transacciones__fecha_transaccion__gte=last_month
+        ).distinct().count()
+        
+        # Top usuarios por transacciones
+        top_users = Usuarios.objects.annotate(
+            transaction_count=Count('transacciones')
+        ).order_by('-transaction_count')[:10]
+        
+        engagement_data = {
+            "user_stats": {
+                "active_users": active_users,
+                "inactive_users": inactive_users,
+                "engaged_users_last_month": engaged_users,
+                "engagement_rate": round((engaged_users / active_users * 100), 2) if active_users > 0 else 0
+            },
+            "top_users": [
+                {
+                    "user": f"{user.nombres_usuario} {user.apellidos_usuario}",
+                    "email": user.email_usuario,
+                    "transaction_count": user.transaction_count
+                }
+                for user in top_users
+            ]
+        }
+        
+        return Response(engagement_data)
+
+
+# ====================================
+# MODERACIÓN DE CONTENIDO (Admin_Negocio)
+# ====================================
+
+class ContentModerationViewSet(viewsets.ViewSet):
+    """
+    ViewSet para moderación de contenido
+    """
+    permission_classes = [AdminPermissions]
+    
+    @action(detail=False, methods=['get'])
+    def pending_reviews(self, request):
+        """Artículos y contenido pendiente de revisión"""
+        # Para futura implementación: artículos reportados, etc.
+        pending_articles = Articulos.objects.filter(
+            # Aquí se pueden agregar campos como 'needs_review' en el futuro
+        )[:20]
+        
+        # PQRs pendientes
+        pending_pqrs = Pqrs.objects.all()[:20]
+        
+        review_data = {
+            "pending_articles": ArticulosSerializer(pending_articles, many=True).data,
+            "pending_pqrs": PqrsSerializer(pending_pqrs, many=True).data,
+            "total_pending": pending_articles.count() + pending_pqrs.count()
+        }
+        
+        return Response(review_data)
+    
+    @action(detail=True, methods=['post'])
+    def moderate_article(self, request, pk=None):
+        """Moderar un artículo específico"""
+        try:
+            article = Articulos.objects.get(id_articulo=pk)
+        except Articulos.DoesNotExist:
+            return Response(
+                {"error": "Artículo no encontrado"}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        action_type = request.data.get('action')  # 'approve', 'reject', 'suspend'
+        reason = request.data.get('reason', '')
+        
+        if action_type == 'suspend':
+            article.disponible = False
+            article.save()
+            
+            # Audit log
+            AuditLogger.log_model_change(
+                request.user,
+                "Articulo",
+                article.id_articulo,
+                "SUSPENDED",
+                {"reason": reason}
+            )
+            
+            return Response({"message": "Artículo suspendido exitosamente"})
+        
+        elif action_type == 'approve':
+            article.disponible = True
+            article.save()
+            
+            return Response({"message": "Artículo aprobado exitosamente"})
+        
+        return Response(
+            {"error": "Acción no válida"}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+# ====================================
+# MONITOR VIEW (Solo lectura)
+# ====================================
+
+class MonitorViewSet(viewsets.ViewSet):
+    """
+    ViewSet para usuarios con rol Monitor (solo lectura)
+    """
+    permission_classes = [MonitorPermissions]
+    
+    @action(detail=False, methods=['get'])
+    def system_health(self, request):
+        """Estado general del sistema"""
+        # Métricas básicas del sistema
+        total_users = Usuarios.objects.count()
+        active_users = Usuarios.objects.filter(is_active=True).count()
+        total_transactions_today = Transacciones.objects.filter(
+            fecha_transaccion__date=timezone.now().date()
+        ).count()
+        
+        # Errores recientes (si se implementa logging)
+        # recent_errors = ...
+        
+        health_data = {
+            "system_status": "healthy",  # Se puede hacer más sofisticado
+            "metrics": {
+                "total_users": total_users,
+                "active_users": active_users,
+                "transactions_today": total_transactions_today,
+                "uptime": "99.9%"  # Placeholder
+            },
+            "last_updated": timezone.now()
+        }
+        
+        return Response(health_data)
+    
+    @action(detail=False, methods=['get'])
+    def audit_logs(self, request):
+        """Logs de auditoría del sistema"""
+        # Esta implementación dependería del sistema de logging que tengas
+        # Por ahora retornamos un placeholder
+        logs_data = {
+            "recent_activities": [
+                {
+                    "timestamp": timezone.now(),
+                    "user": "admin@eduney.com",
+                    "action": "USER_BLOCKED",
+                    "details": "Usuario bloqueado por comportamiento sospechoso"
+                }
+                # Más logs...
+            ],
+            "summary": {
+                "total_activities_today": 25,
+                "critical_events": 0,
+                "warnings": 2
+            }
+        }
+        
+        return Response(logs_data)
+
+
+# ====================================
+# CONFIGURACIÓN DEL SISTEMA (Superuser)
+# ====================================
+
+@api_view(['GET', 'POST'])
+@permission_classes([AdminPermissions])
+def system_configuration(request):
+    """
+    Endpoint para configuración del sistema (solo superusers)
+    """
+    if not request.user.is_superuser:
+        return Response(
+            {"error": "Solo superusuarios pueden acceder a la configuración del sistema"},
+            status=status.HTTP_403_FORBIDDEN
+        )
+    
+    if request.method == 'GET':
+        # Obtener configuración actual
+        config_data = {
+            "payment_gateways": ["stripe", "paypal"],  # Placeholder
+            "email_settings": {
+                "smtp_host": "smtp.gmail.com",
+                "smtp_port": 587
+            },
+            "security_settings": {
+                "max_login_attempts": 5,
+                "session_timeout": 3600
+            }
+        }
+        return Response(config_data)
+    
+    elif request.method == 'POST':
+        # Actualizar configuración
+        # Aquí se implementaría la lógica de actualización
+        return Response({"message": "Configuración actualizada exitosamente"})
+
+
+# ====================================
+# PROMOCIONES Y DESCUENTOS (Admin_Negocio)
+# ====================================
+
+class PromotionsViewSet(viewsets.ViewSet):
+    """
+    ViewSet para gestionar promociones y descuentos
+    """
+    permission_classes = [AdminPermissions]
+    
+    # Placeholder para futura implementación de promociones
+    @action(detail=False, methods=['get'])
+    def list_promotions(self, request):
+        """Listar todas las promociones"""
+        return Response({
+            "message": "Funcionalidad de promociones en desarrollo",
+            "promotions": []
+        })
+    
+    @action(detail=False, methods=['post'])
+    def create_promotion(self, request):
+        """Crear nueva promoción"""
+        return Response({
+            "message": "Promoción creada exitosamente (placeholder)"
+        }, status=status.HTTP_201_CREATED)

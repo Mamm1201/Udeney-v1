@@ -15,8 +15,11 @@ from .views import (ArticuloDetailAPIView, ArticulosViewSet, CacheStatsView,
                     CalificacionesViewSet, CategoriasViewSet, DetalleTransaccionViewSet,
                     LoginView, MisTransaccionesView, PagosViewSet, PqrsViewSet,
                     RegistroUsuarioView, ResumenCompraAPIView, RolesViewSet,
-                    TokenRefreshView, TransaccionesViewSet, UsuarioRolViewSet, UsuariosViewSet,
+                    TransaccionesViewSet, UsuarioRolViewSet, UsuariosViewSet,
                     WarmupCacheView, crear_con_detalles, historial_transacciones_api)
+# Admin views (nuevos endpoints para roles administrativos)
+from .admin_views import (UserManagementViewSet, ReportsViewSet, ContentModerationViewSet,
+                          MonitorViewSet, PromotionsViewSet, system_configuration)
 
 # ====================================
 # ROUTER DRF (Rutas automáticas para ViewSets)
@@ -32,6 +35,13 @@ router.register(r"calificaciones", CalificacionesViewSet)
 router.register(r"pagos", PagosViewSet)
 router.register(r"pqrs", PqrsViewSet)
 router.register(r"articulos", ArticulosViewSet, basename="articulos")
+
+# Rutas administrativas (solo para roles específicos)
+router.register(r"admin/users", UserManagementViewSet, basename="admin-users")
+router.register(r"admin/reports", ReportsViewSet, basename="admin-reports")
+router.register(r"admin/moderation", ContentModerationViewSet, basename="admin-moderation")
+router.register(r"admin/promotions", PromotionsViewSet, basename="admin-promotions")
+router.register(r"monitor", MonitorViewSet, basename="monitor")
 
 # ====================================
 # URLPATTERNS (Rutas de la aplicación)
@@ -60,12 +70,6 @@ urlpatterns = [
         "login/",
         LoginView.as_view(),
         name="login",
-    ),
-    # Refresh de tokens
-    path(
-        "token/refresh/",
-        TokenRefreshView.as_view(),
-        name="token_refresh_custom",
     ),
     # Artículos
     path(
@@ -131,6 +135,12 @@ urlpatterns = [
         "health/",
         HealthCheckAPIView.as_view(),
         name="health-check",
+    ),
+    # System configuration (solo superusers)
+    path(
+        "admin/system/config/",
+        system_configuration,
+        name="system-config",
     ),
 ]
 

@@ -82,23 +82,23 @@ axiosInstance.interceptors.response.use(
 
         console.log('🔄 AXIOS: Renovando token automáticamente...');
         
-        // Llamar al endpoint de refresh
-        const response = await axios.post(`${import.meta.env.VITE_API_URL}/token/refresh/`, {
-          refresh_token: refreshToken
+        // Llamar al endpoint de refresh (formato estándar DRF SimpleJWT)
+        const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/token/refresh/`, {
+          refresh: refreshToken
         });
 
-        const { access_token } = response.data;
+        const { access } = response.data;
 
         // Guardar el nuevo token
-        localStorage.setItem('access_token', access_token);
+        localStorage.setItem('access_token', access);
         
         console.log('✅ AXIOS: Token renovado exitosamente');
 
         // Procesar cola de requests pendientes
-        processQueue(null, access_token);
+        processQueue(null, access);
         
         // Reintentar la request original con el nuevo token
-        originalRequest.headers.Authorization = `Bearer ${access_token}`;
+        originalRequest.headers.Authorization = `Bearer ${access}`;
         return axiosInstance(originalRequest);
 
       } catch (refreshError) {
@@ -108,6 +108,7 @@ axiosInstance.interceptors.response.use(
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
         localStorage.removeItem('user_data');
+        localStorage.removeItem('user');
         
         processQueue(refreshError, null);
         
