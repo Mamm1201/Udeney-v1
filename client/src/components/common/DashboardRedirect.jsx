@@ -15,13 +15,14 @@ const DashboardRedirect = () => {
   useEffect(() => {
     if (!loading) {
       if (isAuthenticated()) {
-        redirectToDashboard();
+        // Si ya está logueado, mantenerlo en Home para que pueda elegir rol
+        navigate('/home');
       } else {
-        // Si no está autenticado, ir a login
-        navigate('/login');
+        // Si no está autenticado, llevarlo a Home público
+        navigate('/home');
       }
     }
-  }, [loading, isAuthenticated, redirectToDashboard, navigate]);
+  }, [loading, isAuthenticated, navigate]);
 
   return (
     <Box

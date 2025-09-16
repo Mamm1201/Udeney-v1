@@ -50,9 +50,9 @@ const Navbar = () => {
   const seleccionarRol = rol => {
     localStorage.setItem('rol_usuario', rol);
     if (rol === 'vendedor') {
-      navigate('/crear-articulo');
-    } else {
-      navigate('/articulos');
+      navigate('/vendedor-dashboard');
+    } else if (rol === 'comprador') {
+      navigate('/comprador-dashboard');
     }
     handleCloseRoles();
   };

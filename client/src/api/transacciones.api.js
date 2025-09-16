@@ -31,7 +31,7 @@ export const getResumenCompraByTransaccionId = async id => {
 };
 
 export const getMisTransacciones = () => {
-  return api.get(`/mis-transacciones/`);
+  return api.get(`/transacciones/`); // Cambiar a la ruta que funciona
 };
 
 // Obtener transacciones del usuario autenticado con filtros

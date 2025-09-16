@@ -265,11 +265,7 @@ const ComprasRecientes = ({ compras = [], loading = false }) => (
         <Typography variant="h6" fontWeight="bold">
           Compras Recientes
         </Typography>
-        <Button
-          size="small"
-          endIcon={<History />}
-          href="/historial-transacciones"
-        >
+        <Button size="small" endIcon={<History />} href="/mis-transacciones">
           Ver Historial
         </Button>
       </Box>
@@ -281,7 +277,7 @@ const ComprasRecientes = ({ compras = [], loading = false }) => (
         compras.map((compra, index) => (
           <Box key={index} display="flex" alignItems="center" mb={2}>
             <Avatar
-              src={compra.imagen || 'https://via.placeholder.com/48'}
+              src={compra.imagen || '/placeholder.jpg'}
               sx={{ width: 48, height: 48, mr: 2 }}
             />
             <Box flexGrow={1}>
@@ -444,7 +440,7 @@ const CompradorDashboard = () => {
       const favoritos = getFavoritos();
       const articulosConFavoritos = articulosRes.map(articulo => ({
         ...articulo,
-        favorito: favoritos.includes(articulo.id_articulo)
+        favorito: favoritos.includes(articulo.id_articulo),
       }));
 
       setArticulosRecomendados(articulosConFavoritos);
@@ -472,7 +468,9 @@ const CompradorDashboard = () => {
 
   const handleAddToCart = articulo => {
     try {
-      const articuloExiste = carrito.find(item => item.id_articulo === articulo.id_articulo);
+      const articuloExiste = carrito.find(
+        item => item.id_articulo === articulo.id_articulo
+      );
 
       if (articuloExiste) {
         alert('Este artículo ya está en tu carrito');
@@ -499,7 +497,10 @@ const CompradorDashboard = () => {
         nuevosFavoritos = [...favoritos, articuloId];
       }
 
-      localStorage.setItem(`favoritos_${user?.id_usuario}`, JSON.stringify(nuevosFavoritos));
+      localStorage.setItem(
+        `favoritos_${user?.id_usuario}`,
+        JSON.stringify(nuevosFavoritos)
+      );
       updateMetricsFromLocalStorage();
 
       // Actualizar la UI
@@ -530,7 +531,7 @@ const CompradorDashboard = () => {
       const favoritos = getFavoritos();
       const articulosConFavoritos = results.map(articulo => ({
         ...articulo,
-        favorito: favoritos.includes(articulo.id_articulo)
+        favorito: favoritos.includes(articulo.id_articulo),
       }));
 
       setArticulosRecomendados(articulosConFavoritos);
@@ -548,7 +549,7 @@ const CompradorDashboard = () => {
     const favoritos = getFavoritos();
     const articulosConFavoritos = results.map(articulo => ({
       ...articulo,
-      favorito: favoritos.includes(articulo.id_articulo)
+      favorito: favoritos.includes(articulo.id_articulo),
     }));
 
     setArticulosRecomendados(articulosConFavoritos);
@@ -646,7 +647,7 @@ const CompradorDashboard = () => {
             subtitle={`${compradorData.compras.mes} este mes`}
             icon={<ShoppingCart />}
             color="primary"
-            onClick={() => navigate('/historial-transacciones')}
+            onClick={() => navigate('/mis-transacciones')}
             loading={loading}
           />
         </Grid>
@@ -657,7 +658,7 @@ const CompradorDashboard = () => {
             subtitle="Total acumulado"
             icon={<TrendingUp />}
             color="secondary"
-            onClick={() => navigate('/historial-transacciones')}
+            onClick={() => navigate('/mis-transacciones')}
             loading={loading}
           />
         </Grid>
@@ -765,8 +766,16 @@ const CompradorDashboard = () => {
                   <Chip
                     key={categoria.id_categoria}
                     label={categoria.nombre_categoria}
-                    variant={categoriaSeleccionada === categoria.nombre_categoria ? 'filled' : 'outlined'}
-                    color={categoriaSeleccionada === categoria.nombre_categoria ? 'primary' : 'default'}
+                    variant={
+                      categoriaSeleccionada === categoria.nombre_categoria
+                        ? 'filled'
+                        : 'outlined'
+                    }
+                    color={
+                      categoriaSeleccionada === categoria.nombre_categoria
+                        ? 'primary'
+                        : 'default'
+                    }
                     onClick={() =>
                       handleCategoryFilter(categoria.nombre_categoria)
                     }
@@ -841,8 +850,7 @@ const CompradorDashboard = () => {
               <Grid item xs={12} md={6}>
                 <img
                   src={
-                    getImageUrl(selectedArticulo.imagen) ||
-                    'https://via.placeholder.com/400x300'
+                    getImageUrl(selectedArticulo.imagen) || '/placeholder.jpg'
                   }
                   alt={selectedArticulo.titulo_articulo}
                   style={{ width: '100%', height: 'auto', borderRadius: 8 }}

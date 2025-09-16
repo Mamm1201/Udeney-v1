@@ -3,7 +3,7 @@
  * Muestra elementos de menú según los permisos y roles del usuario
  */
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   AppBar,
   Toolbar,
@@ -23,7 +23,7 @@ import {
   Drawer,
   List,
   ListItem,
-  ListItemButton
+  ListItemButton,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -38,7 +38,7 @@ import {
   History,
   AdminPanelSettings,
   MonitorHeart,
-  Inventory
+  Inventory,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useRoleAuth } from '../../hooks/useRoleAuth';
@@ -53,20 +53,20 @@ const getNavigationItems = (user, permissions) => {
   if (user) {
     items.push({
       label: 'Dashboard',
-      path: '/dashboard',
+      path: '/comprador-dashboard',
       icon: <Dashboard />,
       roles: ['Vendedor', 'Comprador', 'Admin_Negocio', 'Monitor'],
-      show: true
+      show: true,
     });
 
     // Historial de transacciones (IMPORTANTE: Mantener para vendedores y compradores)
     if (permissions.can_view_transactions) {
       items.push({
         label: 'Historial',
-        path: '/historial',
+        path: '/mis-transacciones',
         icon: <History />,
         roles: ['Vendedor', 'Comprador'],
-        show: true
+        show: true,
       });
     }
 
@@ -77,7 +77,7 @@ const getNavigationItems = (user, permissions) => {
         path: '/mis-articulos',
         icon: <Store />,
         roles: ['Vendedor'],
-        show: true
+        show: true,
       });
 
       items.push({
@@ -85,20 +85,35 @@ const getNavigationItems = (user, permissions) => {
         path: '/crear-articulo',
         icon: <Inventory />,
         roles: ['Vendedor'],
-        show: true
+        show: true,
       });
     }
 
+    // Elementos de cambio de rol (disponible para todos los usuarios logueados)
+    items.push({
+      label: 'Modo Comprador',
+      path: '/comprador-dashboard',
+      icon: <ShoppingCart />,
+      roles: ['all'],
+      show: true,
+    });
+
+    items.push({
+      label: 'Modo Vendedor',
+      path: '/vendedor-dashboard',
+      icon: <Store />,
+      roles: ['all'],
+      show: true,
+    });
+
     // Elementos específicos para compradores
-    if (user.groups?.includes('Comprador')) {
-      items.push({
-        label: 'Explorar',
-        path: '/explorar',
-        icon: <ShoppingCart />,
-        roles: ['Comprador'],
-        show: true
-      });
-    }
+    items.push({
+      label: 'Explorar',
+      path: '/articulos',
+      icon: <ShoppingCart />,
+      roles: ['all'],
+      show: true,
+    });
 
     // Elementos administrativos
     if (permissions.can_manage_users) {
@@ -107,7 +122,7 @@ const getNavigationItems = (user, permissions) => {
         path: '/admin/usuarios',
         icon: <People />,
         roles: ['Admin_Negocio'],
-        show: true
+        show: true,
       });
     }
 
@@ -117,7 +132,7 @@ const getNavigationItems = (user, permissions) => {
         path: '/admin/reportes',
         icon: <Assessment />,
         roles: ['Admin_Negocio', 'Monitor'],
-        show: true
+        show: true,
       });
     }
 
@@ -127,7 +142,7 @@ const getNavigationItems = (user, permissions) => {
         path: '/admin/moderacion',
         icon: <AdminPanelSettings />,
         roles: ['Admin_Negocio'],
-        show: true
+        show: true,
       });
     }
 
@@ -138,7 +153,7 @@ const getNavigationItems = (user, permissions) => {
         path: '/monitor/sistema',
         icon: <MonitorHeart />,
         roles: ['Monitor', 'Admin_Negocio'],
-        show: true
+        show: true,
       });
     }
 
@@ -149,7 +164,7 @@ const getNavigationItems = (user, permissions) => {
         path: '/admin/sistema',
         icon: <Settings />,
         roles: ['superuser'],
-        show: true
+        show: true,
       });
     }
   }
@@ -165,13 +180,8 @@ const RoleBasedNavigation = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const navigate = useNavigate();
   const location = useLocation();
-  const {
-    user,
-    permissions,
-    logout,
-    isAuthenticated,
-    getPrimaryRole
-  } = useRoleAuth();
+  const { user, permissions, logout, isAuthenticated, getPrimaryRole } =
+    useRoleAuth();
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
@@ -179,7 +189,7 @@ const RoleBasedNavigation = () => {
   const navigationItems = getNavigationItems(user, permissions);
   const primaryRole = getPrimaryRole();
 
-  const handleMenuOpen = (event) => {
+  const handleMenuOpen = event => {
     setAnchorEl(event.currentTarget);
   };
 
@@ -192,7 +202,7 @@ const RoleBasedNavigation = () => {
     logout();
   };
 
-  const handleNavigation = (path) => {
+  const handleNavigation = path => {
     navigate(path);
     setMobileDrawerOpen(false);
   };
@@ -219,22 +229,27 @@ const RoleBasedNavigation = () => {
         <Typography variant="subtitle1" fontWeight="bold">
           {user?.nombres_usuario} {user?.apellidos_usuario}
         </Typography>
-        <Typography variant="body2" color="text.secondary">
+        <Typography variant="body2" color="primary">
           {user?.email}
         </Typography>
         {primaryRole && (
           <Box sx={{ mt: 1 }}>
-            <Chip 
-              label={primaryRole} 
-              size="small" 
-              color="primary" 
+            <Chip
+              label={primaryRole}
+              size="small"
+              color="primary"
               variant="outlined"
             />
           </Box>
         )}
       </Box>
       <Divider />
-      <MenuItem onClick={() => { handleMenuClose(); navigate('/perfil'); }}>
+      <MenuItem
+        onClick={() => {
+          handleMenuClose();
+          navigate('/perfil');
+        }}
+      >
         <ListItemIcon>
           <AccountCircle fontSize="small" />
         </ListItemIcon>
@@ -272,10 +287,10 @@ const RoleBasedNavigation = () => {
               {user.nombres_usuario} {user.apellidos_usuario}
             </Typography>
             {primaryRole && (
-              <Chip 
-                label={primaryRole} 
-                size="small" 
-                color="primary" 
+              <Chip
+                label={primaryRole}
+                size="small"
+                color="primary"
                 variant="outlined"
                 sx={{ mt: 1 }}
               />
@@ -291,9 +306,7 @@ const RoleBasedNavigation = () => {
               onClick={() => handleNavigation(item.path)}
               selected={location.pathname === item.path}
             >
-              <ListItemIcon>
-                {item.icon}
-              </ListItemIcon>
+              <ListItemIcon>{item.icon}</ListItemIcon>
               <ListItemText primary={item.label} />
             </ListItemButton>
           </ListItem>
@@ -308,7 +321,7 @@ const RoleBasedNavigation = () => {
 
   return (
     <>
-      <AppBar position="sticky" elevation={2}>
+      <AppBar position="sticky" elevation={2} sx={{ backgroundColor: '#45858C' }}>
         <Toolbar>
           {/* Botón de menú móvil */}
           {isMobile && (
@@ -323,15 +336,15 @@ const RoleBasedNavigation = () => {
           )}
 
           {/* Logo y título */}
-          <Typography 
-            variant="h6" 
-            component="div" 
-            sx={{ 
+          <Typography
+            variant="h6"
+            component="div"
+            sx={{
               flexGrow: isMobile ? 1 : 0,
               fontWeight: 'bold',
-              cursor: 'pointer'
+              cursor: 'pointer',
             }}
-            onClick={() => navigate('/dashboard')}
+            onClick={() => navigate('/home')}
           >
             Eduney
           </Typography>
@@ -347,9 +360,10 @@ const RoleBasedNavigation = () => {
                   onClick={() => handleNavigation(item.path)}
                   sx={{
                     mr: 1,
-                    backgroundColor: location.pathname === item.path 
-                      ? 'rgba(255, 255, 255, 0.1)' 
-                      : 'transparent',
+                    backgroundColor:
+                      location.pathname === item.path
+                        ? 'rgba(255, 255, 255, 0.1)'
+                        : 'transparent',
                     '&:hover': {
                       backgroundColor: 'rgba(255, 255, 255, 0.1)',
                     },
@@ -364,12 +378,10 @@ const RoleBasedNavigation = () => {
           {/* Menú de usuario */}
           {user && (
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <IconButton
-                size="large"
-                onClick={handleMenuOpen}
-                color="inherit"
-              >
-                <Avatar sx={{ width: 32, height: 32, bgcolor: 'secondary.main' }}>
+              <IconButton size="large" onClick={handleMenuOpen} color="inherit">
+                <Avatar
+                  sx={{ width: 32, height: 32, bgcolor: 'secondary.main' }}
+                >
                   {user.nombres_usuario?.charAt(0)?.toUpperCase()}
                 </Avatar>
               </IconButton>

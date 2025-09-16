@@ -84,8 +84,11 @@ const Favoritos = () => {
       try {
         setLoading(true);
         const favoritosIds = getFavoritos();
+        console.log('🔍 Favoritos IDs encontrados:', favoritosIds);
+        console.log('👤 Usuario actual:', user);
 
         if (favoritosIds.length === 0) {
+          console.log('ℹ️ No hay favoritos guardados');
           setArticulosFavoritos([]);
           setLoading(false);
           return;
@@ -97,9 +100,13 @@ const Favoritos = () => {
         });
 
         const articulosData = response.data;
+        console.log('📦 Artículos obtenidos del API:', articulosData.length);
+
         const articulosFiltrados = articulosData.filter(articulo =>
           favoritosIds.includes(articulo.id_articulo)
         );
+
+        console.log('❤️ Artículos favoritos filtrados:', articulosFiltrados);
 
         setArticulosFavoritos(articulosFiltrados);
         setFavoritos(favoritosIds);

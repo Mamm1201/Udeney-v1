@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import AppRoutes from './appRoutes';
+import App from './pages/App';
 import { CarritoProvider } from './context/CarritoContext';
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 
@@ -21,7 +21,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <CarritoProvider>
-        <AppRoutes />
+        <App />
       </CarritoProvider>
     </ThemeProvider>
   </React.StrictMode>

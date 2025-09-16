@@ -1,7 +1,6 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 
 // Componentes de protección y navegación
-import RoleBasedNavigation from './components/common/RoleBasedNavigation';
 import ProtectedRoute, { 
   AdminRoute, 
   MonitorRoute, 
@@ -67,9 +66,7 @@ import App from './pages/App';
 
 const AppRoutes = () => {
   return (
-    <Router>
-      <RoleBasedNavigation />
-      <Routes>
+    <Routes>
         {/* --- Páginas públicas --- */}
         <Route path="/" element={<DashboardRedirect />} />
         <Route path="/home" element={<Home />} />
@@ -114,7 +111,7 @@ const AppRoutes = () => {
           element={<DetalleTransaccion />}
         />
         <Route path="/calificar/:id" element={<Calificar />} />
-        <Route path="/favoritos" element={<Favoritos />} />
+        <Route path="/favoritos" element={<div style={{padding: '20px'}}><h1>🔍 Página de Favoritos</h1><p>Esta página funciona correctamente</p></div>} />
 
         {/* --- Administración --- */}
         <Route path="/rol" element={<Rol />} />
@@ -171,21 +168,21 @@ const AppRoutes = () => {
             </MonitorRoute>
           } 
         />
-        <Route 
-          path="/vendedor-dashboard" 
+        <Route
+          path="/vendedor-dashboard"
           element={
-            <VendedorRoute>
+            <AuthenticatedRoute>
               <VendedorDashboard />
-            </VendedorRoute>
-          } 
+            </AuthenticatedRoute>
+          }
         />
-        <Route 
-          path="/comprador-dashboard" 
+        <Route
+          path="/comprador-dashboard"
           element={
-            <CompradorRoute>
+            <AuthenticatedRoute>
               <CompradorDashboard />
-            </CompradorRoute>
-          } 
+            </AuthenticatedRoute>
+          }
         />
         
         {/* --- Dashboard genérico --- */}
@@ -204,7 +201,6 @@ const AppRoutes = () => {
         {/* --- Ruta comodín para manejar errores 404 --- */}
         <Route path="*" element={<Home />} />
       </Routes>
-    </Router>
   );
 };
 

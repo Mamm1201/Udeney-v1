@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import logo from '../assets/logo.png';
+// import logo from '../assets/logo.png'; // Temporalmente comentado
 import {
   Button,
   Box,
@@ -108,7 +108,7 @@ const Carrito = () => {
           >
             <Box
               component="img"
-              src={logo}
+              src="/logo.png" // Usar ruta pública
               alt="Logo"
               sx={{
                 height: 100,
