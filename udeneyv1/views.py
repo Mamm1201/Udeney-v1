@@ -3,7 +3,7 @@
 # ====================================
 
 # Django
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import Group, User
 from django.utils.dateparse import parse_date
 # Filtros
 from django_filters.rest_framework import DjangoFilterBackend
@@ -69,14 +69,14 @@ class RegistroUsuarioView(APIView):
             if User.objects.filter(email=email).exists():
                 return Response(
                     {"error": "Ya existe un usuario con este email"},
-                    status=status.HTTP_400_BAD_REQUEST
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
 
             # Verificar que el email no exista en Usuarios
             if Usuarios.objects.filter(email_usuario=email).exists():
                 return Response(
                     {"error": "Ya existe un usuario con este email"},
-                    status=status.HTTP_400_BAD_REQUEST
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
 
             # Crear usuario Django
@@ -85,11 +85,11 @@ class RegistroUsuarioView(APIView):
                 email=email,
                 password=password,
                 first_name=nombres,
-                last_name=apellidos
+                last_name=apellidos,
             )
 
             # Asignar grupo por defecto (Comprador para usuarios normales)
-            comprador_group = Group.objects.get(name='Comprador')
+            comprador_group = Group.objects.get(name="Comprador")
             django_user.groups.add(comprador_group)
 
             # Crear usuario Eduney vinculado
@@ -100,7 +100,7 @@ class RegistroUsuarioView(APIView):
                 email_usuario=email,
                 telefono_usuario=telefono,
                 direccion_usuario=direccion,
-                is_active=True
+                is_active=True,
             )
             usuario_eduney.set_password(password)
             usuario_eduney.save()
@@ -117,7 +117,9 @@ class RegistroUsuarioView(APIView):
                         "email": usuario_eduney.email_usuario,
                         "nombres_usuario": usuario_eduney.nombres_usuario,
                         "apellidos_usuario": usuario_eduney.apellidos_usuario,
-                        "groups": list(django_user.groups.values_list("name", flat=True)),
+                        "groups": list(
+                            django_user.groups.values_list("name", flat=True)
+                        ),
                         "permissions": permissions_summary,
                         "dashboard_route": permissions_summary["dashboard_route"],
                         "is_superuser": django_user.is_superuser,
@@ -132,12 +134,12 @@ class RegistroUsuarioView(APIView):
         except Group.DoesNotExist:
             return Response(
                 {"error": "Error de configuración: grupo Comprador no existe"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
         except Exception as e:
             return Response(
                 {"error": f"Error interno del servidor: {str(e)}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
 
@@ -272,7 +274,11 @@ class ArticulosViewSet(viewsets.ModelViewSet):
     serializer_class = ArticulosSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ["id_categoria", "id_categoria__nombre_categoria"]
-    search_fields = ["titulo_articulo", "descripcion_articulo", "id_categoria__nombre_categoria"]
+    search_fields = [
+        "titulo_articulo",
+        "descripcion_articulo",
+        "id_categoria__nombre_categoria",
+    ]
 
     def get_permissions(self):
         """
@@ -442,7 +448,9 @@ class TransaccionesViewSet(viewsets.ModelViewSet):
         if self.request.user and self.request.user.is_authenticated:
             try:
                 # Obtener el usuario personalizado basado en el Django user
-                usuario_personalizado = Usuarios.objects.get(id_usuario=self.request.user.id)
+                usuario_personalizado = Usuarios.objects.get(
+                    id_usuario=self.request.user.id
+                )
                 return Transacciones.objects.filter(
                     usuario=usuario_personalizado
                 ).select_related("usuario")
