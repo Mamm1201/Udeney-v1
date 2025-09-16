@@ -48,13 +48,19 @@ import ActualizarDatos from './pages/ActualizarDatos';
 import HistorialTransacciones from './pages/HistorialTransacciones';
 import MisTransacciones from './pages/MisTransacciones';
 import Calificar from './pages/Calificar';
+import Favoritos from './pages/Favoritos';
 
 // Administración
 import Rol from './pages/Rol';
 import PqrsAdmin from './components/admin/PqrsAdmin';
+import UserManagement from './pages/admin/UserManagement';
+import Reports from './pages/admin/Reports';
+import Moderation from './pages/admin/Moderation';
+import SystemConfig from './pages/admin/SystemConfig';
 
 // Componentes de redirección
 import DashboardRedirect from './components/common/DashboardRedirect';
+import GenericDashboard from './components/common/GenericDashboard';
 
 // Página base o futura app interna
 import App from './pages/App';
@@ -65,7 +71,8 @@ const AppRoutes = () => {
       <RoleBasedNavigation />
       <Routes>
         {/* --- Páginas públicas --- */}
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<DashboardRedirect />} />
+        <Route path="/home" element={<Home />} />
         <Route path="/nosotros" element={<Nosotros />} />
         <Route path="/contacto" element={<Contacto />} />
         <Route path="/politica-cookies" element={<PoliticaCookies />} />
@@ -107,10 +114,45 @@ const AppRoutes = () => {
           element={<DetalleTransaccion />}
         />
         <Route path="/calificar/:id" element={<Calificar />} />
+        <Route path="/favoritos" element={<Favoritos />} />
 
         {/* --- Administración --- */}
         <Route path="/rol" element={<Rol />} />
         <Route path="/admin/pqrs" element={<PqrsAdmin />} />
+
+        {/* --- Rutas Administrativas Protegidas --- */}
+        <Route
+          path="/admin/usuarios"
+          element={
+            <AdminRoute>
+              <UserManagement />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/reportes"
+          element={
+            <AdminRoute>
+              <Reports />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/moderacion"
+          element={
+            <AdminRoute>
+              <Moderation />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/configuracion"
+          element={
+            <AdminRoute>
+              <SystemConfig />
+            </AdminRoute>
+          }
+        />
 
         {/* --- Dashboards específicos por rol --- */}
         <Route 
@@ -146,14 +188,14 @@ const AppRoutes = () => {
           } 
         />
         
-        {/* --- Dashboard genérico (redirige según rol) --- */}
-        <Route 
-          path="/dashboard" 
+        {/* --- Dashboard genérico --- */}
+        <Route
+          path="/dashboard"
           element={
             <AuthenticatedRoute>
-              <DashboardRedirect />
+              <GenericDashboard />
             </AuthenticatedRoute>
-          } 
+          }
         />
         
         {/* --- Ruta auxiliar o futura app interna --- */}

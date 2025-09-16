@@ -3,7 +3,7 @@
 # ====================================
 
 # Django
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.utils.dateparse import parse_date
 # Filtros
 from django_filters.rest_framework import DjangoFilterBackend
@@ -51,25 +51,94 @@ class RegistroUsuarioView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        serializer = UsuariosSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save()
-            refresh = RefreshToken.for_user(user)
+        try:
+            # Validar datos
+            serializer = UsuariosSerializer(data=request.data)
+            if not serializer.is_valid():
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            # Extraer datos validados
+            email = serializer.validated_data["email_usuario"]
+            password = serializer.validated_data["password_usuario"]
+            nombres = serializer.validated_data["nombres_usuario"]
+            apellidos = serializer.validated_data["apellidos_usuario"]
+            telefono = serializer.validated_data.get("telefono_usuario", "")
+            direccion = serializer.validated_data.get("direccion_usuario", "")
+
+            # Verificar que el email no exista en Django User
+            if User.objects.filter(email=email).exists():
+                return Response(
+                    {"error": "Ya existe un usuario con este email"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Verificar que el email no exista en Usuarios
+            if Usuarios.objects.filter(email_usuario=email).exists():
+                return Response(
+                    {"error": "Ya existe un usuario con este email"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Crear usuario Django
+            django_user = User.objects.create_user(
+                username=email,  # Usar email como username
+                email=email,
+                password=password,
+                first_name=nombres,
+                last_name=apellidos
+            )
+
+            # Asignar grupo por defecto (Comprador para usuarios normales)
+            comprador_group = Group.objects.get(name='Comprador')
+            django_user.groups.add(comprador_group)
+
+            # Crear usuario Eduney vinculado
+            usuario_eduney = Usuarios.objects.create(
+                id_usuario=django_user.id,
+                nombres_usuario=nombres,
+                apellidos_usuario=apellidos,
+                email_usuario=email,
+                telefono_usuario=telefono,
+                direccion_usuario=direccion,
+                is_active=True
+            )
+            usuario_eduney.set_password(password)
+            usuario_eduney.save()
+
+            # Generar tokens
+            refresh = RefreshToken.for_user(django_user)
+            permissions_summary = get_user_permissions_summary(django_user)
+
             return Response(
                 {
                     "message": "Usuario registrado exitosamente",
                     "user": {
-                        "id_usuario": user.id_usuario,
-                        "email_usuario": user.email_usuario,
-                        "nombres_usuario": user.nombres_usuario,
-                        "apellidos_usuario": user.apellidos_usuario,
+                        "id_usuario": usuario_eduney.id_usuario,
+                        "email": usuario_eduney.email_usuario,
+                        "nombres_usuario": usuario_eduney.nombres_usuario,
+                        "apellidos_usuario": usuario_eduney.apellidos_usuario,
+                        "groups": list(django_user.groups.values_list("name", flat=True)),
+                        "permissions": permissions_summary,
+                        "dashboard_route": permissions_summary["dashboard_route"],
+                        "is_superuser": django_user.is_superuser,
+                        "is_staff": django_user.is_staff,
                     },
                     "access_token": str(refresh.access_token),
                     "refresh_token": str(refresh),
                 },
                 status=status.HTTP_201_CREATED,
             )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        except Group.DoesNotExist:
+            return Response(
+                {"error": "Error de configuración: grupo Comprador no existe"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        except Exception as e:
+            return Response(
+                {"error": f"Error interno del servidor: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class LoginView(APIView):
@@ -120,6 +189,8 @@ class LoginView(APIView):
                     "groups": list(user_django.groups.values_list("name", flat=True)),
                     "permissions": permissions_summary,
                     "dashboard_route": permissions_summary["dashboard_route"],
+                    "is_superuser": user_django.is_superuser,
+                    "is_staff": user_django.is_staff,
                 },
                 "access_token": tokens["access"],
                 "refresh_token": tokens["refresh"],
@@ -200,7 +271,8 @@ class UsuariosViewSet(viewsets.ModelViewSet):
 class ArticulosViewSet(viewsets.ModelViewSet):
     serializer_class = ArticulosSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    filterset_fields = ["id_categoria"]
+    filterset_fields = ["id_categoria", "id_categoria__nombre_categoria"]
+    search_fields = ["titulo_articulo", "descripcion_articulo", "id_categoria__nombre_categoria"]
 
     def get_permissions(self):
         """
@@ -368,9 +440,14 @@ class TransaccionesViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         # Los usuarios solo pueden ver sus propias transacciones
         if self.request.user and self.request.user.is_authenticated:
-            return Transacciones.objects.filter(
-                usuario=self.request.user
-            ).select_related("usuario")
+            try:
+                # Obtener el usuario personalizado basado en el Django user
+                usuario_personalizado = Usuarios.objects.get(id_usuario=self.request.user.id)
+                return Transacciones.objects.filter(
+                    usuario=usuario_personalizado
+                ).select_related("usuario")
+            except Usuarios.DoesNotExist:
+                return Transacciones.objects.none()
         return Transacciones.objects.none()
 
     def get_serializer_class(self):

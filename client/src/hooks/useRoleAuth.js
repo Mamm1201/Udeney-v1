@@ -77,9 +77,18 @@ export const useRoleAuth = () => {
 
   // Obtener el rol principal del usuario (con mayor prioridad)
   const getPrimaryRole = useCallback(() => {
-    if (!user || !user.groups) return null;
+    if (!user) return null;
+
+    // Si es superuser, retornar SUPERUSER inmediatamente
     if (user.is_superuser) return ROLES.SUPERUSER;
-    
+
+    // Si no tiene grupos, retornar null
+    if (!user.groups || user.groups.length === 0) {
+      // Para superusers sin grupos asignados, también es SUPERUSER
+      if (user.is_superuser) return ROLES.SUPERUSER;
+      return null;
+    }
+
     // Orden de prioridad de roles
     const rolePriority = [
       ROLES.ADMIN_NEGOCIO,
@@ -93,15 +102,27 @@ export const useRoleAuth = () => {
         return role;
       }
     }
-    
+
     return null;
   }, [user]);
 
   // Obtener la ruta del dashboard según el rol
   const getDashboardRoute = useCallback(() => {
+    if (!user) return '/login';
+
+    // Si es superuser, siempre ir al admin dashboard
+    if (user.is_superuser) return '/admin-dashboard';
+
     const primaryRole = getPrimaryRole();
-    return DEFAULT_ROUTES[primaryRole] || '/dashboard';
-  }, [getPrimaryRole]);
+
+    // Si tiene un rol específico, usar su ruta
+    if (primaryRole && DEFAULT_ROUTES[primaryRole]) {
+      return DEFAULT_ROUTES[primaryRole];
+    }
+
+    // Fallback: si no tiene rol específico pero está autenticado
+    return '/dashboard';
+  }, [user, getPrimaryRole]);
 
   // Verificar permisos específicos
   const hasPermission = useCallback((permission) => {
