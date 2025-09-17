@@ -203,35 +203,22 @@ const Home = () => {
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'white' }}>
       {/* Animaciones CSS globales */}
-      <style jsx global>{`
-        @keyframes float {
-          0%,
-          100% {
-            transform: translateY(0px);
+      <style>
+        {`
+          @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
           }
-          50% {
-            transform: translateY(-20px);
+          @keyframes pulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
           }
-        }
-        @keyframes pulse {
-          0%,
-          100% {
-            opacity: 0.8;
+          @keyframes glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(76, 175, 80, 0.4); }
+            50% { box-shadow: 0 0 30px rgba(76, 175, 80, 0.8); }
           }
-          50% {
-            opacity: 1;
-          }
-        }
-        @keyframes glow {
-          0%,
-          100% {
-            box-shadow: 0 0 20px rgba(76, 175, 80, 0.4);
-          }
-          50% {
-            box-shadow: 0 0 30px rgba(76, 175, 80, 0.8);
-          }
-        }
-      `}</style>
+        `}
+      </style>
       <Navbar />
 
       {/* Hero Section Completamente Renovado */}
@@ -1196,18 +1183,6 @@ const Home = () => {
 
       <Pie />
 
-      {/* Estilos para animaciones */}
-      <style jsx>{`
-        @keyframes float {
-          0%,
-          100% {
-            transform: translateY(0px);
-          }
-          50% {
-            transform: translateY(-20px);
-          }
-        }
-      `}</style>
     </Box>
   );
 };
