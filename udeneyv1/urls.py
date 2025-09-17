@@ -20,7 +20,8 @@ from .views import (ArticuloDetailAPIView, ArticulosViewSet, CacheStatsView,
                     RegistroUsuarioView, ResumenCompraAPIView, RolesViewSet,
                     TransaccionesViewSet, UsuarioRolViewSet, UsuariosViewSet,
                     WarmupCacheView, crear_con_detalles, historial_transacciones_api,
-                    admin_dashboard_metrics)
+                    admin_dashboard_metrics, admin_users_complete, admin_groups_list,
+                    admin_update_user_groups)
 
 # ====================================
 # ROUTER DRF (Rutas automáticas para ViewSets)
@@ -144,6 +145,22 @@ urlpatterns = [
         "admin/dashboard/metrics/",
         admin_dashboard_metrics,
         name="admin-dashboard-metrics",
+    ),
+    # Admin user management
+    path(
+        "admin/users/complete/",
+        admin_users_complete,
+        name="admin-users-complete",
+    ),
+    path(
+        "admin/groups/",
+        admin_groups_list,
+        name="admin-groups-list",
+    ),
+    path(
+        "admin/users/<int:user_id>/groups/",
+        admin_update_user_groups,
+        name="admin-update-user-groups",
     ),
     # System configuration (solo superusers)
     path(

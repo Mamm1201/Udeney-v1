@@ -889,3 +889,119 @@ def admin_dashboard_metrics(request):
             {"error": f"Error al obtener métricas: {str(e)}"},
             status=500
         )
+
+
+# ====================================
+# GESTIÓN COMPLETA DE USUARIOS PARA ADMIN
+# ====================================
+
+@api_view(['GET'])
+def admin_users_complete(request):
+    """
+    Endpoint para obtener lista completa de usuarios con información de roles y grupos
+    """
+    try:
+        from django.contrib.auth.models import User, Group
+
+        users_data = []
+
+        for user in User.objects.all().order_by('-date_joined'):
+            # Obtener usuario del modelo custom si existe
+            custom_user = None
+            try:
+                custom_user = Usuarios.objects.get(email_usuario=user.email)
+            except Usuarios.DoesNotExist:
+                pass
+
+            # Obtener grupos y roles
+            groups = list(user.groups.values_list('name', flat=True))
+
+            user_info = {
+                "id": user.id,
+                "id_usuario": custom_user.id_usuario if custom_user else None,
+                "username": user.username,
+                "email": user.email,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "nombres_usuario": custom_user.nombres_usuario if custom_user else user.first_name,
+                "apellidos_usuario": custom_user.apellidos_usuario if custom_user else user.last_name,
+                "telefono_usuario": custom_user.telefono_usuario if custom_user else "",
+                "direccion_usuario": custom_user.direccion_usuario if custom_user else "",
+                "fecha_registro": custom_user.fecha_registro if custom_user else user.date_joined.date(),
+                "is_active": user.is_active,
+                "is_superuser": user.is_superuser,
+                "is_staff": user.is_staff,
+                "groups": groups,
+                "last_login": user.last_login,
+                "date_joined": user.date_joined
+            }
+
+            users_data.append(user_info)
+
+        return Response({
+            "users": users_data,
+            "total": len(users_data)
+        }, status=200)
+
+    except Exception as e:
+        return Response(
+            {"error": f"Error al obtener usuarios: {str(e)}"},
+            status=500
+        )
+
+
+@api_view(['GET'])
+def admin_groups_list(request):
+    """
+    Endpoint para obtener lista de grupos disponibles
+    """
+    try:
+        from django.contrib.auth.models import Group
+
+        groups = Group.objects.all().values('id', 'name')
+
+        return Response({
+            "groups": list(groups)
+        }, status=200)
+
+    except Exception as e:
+        return Response(
+            {"error": f"Error al obtener grupos: {str(e)}"},
+            status=500
+        )
+
+
+@api_view(['POST'])
+def admin_update_user_groups(request, user_id):
+    """
+    Endpoint para actualizar los grupos de un usuario
+    """
+    try:
+        from django.contrib.auth.models import User, Group
+
+        user = User.objects.get(id=user_id)
+        group_names = request.data.get('groups', [])
+
+        # Limpiar grupos actuales
+        user.groups.clear()
+
+        # Agregar nuevos grupos
+        for group_name in group_names:
+            try:
+                group = Group.objects.get(name=group_name)
+                user.groups.add(group)
+            except Group.DoesNotExist:
+                continue
+
+        return Response({
+            "message": "Grupos actualizados correctamente",
+            "groups": list(user.groups.values_list('name', flat=True))
+        }, status=200)
+
+    except User.DoesNotExist:
+        return Response({"error": "Usuario no encontrado"}, status=404)
+    except Exception as e:
+        return Response(
+            {"error": f"Error al actualizar grupos: {str(e)}"},
+            status=500
+        )
