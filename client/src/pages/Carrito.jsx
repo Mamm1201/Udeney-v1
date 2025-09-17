@@ -26,6 +26,7 @@ import { DeleteOutline, ShoppingCartCheckout } from '@mui/icons-material';
 import { useCarrito } from '../context/CarritoContext';
 import api from '../api/axiosConfig';
 import { useNavigate } from 'react-router-dom';
+import Logo from '../components/Logo';
 
 const Carrito = () => {
   const { carrito, agregarAlCarrito, eliminarDelCarrito, vaciarCarrito } =
@@ -106,17 +107,7 @@ const Carrito = () => {
             edge="start"
             sx={{ p: 0, mr: 2 }}
           >
-            <Box
-              component="img"
-              src="/logo.png" // Usar ruta pública
-              alt="Logo"
-              sx={{
-                height: 100,
-                width: 100,
-                borderRadius: '20%',
-                objectFit: 'cover',
-              }}
-            />
+            <Logo />
           </IconButton>
           <Typography variant="h6" sx={{ ml: 1 }}>
             Carrito de Compras

@@ -13,7 +13,7 @@ const Logo = () => {
       <img
         src={logo}
         alt="Eduney Logo"
-        style={{ height: '50px', marginLeft: '10px' }}
+        style={{ height: '80px', marginLeft: '10px' }}
       />
     </Box>
   );
