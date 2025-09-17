@@ -8,8 +8,8 @@ function AppContent() {
 
   return (
     <>
-      <RoleBasedNavigation />
-      <AppRoutes key={location.pathname} />
+      <Navbar />
+      <AppRoutes />
     </>
   );
 }

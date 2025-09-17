@@ -17,7 +17,7 @@ const LogoutButton = ({
     localStorage.clear();
     setOpenSnackbar(true);
     setTimeout(() => {
-      navigate('/login');
+      navigate('/home');
     }, 2000);
   };
 

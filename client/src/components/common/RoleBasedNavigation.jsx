@@ -3,7 +3,7 @@
  * Muestra elementos de menú según los permisos y roles del usuario
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   AppBar,
   Toolbar,
@@ -344,7 +344,7 @@ const RoleBasedNavigation = () => {
               fontWeight: 'bold',
               cursor: 'pointer',
             }}
-            onClick={() => navigate('/home')}
+            onClick={() => handleNavigation('/')}
           >
             Eduney
           </Typography>
