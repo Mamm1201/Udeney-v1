@@ -64,12 +64,12 @@ const Navbar = () => {
   );
 
   return (
-    <AppBar position="static" sx={{ backgroundColor: '#45858C' }}>
+    <AppBar position="static" sx={{ backgroundColor: 'white' }}>
       <Toolbar
         sx={{
           display: 'flex',
           justifyContent: 'space-between',
-          color: 'white',
+          color: '#45858C',
         }}
       >
         <Logo />
@@ -144,18 +144,18 @@ const Navbar = () => {
           </>
         ) : (
           <Box display="flex" alignItems="center" gap={2}>
-            <Button onClick={() => navigate('/')} sx={{ color: 'white' }}>
+            {/* <Button onClick={() => navigate('/')} sx={{ color: 'white' }}>
               Inicio
-            </Button>
+            </Button> */}
             <Button
               onClick={() => navigate('/nosotros')}
-              sx={{ color: 'white' }}
+              sx={{ color: '#45858C' }}
             >
               Nosotros
             </Button>
             <Button
               onClick={() => navigate('/contacto')}
-              sx={{ color: 'white' }}
+              sx={{ color: '#45858C' }}
             >
               Contacto
             </Button>
@@ -163,7 +163,7 @@ const Navbar = () => {
             <Button
               onClick={handleOpenRoles}
               endIcon={<ArrowDropDownIcon />}
-              sx={{ color: 'white' }}
+              sx={{ color: '#45858C' }}
             >
               ¿Qué deseas hacer hoy?
             </Button>

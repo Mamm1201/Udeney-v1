@@ -32,7 +32,7 @@ import {
   DialogActions,
 } from '@mui/material';
 
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import {
   ShoppingCart,
   Search,
@@ -51,6 +51,7 @@ const Articulos = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
+  const location = useLocation();
 
   const [articulos, setArticulos] = useState([]);
   const [articulosOriginales, setArticulosOriginales] = useState([]);
@@ -91,6 +92,23 @@ const Articulos = () => {
     cargarDatos();
   }, []);
 
+  // Procesar parámetros URL para filtrado inicial
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const categoriaNombre = searchParams.get('id_categoria__nombre_categoria');
+
+    if (categoriaNombre && categorias.length > 0) {
+      // Buscar la categoría por nombre y obtener su ID
+      const categoriaEncontrada = categorias.find(
+        cat => cat.nombre_categoria === categoriaNombre
+      );
+
+      if (categoriaEncontrada) {
+        setCategoriaSeleccionada(categoriaEncontrada.id_categoria.toString());
+      }
+    }
+  }, [location.search, categorias]);
+
   // Filtrar artículos por categoría y búsqueda
   useEffect(() => {
     let articulosFiltrados = [...articulosOriginales];
@@ -98,7 +116,11 @@ const Articulos = () => {
     // Filtrar por categoría
     if (categoriaSeleccionada) {
       articulosFiltrados = articulosFiltrados.filter(
-        articulo => articulo.id_categoria?.id_categoria === parseInt(categoriaSeleccionada)
+        articulo => {
+          // Intentar ambas estructuras posibles
+          const categoriaId = articulo.id_categoria?.id_categoria || articulo.id_categoria;
+          return categoriaId === parseInt(categoriaSeleccionada);
+        }
       );
     }
 
