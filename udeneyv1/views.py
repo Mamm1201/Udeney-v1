@@ -905,6 +905,9 @@ class AdminUsersCompleteView(APIView):
         try:
             from django.contrib.auth.models import User, Group
 
+            # Log para debugging
+            print(f"AdminUsersCompleteView: User={request.user}, Authenticated={request.user.is_authenticated}")
+
             users_data = []
 
             for user in User.objects.all().order_by('-date_joined'):

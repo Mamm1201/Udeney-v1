@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 
 from .models import (ArticuloDetalleTransaccion, Articulos, Calificaciones, Categorias,
-                     DetalleTransaccion, Pagos, Pqrs, Roles, Transacciones, UsuarioRol,
+                     DetalleTransaccion, Pagos, Pqrs, Reportes, Roles, Transacciones, UsuarioRol,
                      Usuarios)
 
 
@@ -221,6 +221,42 @@ class PqrsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pqrs
         fields = "__all__"
+
+
+class ReportesSerializer(serializers.ModelSerializer):
+    reportado_por_nombre = serializers.SerializerMethodField()
+    resuelto_por_nombre = serializers.SerializerMethodField()
+    contenido_info = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Reportes
+        fields = "__all__"
+
+    def get_reportado_por_nombre(self, obj):
+        if obj.reportado_por:
+            return f"{obj.reportado_por.nombres_usuario} {obj.reportado_por.apellidos_usuario}"
+        return "Usuario desconocido"
+
+    def get_resuelto_por_nombre(self, obj):
+        if obj.resuelto_por:
+            return f"{obj.resuelto_por.nombres_usuario} {obj.resuelto_por.apellidos_usuario}"
+        return None
+
+    def get_contenido_info(self, obj):
+        contenido = obj.get_contenido_reportado()
+        if contenido:
+            if obj.tipo_contenido == "articulo":
+                return {
+                    "titulo": contenido.titulo_articulo,
+                    "descripcion": contenido.descripcion_articulo[:100] + "...",
+                    "precio": contenido.precio_articulo
+                }
+            elif obj.tipo_contenido == "usuario":
+                return {
+                    "nombre": f"{contenido.nombres_usuario} {contenido.apellidos_usuario}",
+                    "email": contenido.email_usuario
+                }
+        return None
 
 
 # ====================================

@@ -235,13 +235,74 @@ class Pqrs(models.Model):
     )
     descripcion_pqr = models.TextField()
     fecha_pqr = models.DateTimeField(auto_now_add=True)
-    id_usuario = models.ForeignKey(
-        Usuarios, on_delete=models.CASCADE, db_column="id_usuario"
-    )
+    # Removido id_usuario - la relación va através de transacciones
     id_transaccion = models.ForeignKey(
         Transacciones, on_delete=models.CASCADE, db_column="id_transaccion"
     )
 
+    # Método para obtener el usuario a través de la transacción
+    @property
+    def usuario(self):
+        return self.id_transaccion.usuario if self.id_transaccion else None
+
     class Meta:
         db_table = "pqrs"
+        managed = True
+
+
+# ====================================
+# MODELO REPORTES (Sistema de moderación)
+# ====================================
+class Reportes(models.Model):
+    id_reporte = models.AutoField(primary_key=True)
+    tipo_contenido = models.CharField(
+        max_length=20,
+        choices=[
+            ("articulo", "Artículo"),
+            ("usuario", "Usuario"),
+            ("comentario", "Comentario"),
+        ],
+    )
+    id_contenido = models.IntegerField()  # ID del contenido reportado
+    titulo_reporte = models.CharField(max_length=200)
+    razon_reporte = models.TextField()
+    descripcion_adicional = models.TextField(blank=True, null=True)
+    reportado_por = models.ForeignKey(
+        Usuarios, on_delete=models.CASCADE, db_column="reportado_por",
+        related_name="reportes_enviados"
+    )
+    estado_reporte = models.CharField(
+        max_length=20,
+        choices=[
+            ("pendiente", "Pendiente"),
+            ("revisando", "Revisando"),
+            ("resuelto", "Resuelto"),
+            ("rechazado", "Rechazado"),
+        ],
+        default="pendiente"
+    )
+    fecha_reporte = models.DateTimeField(auto_now_add=True)
+    fecha_resolucion = models.DateTimeField(null=True, blank=True)
+    resuelto_por = models.ForeignKey(
+        Usuarios, on_delete=models.SET_NULL, null=True, blank=True,
+        db_column="resuelto_por", related_name="reportes_resueltos"
+    )
+    notas_moderador = models.TextField(blank=True, null=True)
+
+    # Método para obtener el objeto reportado
+    def get_contenido_reportado(self):
+        if self.tipo_contenido == "articulo":
+            try:
+                return Articulos.objects.get(id_articulo=self.id_contenido)
+            except Articulos.DoesNotExist:
+                return None
+        elif self.tipo_contenido == "usuario":
+            try:
+                return Usuarios.objects.get(id_usuario=self.id_contenido)
+            except Usuarios.DoesNotExist:
+                return None
+        return None
+
+    class Meta:
+        db_table = "reportes"
         managed = True

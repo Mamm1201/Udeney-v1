@@ -47,7 +47,7 @@ import {
   Person,
   Report
 } from '@mui/icons-material';
-import axios from 'axios';
+import api from '../../api/axiosConfig';
 
 const Moderation = () => {
   const [loading, setLoading] = useState(false);
@@ -66,53 +66,28 @@ const Moderation = () => {
   const fetchModerationData = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('access_token');
-      const config = { headers: { Authorization: `Bearer ${token}` } };
 
-      // Cargar artículos, PQRs y datos relacionados
-      const [articlesRes, pqrsRes, usersRes] = await Promise.all([
-        axios.get('http://localhost:8000/api/v1/articulos/', config),
-        axios.get('http://localhost:8000/api/v1/pqrs/', config),
-        axios.get('http://localhost:8000/api/v1/usuarios/', config)
+      // Cargar datos reales de moderación desde backend
+      const [moderationRes, reportsRes, usersRes] = await Promise.all([
+        api.get('/admin/moderation/pending_reviews/'),
+        api.get('/admin/moderation/reported_content/'),
+        api.get('/admin/complete-users/')
       ]);
 
-      // Simular artículos pendientes de moderación
-      const pendingArticles = articlesRes.data.slice(0, 5).map(article => ({
-        ...article,
-        reportReason: 'Contenido inapropiado',
-        reportedBy: 'Usuario anónimo',
-        status: 'pending'
-      }));
+      // Datos reales desde el backend
+      const pendingArticles = moderationRes.data.pending_articles || [];
+      const pqrsData = moderationRes.data.pending_pqrs || [];
 
-      // Simular contenido reportado
-      const reportedContent = [
-        {
-          id: 1,
-          type: 'article',
-          title: 'Producto sospechoso',
-          reporter: 'user@example.com',
-          reason: 'Precio sospechosamente bajo',
-          date: new Date().toISOString(),
-          status: 'pending'
-        },
-        {
-          id: 2,
-          type: 'user',
-          title: 'Comportamiento abusivo',
-          reporter: 'user2@example.com',
-          reason: 'Mensajes ofensivos',
-          date: new Date(Date.now() - 86400000).toISOString(),
-          status: 'reviewing'
-        }
-      ];
+      // Usuarios suspendidos (inactivos)
+      const suspendedUsers = usersRes.data.users.filter(user => !user.is_active);
 
-      // Usuarios suspendidos
-      const suspendedUsers = usersRes.data.filter(user => !user.is_active);
+      // Contenido reportado REAL desde el backend
+      const reportedContent = reportsRes.data.reported_content || [];
 
       setModerationData({
         pendingArticles,
         reportedContent,
-        pqrs: pqrsRes.data,
+        pqrs: pqrsData,
         suspendedUsers
       });
 
@@ -132,14 +107,12 @@ const Moderation = () => {
   // Aprobar contenido
   const handleApprove = async (item, type) => {
     try {
-      const token = localStorage.getItem('access_token');
-
       if (type === 'article') {
-        await axios.patch(
-          `http://localhost:8000/api/v1/articulos/${item.id_articulo}/`,
-          { disponible: true },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        // Usar endpoint real de moderación
+        await api.post(`/admin/moderation/${item.id_articulo}/moderate_article/`, {
+          action: 'approve',
+          reason: 'Contenido aprobado por moderador'
+        });
       }
 
       await fetchModerationData();
@@ -150,22 +123,66 @@ const Moderation = () => {
     }
   };
 
-  // Rechazar/Eliminar contenido
+  // Rechazar/Suspender contenido
   const handleReject = async (item, type) => {
     try {
-      const token = localStorage.getItem('access_token');
-
       if (type === 'article') {
-        await axios.delete(
-          `http://localhost:8000/api/v1/articulos/${item.id_articulo}/`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        // Usar endpoint real de moderación para suspender
+        await api.post(`/admin/moderation/${item.id_articulo}/moderate_article/`, {
+          action: 'suspend',
+          reason: 'Contenido rechazado por moderador'
+        });
       }
 
       await fetchModerationData();
       setError(null);
     } catch (err) {
       setError('Error al rechazar contenido');
+      console.error('Error:', err);
+    }
+  };
+
+  // Reactivar usuario suspendido
+  const handleReactivateUser = async (user) => {
+    try {
+      if (user.id_usuario) {
+        await api.patch(`/usuarios/${user.id_usuario}/`, {
+          is_active: true
+        });
+      }
+      await fetchModerationData();
+      setError(null);
+    } catch (err) {
+      setError('Error al reactivar usuario');
+      console.error('Error:', err);
+    }
+  };
+
+  // Responder PQR
+  const handleRespondPQR = async (pqr) => {
+    try {
+      await api.patch(`/pqrs/${pqr.id_pqrs}/`, {
+        estado_pqrs: 'cerrado'
+      });
+      await fetchModerationData();
+      setError(null);
+    } catch (err) {
+      setError('Error al responder PQR');
+      console.error('Error:', err);
+    }
+  };
+
+  // Procesar reportes reales
+  const handleProcessReport = async (report, action) => {
+    try {
+      await api.post(`/admin/moderation/${report.id}/process_report/`, {
+        action: action, // 'approve', 'reject', 'reviewing'
+        notes: `Procesado por moderador - ${action}`
+      });
+      await fetchModerationData();
+      setError(null);
+    } catch (err) {
+      setError('Error al procesar reporte');
       console.error('Error:', err);
     }
   };
@@ -352,13 +369,28 @@ const Moderation = () => {
                     }
                   />
                   <Box display="flex" gap={1}>
-                    <Button size="small" variant="outlined" color="primary">
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      color="primary"
+                      onClick={() => handleProcessReport(report, 'reviewing')}
+                    >
                       Revisar
                     </Button>
-                    <Button size="small" variant="outlined" color="success">
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      color="success"
+                      onClick={() => handleProcessReport(report, 'approve')}
+                    >
                       Aprobar
                     </Button>
-                    <Button size="small" variant="outlined" color="error">
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      color="error"
+                      onClick={() => handleProcessReport(report, 'reject')}
+                    >
                       Rechazar
                     </Button>
                   </Box>
@@ -390,8 +422,32 @@ const Moderation = () => {
                       <TableCell>
                         <Chip label={pqr.tipo_pqrs} size="small" />
                       </TableCell>
-                      <TableCell>{pqr.asunto_pqrs}</TableCell>
-                      <TableCell>{pqr.id_usuario}</TableCell>
+                      <TableCell>
+                        <Typography variant="body2" fontWeight="medium">
+                          {pqr.asunto_pqrs}
+                        </Typography>
+                        {pqr.descripcion_pqrs && (
+                          <Typography variant="caption" color="text.secondary" noWrap>
+                            {pqr.descripcion_pqrs.substring(0, 50)}...
+                          </Typography>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {pqr.id_usuario?.nombres_usuario ? (
+                          <Box>
+                            <Typography variant="body2">
+                              {pqr.id_usuario.nombres_usuario} {pqr.id_usuario.apellidos_usuario}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {pqr.id_usuario.email_usuario}
+                            </Typography>
+                          </Box>
+                        ) : (
+                          <Typography variant="body2" color="text.secondary">
+                            Usuario #{pqr.id_usuario}
+                          </Typography>
+                        )}
+                      </TableCell>
                       <TableCell>
                         <Chip
                           label={pqr.estado_pqrs}
@@ -400,9 +456,24 @@ const Moderation = () => {
                         />
                       </TableCell>
                       <TableCell>
-                        <Button size="small" variant="outlined">
-                          Responder
-                        </Button>
+                        <Box display="flex" gap={1}>
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            color="primary"
+                            onClick={() => handleViewDetails(pqr)}
+                          >
+                            Ver
+                          </Button>
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            onClick={() => handleRespondPQR(pqr)}
+                            disabled={pqr.estado_pqrs === 'cerrado'}
+                          >
+                            {pqr.estado_pqrs === 'cerrado' ? 'Cerrado' : 'Cerrar'}
+                          </Button>
+                        </Box>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -440,7 +511,12 @@ const Moderation = () => {
                         <Chip label="Suspendido" color="error" size="small" />
                       </TableCell>
                       <TableCell>
-                        <Button size="small" variant="outlined" color="success">
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          color="success"
+                          onClick={() => handleReactivateUser(user)}
+                        >
                           Reactivar
                         </Button>
                       </TableCell>
@@ -459,18 +535,68 @@ const Moderation = () => {
         <DialogContent>
           {selectedItem && (
             <Box>
-              <Typography variant="h6" gutterBottom>
-                {selectedItem.nombre_articulo || selectedItem.title}
-              </Typography>
-              <Typography variant="body2" paragraph>
-                {selectedItem.descripcion_articulo || selectedItem.description}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                <strong>Precio:</strong> ${selectedItem.precio_articulo?.toLocaleString()}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                <strong>Categoría:</strong> {selectedItem.id_categoria?.nombre_categoria}
-              </Typography>
+              {/* Si es un artículo */}
+              {selectedItem.nombre_articulo && (
+                <>
+                  <Typography variant="h6" gutterBottom>
+                    {selectedItem.nombre_articulo}
+                  </Typography>
+                  <Typography variant="body2" paragraph>
+                    {selectedItem.descripcion_articulo}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    <strong>Precio:</strong> ${selectedItem.precio_articulo?.toLocaleString()}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    <strong>Categoría:</strong> {selectedItem.id_categoria?.nombre_categoria}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    <strong>Vendedor:</strong> {selectedItem.id_usuario?.nombres_usuario} {selectedItem.id_usuario?.apellidos_usuario}
+                  </Typography>
+                </>
+              )}
+
+              {/* Si es una PQR */}
+              {selectedItem.asunto_pqrs && (
+                <>
+                  <Typography variant="h6" gutterBottom>
+                    {selectedItem.tipo_pqrs}: {selectedItem.asunto_pqrs}
+                  </Typography>
+                  <Typography variant="body2" paragraph>
+                    {selectedItem.descripcion_pqrs}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    <strong>Usuario:</strong> {selectedItem.id_usuario?.nombres_usuario} {selectedItem.id_usuario?.apellidos_usuario}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    <strong>Email:</strong> {selectedItem.id_usuario?.email_usuario}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    <strong>Estado:</strong> {selectedItem.estado_pqrs}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    <strong>Fecha:</strong> {new Date(selectedItem.fecha_creacion).toLocaleString('es-ES')}
+                  </Typography>
+                </>
+              )}
+
+              {/* Si es contenido reportado */}
+              {selectedItem.title && !selectedItem.nombre_articulo && !selectedItem.asunto_pqrs && (
+                <>
+                  <Typography variant="h6" gutterBottom>
+                    {selectedItem.title}
+                  </Typography>
+                  <Typography variant="body2" paragraph>
+                    <strong>Reportado por:</strong> {selectedItem.reporter}
+                  </Typography>
+                  <Typography variant="body2" paragraph>
+                    <strong>Razón:</strong> {selectedItem.reason}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    <strong>Fecha:</strong> {new Date(selectedItem.date).toLocaleString('es-ES')}
+                  </Typography>
+                </>
+              )}
             </Box>
           )}
         </DialogContent>

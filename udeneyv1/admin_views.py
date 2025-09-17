@@ -16,11 +16,11 @@ from rest_framework.views import APIView
 from .logging_utils import AuditLogger
 # Importaciones locales
 from .models import (Articulos, Calificaciones, DetalleTransaccion, Pagos, Pqrs,
-                     Transacciones, Usuarios)
+                     Reportes, Transacciones, Usuarios)
 from .permissions_new import (AdminPermissions, IsAdminNegocio, IsMonitor,
                               MonitorPermissions, user_has_group)
 from .serializers import (ArticulosSerializer, CalificacionesSerializer, PqrsSerializer,
-                          TransaccionesSerializer, UsuariosSerializer)
+                          ReportesSerializer, TransaccionesSerializer, UsuariosSerializer)
 
 # ====================================
 # GESTIÓN DE USUARIOS (Admin_Negocio)
@@ -271,21 +271,49 @@ class ContentModerationViewSet(viewsets.ViewSet):
     @action(detail=False, methods=["get"])
     def pending_reviews(self, request):
         """Artículos y contenido pendiente de revisión"""
-        # Para futura implementación: artículos reportados, etc.
-        pending_articles = Articulos.objects.filter(
-            # Aquí se pueden agregar campos como 'needs_review' en el futuro
-        )[:20]
+        try:
+            # Artículos disponibles para revisión (últimos 20)
+            pending_articles = Articulos.objects.all().order_by('-id_articulo')[:20]
 
-        # PQRs pendientes
-        pending_pqrs = Pqrs.objects.all()[:20]
+            # PQRs pendientes - usar select_related para obtener datos de transacción y usuario
+            pending_pqrs = Pqrs.objects.select_related('id_transaccion', 'id_transaccion__usuario').order_by('-fecha_pqr')[:20]
 
-        review_data = {
-            "pending_articles": ArticulosSerializer(pending_articles, many=True).data,
-            "pending_pqrs": PqrsSerializer(pending_pqrs, many=True).data,
-            "total_pending": pending_articles.count() + pending_pqrs.count(),
-        }
+            # Serializar artículos
+            articles_data = ArticulosSerializer(pending_articles, many=True).data
 
-        return Response(review_data)
+            # Adaptar PQRs para el frontend usando el modelo corregido
+            pqrs_data = []
+            for pqr in pending_pqrs:
+                # Usar la property usuario del modelo corregido
+                usuario = pqr.usuario
+
+                pqrs_data.append({
+                    'id_pqrs': pqr.id_pqr,
+                    'tipo_pqrs': pqr.tipo_pqr,
+                    'asunto_pqrs': f"{pqr.tipo_pqr.title()} - {pqr.descripcion_pqr[:50]}...",
+                    'descripcion_pqrs': pqr.descripcion_pqr,
+                    'estado_pqrs': 'abierto',  # Simular estado por ahora
+                    'fecha_creacion': pqr.fecha_pqr,
+                    'id_usuario': {
+                        'nombres_usuario': usuario.nombres_usuario if usuario else 'Usuario desconocido',
+                        'apellidos_usuario': usuario.apellidos_usuario if usuario else '',
+                        'email_usuario': usuario.email_usuario if usuario else 'No disponible'
+                    } if usuario else None
+                })
+
+            review_data = {
+                "pending_articles": articles_data,
+                "pending_pqrs": pqrs_data,
+                "total_pending": pending_articles.count() + pending_pqrs.count(),
+            }
+
+            return Response(review_data)
+        except Exception as e:
+            print(f"Error en pending_reviews: {e}")
+            return Response(
+                {"error": "Error al cargar datos de moderación", "detail": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
     @action(detail=True, methods=["post"])
     def moderate_article(self, request, pk=None):
@@ -320,6 +348,90 @@ class ContentModerationViewSet(viewsets.ViewSet):
             article.save()
 
             return Response({"message": "Artículo aprobado exitosamente"})
+
+        return Response(
+            {"error": "Acción no válida"}, status=status.HTTP_400_BAD_REQUEST
+        )
+
+    @action(detail=False, methods=["get"])
+    def reported_content(self, request):
+        """Obtener contenido reportado"""
+        try:
+            # Obtener reportes pendientes y en revisión
+            reportes = Reportes.objects.filter(
+                estado_reporte__in=['pendiente', 'revisando']
+            ).select_related(
+                'reportado_por', 'resuelto_por'
+            ).order_by('-fecha_reporte')[:20]
+
+            # Serializar reportes
+            reportes_data = ReportesSerializer(reportes, many=True).data
+
+            # Adaptar formato para el frontend existente
+            reported_content = []
+            for reporte in reportes_data:
+                contenido_info = reporte.get('contenido_info', {})
+                reported_content.append({
+                    'id': reporte['id_reporte'],
+                    'type': reporte['tipo_contenido'],
+                    'title': reporte['titulo_reporte'],
+                    'reporter': reporte['reportado_por_nombre'],
+                    'reason': reporte['razon_reporte'],
+                    'date': reporte['fecha_reporte'],
+                    'status': reporte['estado_reporte'],
+                    'content_info': contenido_info,
+                    'description': reporte.get('descripcion_adicional', ''),
+                    'moderator_notes': reporte.get('notas_moderador', '')
+                })
+
+            return Response({
+                "reported_content": reported_content,
+                "total_reports": len(reported_content)
+            })
+
+        except Exception as e:
+            print(f"Error en reported_content: {e}")
+            return Response(
+                {"error": "Error al cargar reportes", "detail": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    @action(detail=True, methods=["post"])
+    def process_report(self, request, pk=None):
+        """Procesar un reporte específico"""
+        try:
+            reporte = Reportes.objects.get(id_reporte=pk)
+        except Reportes.DoesNotExist:
+            return Response(
+                {"error": "Reporte no encontrado"}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        action_type = request.data.get("action")  # 'approve', 'reject', 'reviewing'
+        notes = request.data.get("notes", "")
+
+        if action_type == "approve":
+            reporte.estado_reporte = "resuelto"
+            reporte.fecha_resolucion = timezone.now()
+            reporte.notas_moderador = notes
+            # Aquí podrías agregar lógica para el usuario resuelto_por si es necesario
+            reporte.save()
+
+            return Response({"message": "Reporte aprobado y resuelto"})
+
+        elif action_type == "reject":
+            reporte.estado_reporte = "rechazado"
+            reporte.fecha_resolucion = timezone.now()
+            reporte.notas_moderador = notes
+            reporte.save()
+
+            return Response({"message": "Reporte rechazado"})
+
+        elif action_type == "reviewing":
+            reporte.estado_reporte = "revisando"
+            reporte.notas_moderador = notes
+            reporte.save()
+
+            return Response({"message": "Reporte marcado como en revisión"})
 
         return Response(
             {"error": "Acción no válida"}, status=status.HTTP_400_BAD_REQUEST
