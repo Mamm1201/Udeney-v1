@@ -336,8 +336,8 @@ const Home = () => {
                       mx: { xs: 'auto', md: 0 },
                     }}
                   >
-                    🌱 Conectamos familias que intercambian uniformes, libros y
-                    útiles escolares.
+                    🌱 Conectamos familias que intercambian uniformes, libros,
+                    herramientas y útiles escolares.
                     <Box
                       component="span"
                       sx={{ fontWeight: 'bold', color: '#E8F5E8' }}
@@ -1142,7 +1142,10 @@ const Home = () => {
               variant="contained"
               size="large"
               startIcon={<ShoppingCart />}
-              onClick={() => navigate('/registro')}
+              onClick={() => {
+                const isLoggedIn = !!localStorage.getItem('access_token');
+                navigate(isLoggedIn ? '/comprador-dashboard' : '/articulos');
+              }}
               sx={{
                 bgcolor: '#FF6B35',
                 px: 6,
@@ -1159,7 +1162,10 @@ const Home = () => {
               variant="outlined"
               size="large"
               startIcon={<Sell />}
-              onClick={() => navigate('/registro')}
+              onClick={() => {
+                const isLoggedIn = !!localStorage.getItem('access_token');
+                navigate(isLoggedIn ? '/crear-articulo' : '/registro');
+              }}
               sx={{
                 borderColor: 'white',
                 color: 'white',
@@ -1182,7 +1188,6 @@ const Home = () => {
       </Box>
 
       <Pie />
-
     </Box>
   );
 };
