@@ -52,7 +52,7 @@ const Navbar = () => {
     if (rol === 'vendedor') {
       navigate('/vendedor-dashboard');
     } else if (rol === 'comprador') {
-      navigate('/comprador-dashboard');
+      navigate('/articulos');
     }
     handleCloseRoles();
   };

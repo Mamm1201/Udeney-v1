@@ -26,7 +26,7 @@ import { DeleteOutline, ShoppingCartCheckout } from '@mui/icons-material';
 import { useCarrito } from '../context/CarritoContext';
 import api from '../api/axiosConfig';
 import { useNavigate } from 'react-router-dom';
-import Logo from '../components/Logo';
+import Navbar from '../components/Navbar';
 
 const Carrito = () => {
   const { carrito, agregarAlCarrito, eliminarDelCarrito, vaciarCarrito } =
@@ -61,7 +61,27 @@ const Carrito = () => {
   const handleCerrarConfirmacion = () => setOpenConfirmDialog(false);
 
   const realizarCompra = async () => {
+    // ✅ REDIRECT INTELIGENTE: Verificar si el usuario está logueado
+    const isLoggedIn = !!localStorage.getItem('access_token');
     const id_usuario = parseInt(localStorage.getItem('id_usuario'));
+
+    if (!isLoggedIn || !id_usuario) {
+      // Usuario no está logueado → redirigir a registro con mensaje
+      setSnackbar({
+        open: true,
+        message: '🔐 Debes iniciar sesión para completar tu compra',
+        type: 'info',
+      });
+      setOpenConfirmDialog(false);
+
+      // Redirigir a registro después de un momento
+      setTimeout(() => {
+        navigate('/registro');
+      }, 2000);
+      return;
+    }
+
+    // Usuario logueado → proceder con la compra normal
     try {
       const articulos = carrito.map(item => ({
         id_articulo: item.id_articulo,
@@ -100,22 +120,20 @@ const Carrito = () => {
 
   return (
     <Box>
-      <AppBar position="static" sx={{ mb: 4, backgroundColor: '#45858C' }}>
-        <Toolbar>
-          <IconButton
-            onClick={() => navigate('/')}
-            edge="start"
-            sx={{ p: 0, mr: 2 }}
-          >
-            <Logo />
-          </IconButton>
-          <Typography variant="h6" sx={{ ml: 1 }}>
-            Carrito de Compras
-          </Typography>
-        </Toolbar>
-      </AppBar>
+      <Navbar />
 
-      <Box sx={{ paddingX: { xs: 2, md: 4 }, paddingBottom: 4 }}>
+      <Box sx={{ paddingX: { xs: 2, md: 4 }, paddingY: 4 }}>
+        <Typography
+          variant="h4"
+          sx={{
+            mb: 4,
+            color: '#45858C',
+            fontWeight: 'bold',
+            textAlign: 'center',
+          }}
+        >
+          🛒 Carrito de Compras
+        </Typography>
         {carrito.length === 0 ? (
           <Typography>No hay artículos en el carrito.</Typography>
         ) : (

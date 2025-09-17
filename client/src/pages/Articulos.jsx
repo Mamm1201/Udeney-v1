@@ -46,6 +46,7 @@ import {
 
 import { getAllArticulos, getCategorias } from '../api/articulos.api';
 import { useCarrito } from '../context/CarritoContext';
+import Navbar from '../components/Navbar';
 
 const Articulos = () => {
   const theme = useTheme();
@@ -59,7 +60,11 @@ const Articulos = () => {
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', type: 'success' });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    type: 'success',
+  });
   const [showFilters, setShowFilters] = useState(false);
   const [selectedArticle, setSelectedArticle] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -72,7 +77,7 @@ const Articulos = () => {
         setLoading(true);
         const [categoriasRes, articulosRes] = await Promise.all([
           getCategorias(),
-          getAllArticulos()
+          getAllArticulos(),
         ]);
 
         setCategorias(categoriasRes.data || []);
@@ -82,8 +87,9 @@ const Articulos = () => {
         console.error('Error al cargar datos:', error);
         setSnackbar({
           open: true,
-          message: 'Error al cargar los artículos. Por favor, intenta de nuevo.',
-          type: 'error'
+          message:
+            'Error al cargar los artículos. Por favor, intenta de nuevo.',
+          type: 'error',
         });
       } finally {
         setLoading(false);
@@ -115,37 +121,45 @@ const Articulos = () => {
 
     // Filtrar por categoría
     if (categoriaSeleccionada) {
-      articulosFiltrados = articulosFiltrados.filter(
-        articulo => {
-          // Intentar ambas estructuras posibles
-          const categoriaId = articulo.id_categoria?.id_categoria || articulo.id_categoria;
-          return categoriaId === parseInt(categoriaSeleccionada);
-        }
-      );
+      articulosFiltrados = articulosFiltrados.filter(articulo => {
+        // Intentar ambas estructuras posibles
+        const categoriaId =
+          articulo.id_categoria?.id_categoria || articulo.id_categoria;
+        return categoriaId === parseInt(categoriaSeleccionada);
+      });
     }
 
     // Filtrar por búsqueda
     if (searchTerm.trim()) {
-      articulosFiltrados = articulosFiltrados.filter(articulo =>
-        articulo.titulo_articulo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        articulo.descripcion_articulo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        articulo.id_categoria?.nombre_categoria?.toLowerCase().includes(searchTerm.toLowerCase())
+      articulosFiltrados = articulosFiltrados.filter(
+        articulo =>
+          articulo.titulo_articulo
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          articulo.descripcion_articulo
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          articulo.id_categoria?.nombre_categoria
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase())
       );
     }
 
     setArticulos(articulosFiltrados);
   }, [categoriaSeleccionada, searchTerm, articulosOriginales]);
 
-  const handleAgregar = (articulo) => {
+  const handleAgregar = articulo => {
     try {
       // Verificar si el artículo ya está en el carrito
-      const yaEnCarrito = carrito.some(item => item.id_articulo === articulo.id_articulo);
+      const yaEnCarrito = carrito.some(
+        item => item.id_articulo === articulo.id_articulo
+      );
 
       if (yaEnCarrito) {
         setSnackbar({
           open: true,
           message: '⚠️ Este artículo ya está en tu carrito',
-          type: 'warning'
+          type: 'warning',
         });
         return;
       }
@@ -154,7 +168,7 @@ const Articulos = () => {
         setSnackbar({
           open: true,
           message: '❌ Este artículo no está disponible actualmente',
-          type: 'error'
+          type: 'error',
         });
         return;
       }
@@ -163,19 +177,19 @@ const Articulos = () => {
       setSnackbar({
         open: true,
         message: '✅ ¡Artículo agregado al carrito exitosamente!',
-        type: 'success'
+        type: 'success',
       });
     } catch (error) {
       console.error('Error al agregar al carrito:', error);
       setSnackbar({
         open: true,
         message: 'Error al agregar el artículo. Intenta de nuevo.',
-        type: 'error'
+        type: 'error',
       });
     }
   };
 
-  const handleVerDetalle = (articulo) => {
+  const handleVerDetalle = articulo => {
     setSelectedArticle(articulo);
     setDialogOpen(true);
   };
@@ -185,7 +199,7 @@ const Articulos = () => {
     setSearchTerm('');
   };
 
-  const formatPrice = (price) => {
+  const formatPrice = price => {
     return new Intl.NumberFormat('es-CO', {
       style: 'currency',
       currency: 'COP',
@@ -215,15 +229,16 @@ const Articulos = () => {
 
   return (
     <Container maxWidth="xl" sx={{ py: 3 }}>
+      <Navbar />
       {/* Header mejorado */}
       <Box textAlign="center" mb={4}>
         <Typography
-          variant={isMobile ? "h4" : "h3"}
+          variant={isMobile ? 'h4' : 'h3'}
           fontWeight="bold"
           gutterBottom
           sx={{
             color: 'primary.main',
-            mb: 2
+            mb: 2,
           }}
         >
           🛍️ Encuentra lo que necesitas
@@ -252,7 +267,7 @@ const Articulos = () => {
               fullWidth
               placeholder="Buscar por nombre, descripción o categoría... (ej: 'uniforme', 'libros')"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={e => setSearchTerm(e.target.value)}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -273,7 +288,7 @@ const Articulos = () => {
           <Grid item xs={12} md={4}>
             <Box display="flex" gap={1}>
               <Button
-                variant={showFilters ? "contained" : "outlined"}
+                variant={showFilters ? 'contained' : 'outlined'}
                 startIcon={<FilterList />}
                 onClick={() => setShowFilters(!showFilters)}
                 fullWidth={isMobile}
@@ -310,7 +325,7 @@ const Articulos = () => {
                 <Select
                   value={categoriaSeleccionada}
                   label="Selecciona una categoría"
-                  onChange={(e) => setCategoriaSeleccionada(e.target.value)}
+                  onChange={e => setCategoriaSeleccionada(e.target.value)}
                 >
                   <MenuItem value="">Todas las categorías</MenuItem>
                   {categorias.map(categoria => (
@@ -336,7 +351,11 @@ const Articulos = () => {
                     variant="outlined"
                     size="small"
                     clickable
-                    onClick={() => setCategoriaSeleccionada(categoria.id_categoria.toString())}
+                    onClick={() =>
+                      setCategoriaSeleccionada(
+                        categoria.id_categoria.toString()
+                      )
+                    }
                   />
                 ))}
               </Box>
@@ -346,13 +365,18 @@ const Articulos = () => {
       )}
 
       {/* Información de resultados */}
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={3}
+      >
         <Typography variant="body1" color="text.secondary">
           {articulos.length === 0
-            ? "No se encontraron artículos"
-            : `${articulos.length} artículo${articulos.length !== 1 ? 's' : ''} encontrado${articulos.length !== 1 ? 's' : ''}`
-          }
-          {(categoriaSeleccionada || searchTerm) && " con los filtros aplicados"}
+            ? 'No se encontraron artículos'
+            : `${articulos.length} artículo${articulos.length !== 1 ? 's' : ''} encontrado${articulos.length !== 1 ? 's' : ''}`}
+          {(categoriaSeleccionada || searchTerm) &&
+            ' con los filtros aplicados'}
         </Typography>
 
         {carrito.length > 0 && (
@@ -369,14 +393,7 @@ const Articulos = () => {
       {articulos.length > 0 ? (
         <Grid container spacing={3}>
           {articulos.map(articulo => (
-            <Grid
-              item
-              xs={12}
-              sm={6}
-              md={4}
-              lg={3}
-              key={articulo.id_articulo}
-            >
+            <Grid item xs={12} sm={6} md={4} lg={3} key={articulo.id_articulo}>
               <Card
                 sx={{
                   height: '100%',
@@ -415,7 +432,7 @@ const Articulos = () => {
                   alt={articulo.titulo_articulo}
                   sx={{
                     cursor: 'pointer',
-                    filter: !articulo.disponible ? 'grayscale(100%)' : 'none'
+                    filter: !articulo.disponible ? 'grayscale(100%)' : 'none',
                   }}
                   onClick={() => handleVerDetalle(articulo)}
                 />
@@ -429,7 +446,7 @@ const Articulos = () => {
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap',
-                      color: 'text.primary'
+                      color: 'text.primary',
                     }}
                   >
                     {articulo.titulo_articulo}
@@ -444,13 +461,18 @@ const Articulos = () => {
                       display: '-webkit-box',
                       WebkitLineClamp: 2,
                       WebkitBoxOrient: 'vertical',
-                      mb: 2
+                      mb: 2,
                     }}
                   >
                     {articulo.descripcion_articulo}
                   </Typography>
 
-                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                  <Box
+                    display="flex"
+                    justifyContent="space-between"
+                    alignItems="center"
+                    mb={2}
+                  >
                     <Typography
                       variant="h5"
                       fontWeight="bold"
@@ -482,7 +504,13 @@ const Articulos = () => {
                       </Button>
                     </Tooltip>
 
-                    <Tooltip title={!articulo.disponible ? "Artículo no disponible" : "Agregar al carrito"}>
+                    <Tooltip
+                      title={
+                        !articulo.disponible
+                          ? 'Artículo no disponible'
+                          : 'Agregar al carrito'
+                      }
+                    >
                       <span style={{ flex: 1 }}>
                         <Button
                           variant="contained"
@@ -492,13 +520,17 @@ const Articulos = () => {
                           disabled={!articulo.disponible}
                           fullWidth
                           sx={{
-                            backgroundColor: articulo.disponible ? 'primary.main' : 'grey.400',
+                            backgroundColor: articulo.disponible
+                              ? 'primary.main'
+                              : 'grey.400',
                             '&:hover': {
-                              backgroundColor: articulo.disponible ? 'primary.dark' : 'grey.400',
-                            }
+                              backgroundColor: articulo.disponible
+                                ? 'primary.dark'
+                                : 'grey.400',
+                            },
                           }}
                         >
-                          {isMobile ? "+" : "Agregar"}
+                          {isMobile ? '+' : 'Agregar'}
                         </Button>
                       </span>
                     </Tooltip>
@@ -515,9 +547,8 @@ const Articulos = () => {
           </Typography>
           <Typography variant="body1" color="text.secondary" mb={3}>
             {searchTerm || categoriaSeleccionada
-              ? "Intenta cambiar los filtros de búsqueda"
-              : "No hay artículos disponibles en este momento"
-            }
+              ? 'Intenta cambiar los filtros de búsqueda'
+              : 'No hay artículos disponibles en este momento'}
           </Typography>
           {(searchTerm || categoriaSeleccionada) && (
             <Button
@@ -561,7 +592,11 @@ const Articulos = () => {
         {selectedArticle && (
           <>
             <DialogTitle>
-              <Box display="flex" justifyContent="space-between" alignItems="center">
+              <Box
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
+              >
                 <Typography variant="h5" fontWeight="bold">
                   {selectedArticle.titulo_articulo}
                 </Typography>
@@ -581,12 +616,17 @@ const Articulos = () => {
                       height: 'auto',
                       borderRadius: 8,
                       maxHeight: 400,
-                      objectFit: 'cover'
+                      objectFit: 'cover',
                     }}
                   />
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <Typography variant="h4" color="success.main" fontWeight="bold" gutterBottom>
+                  <Typography
+                    variant="h4"
+                    color="success.main"
+                    fontWeight="bold"
+                    gutterBottom
+                  >
                     {formatPrice(selectedArticle.precio_articulo)}
                   </Typography>
 
@@ -604,18 +644,20 @@ const Articulos = () => {
 
                   <Typography
                     variant="body2"
-                    color={selectedArticle.disponible ? 'success.main' : 'error.main'}
+                    color={
+                      selectedArticle.disponible ? 'success.main' : 'error.main'
+                    }
                     fontWeight="bold"
                   >
-                    {selectedArticle.disponible ? '✅ Disponible' : '❌ No disponible'}
+                    {selectedArticle.disponible
+                      ? '✅ Disponible'
+                      : '❌ No disponible'}
                   </Typography>
                 </Grid>
               </Grid>
             </DialogContent>
             <DialogActions sx={{ p: 3 }}>
-              <Button onClick={() => setDialogOpen(false)}>
-                Cerrar
-              </Button>
+              <Button onClick={() => setDialogOpen(false)}>Cerrar</Button>
               <Button
                 variant="contained"
                 startIcon={<ShoppingCart />}
@@ -639,11 +681,7 @@ const Articulos = () => {
         onClose={() => setSnackbar({ ...snackbar, open: false })}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert
-          severity={snackbar.type}
-          sx={{ width: '100%' }}
-          variant="filled"
-        >
+        <Alert severity={snackbar.type} sx={{ width: '100%' }} variant="filled">
           {snackbar.message}
         </Alert>
       </Snackbar>
