@@ -75,7 +75,7 @@ const UserManagement = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/admin/users/complete/');
+      const response = await api.get('/admin/complete-users/');
       setUsers(response.data.users);
       setError(null);
     } catch (err) {
@@ -170,7 +170,7 @@ const UserManagement = () => {
         // Si se creó exitosamente, actualizar grupos
         if (formData.groups.length > 0) {
           // Buscar el usuario recién creado para obtener su ID de Django
-          const usersResponse = await api.get('/admin/users/complete/');
+          const usersResponse = await api.get('/admin/complete-users/');
           const newUser = usersResponse.data.users.find(u => u.email === formData.email_usuario);
 
           if (newUser) {

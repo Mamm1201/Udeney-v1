@@ -148,7 +148,7 @@ urlpatterns = [
     ),
     # Admin user management
     path(
-        "admin/users/complete/",
+        "admin/complete-users/",
         AdminUsersCompleteView.as_view(),
         name="admin-users-complete",
     ),
