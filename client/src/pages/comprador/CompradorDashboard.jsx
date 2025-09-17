@@ -52,6 +52,7 @@ import { useNavigate } from 'react-router-dom';
 import { useRoleAuth } from '../../hooks/useRoleAuth';
 import { useCarrito } from '../../context/CarritoContext';
 import axios from 'axios';
+import Navbar from '../../components/Navbar';
 
 /**
  * Componente de tarjeta de métrica para comprador
@@ -562,6 +563,7 @@ const CompradorDashboard = () => {
 
   return (
     <Container maxWidth="xl" sx={{ py: 3 }}>
+      <Navbar />
       {/* Header */}
       <Box
         display="flex"
