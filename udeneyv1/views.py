@@ -767,3 +767,125 @@ class ResumenCompraAPIView(APIView):
             return Response({"error": "Transacción no encontrada"}, status=404)
         except Exception as e:
             return Response({"error": str(e)}, status=500)
+
+
+# ====================================
+# MÉTRICAS PARA DASHBOARD ADMINISTRATIVO
+# ====================================
+
+@api_view(['GET'])
+def admin_dashboard_metrics(request):
+    """
+    Endpoint para obtener métricas reales del dashboard administrativo
+    """
+    try:
+        from django.db.models import Count, Sum, Q
+        from datetime import datetime, timedelta
+        from django.utils import timezone
+
+        # Fecha actual y rangos de tiempo
+        now = timezone.now()
+        today = now.date()
+        first_day_month = today.replace(day=1)
+        last_month = (first_day_month - timedelta(days=1)).replace(day=1)
+
+        # ============ MÉTRICAS DE USUARIOS ============
+        total_users = User.objects.count()
+        active_users = User.objects.filter(is_active=True).count()
+
+        # Usuarios nuevos (registrados en los últimos 30 días)
+        thirty_days_ago = now - timedelta(days=30)
+        new_users = User.objects.filter(date_joined__gte=thirty_days_ago).count()
+
+        # ============ MÉTRICAS DE TRANSACCIONES ============
+        total_transactions = Transacciones.objects.count()
+
+        # Transacciones de hoy
+        today_transactions = Transacciones.objects.filter(
+            fecha_transaccion__date=today
+        ).count()
+
+        # Calcular tendencia de transacciones (mes actual vs mes anterior)
+        current_month_transactions = Transacciones.objects.filter(
+            fecha_transaccion__date__gte=first_day_month
+        ).count()
+
+        last_month_transactions = Transacciones.objects.filter(
+            fecha_transaccion__date__gte=last_month,
+            fecha_transaccion__date__lt=first_day_month
+        ).count()
+
+        transactions_trend = 0
+        if last_month_transactions > 0:
+            transactions_trend = round(
+                ((current_month_transactions - last_month_transactions) / last_month_transactions) * 100, 1
+            )
+
+        # ============ MÉTRICAS DE ARTÍCULOS ============
+        total_articles = Articulos.objects.count()
+        pending_articles = Articulos.objects.filter(disponible=False).count()
+
+        # ============ MÉTRICAS DE INGRESOS ============
+        # Calcular ingresos totales basados en transacciones
+        total_revenue = 0
+        monthly_revenue = 0
+
+        # Obtener todos los detalles de transacciones con artículos
+        all_transactions = ArticuloDetalleTransaccion.objects.select_related(
+            'id_articulo', 'id_detalle_transaccion__id_transaccion'
+        ).all()
+
+        # Calcular ingresos totales
+        for item in all_transactions:
+            subtotal = item.id_articulo.precio_articulo * item.cantidad
+            total_revenue += subtotal
+
+            # Ingresos del mes actual
+            if item.id_detalle_transaccion.id_transaccion.fecha_transaccion.date() >= first_day_month:
+                monthly_revenue += subtotal
+
+        # Calcular tendencia de ingresos (mes actual vs mes anterior)
+        last_month_revenue = 0
+        for item in all_transactions:
+            transaction_date = item.id_detalle_transaccion.id_transaccion.fecha_transaccion.date()
+            if last_month <= transaction_date < first_day_month:
+                subtotal = item.id_articulo.precio_articulo * item.cantidad
+                last_month_revenue += subtotal
+
+        revenue_trend = 0
+        if last_month_revenue > 0:
+            revenue_trend = round(
+                ((monthly_revenue - last_month_revenue) / last_month_revenue) * 100, 1
+            )
+
+        # ============ RESPUESTA ============
+        metrics_data = {
+            "users": {
+                "total": total_users,
+                "active": active_users,
+                "new": new_users
+            },
+            "transactions": {
+                "total": total_transactions,
+                "today": today_transactions,
+                "trend": transactions_trend
+            },
+            "articles": {
+                "total": total_articles,
+                "pending": pending_articles
+            },
+            "revenue": {
+                "total": int(total_revenue),
+                "monthly": int(monthly_revenue),
+                "trend": revenue_trend
+            },
+            "alerts": []  # Se puede expandir para alertas reales
+        }
+
+        return Response(metrics_data, status=200)
+
+    except Exception as e:
+        return Response(
+            {"error": f"Error al obtener métricas: {str(e)}"},
+            status=500
+        )

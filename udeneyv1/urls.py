@@ -19,7 +19,8 @@ from .views import (ArticuloDetailAPIView, ArticulosViewSet, CacheStatsView,
                     LoginView, MisTransaccionesView, PagosViewSet, PqrsViewSet,
                     RegistroUsuarioView, ResumenCompraAPIView, RolesViewSet,
                     TransaccionesViewSet, UsuarioRolViewSet, UsuariosViewSet,
-                    WarmupCacheView, crear_con_detalles, historial_transacciones_api)
+                    WarmupCacheView, crear_con_detalles, historial_transacciones_api,
+                    admin_dashboard_metrics)
 
 # ====================================
 # ROUTER DRF (Rutas automáticas para ViewSets)
@@ -137,6 +138,12 @@ urlpatterns = [
         "health/",
         HealthCheckAPIView.as_view(),
         name="health-check",
+    ),
+    # Admin dashboard metrics
+    path(
+        "admin/dashboard/metrics/",
+        admin_dashboard_metrics,
+        name="admin-dashboard-metrics",
     ),
     # System configuration (solo superusers)
     path(

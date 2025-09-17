@@ -46,6 +46,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useRoleAuth } from '../../hooks/useRoleAuth';
+import api from '../../api/axiosConfig';
 
 /**
  * Componente de tarjeta de métrica
@@ -447,45 +448,35 @@ const AdminDashboard = () => {
       setError(null);
 
       try {
-        // Simular llamada a API
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        // Llamada real a la API para obtener métricas
+        const response = await api.get('/admin/dashboard/metrics/');
+        const metricsData = response.data;
 
-        // Datos simulados más realistas
-        const currentDate = new Date();
-        const thisMonth = currentDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
-
+        // Configurar datos reales recibidos de la API
         setDashboardData({
           users: {
-            total: 1250,
-            active: 1180,
-            new: Math.floor(Math.random() * 50) + 10
+            total: metricsData.users.total,
+            active: metricsData.users.active,
+            new: metricsData.users.new
           },
           transactions: {
-            total: 3420,
-            today: Math.floor(Math.random() * 30) + 5,
-            trend: (Math.random() * 30 - 10).toFixed(1)
+            total: metricsData.transactions.total,
+            today: metricsData.transactions.today,
+            trend: metricsData.transactions.trend
           },
           articles: {
-            total: 890,
-            pending: Math.floor(Math.random() * 10) + 1
+            total: metricsData.articles.total,
+            pending: metricsData.articles.pending
           },
           revenue: {
-            total: 45280,
-            monthly: 15420,
-            trend: (Math.random() * 20 - 5).toFixed(1)
+            total: metricsData.revenue.total,
+            monthly: metricsData.revenue.monthly,
+            trend: metricsData.revenue.trend
           },
-          alerts: [
-            {
-              type: 'warning',
-              message: `${Math.floor(Math.random() * 10) + 1} artículos pendientes de moderación`
-            },
+          alerts: metricsData.alerts.length > 0 ? metricsData.alerts : [
             {
               type: 'info',
-              message: 'Respaldo del sistema completado exitosamente'
-            },
-            {
-              type: 'success',
-              message: `Ingresos de ${thisMonth} superan expectativas en un 12%`
+              message: 'Sistema funcionando correctamente'
             }
           ]
         });
@@ -494,7 +485,16 @@ const AdminDashboard = () => {
 
       } catch (error) {
         console.error('Error cargando datos del dashboard:', error);
-        setError('Error al cargar los datos del dashboard');
+        setError('Error al cargar los datos del dashboard. Verifique su conexión.');
+
+        // Datos por defecto en caso de error
+        setDashboardData({
+          users: { total: 0, active: 0, new: 0 },
+          transactions: { total: 0, today: 0, trend: 0 },
+          articles: { total: 0, pending: 0 },
+          revenue: { total: 0, monthly: 0, trend: 0 },
+          alerts: [{ type: 'error', message: 'Error al cargar métricas' }]
+        });
       } finally {
         setLoading(false);
       }
@@ -512,24 +512,41 @@ const AdminDashboard = () => {
 
     setLoading(true);
     try {
-      // Simular actualización de datos
-      await new Promise(resolve => setTimeout(resolve, 800));
+      // Llamada real a la API para actualizar métricas
+      const response = await api.get('/admin/dashboard/metrics/');
+      const metricsData = response.data;
 
-      // Actualizar métricas con nuevos valores
-      setDashboardData(prev => ({
-        ...prev,
-        transactions: {
-          ...prev.transactions,
-          today: Math.floor(Math.random() * 30) + 5,
-          trend: (Math.random() * 30 - 10).toFixed(1)
-        },
+      // Actualizar con datos reales de la API
+      setDashboardData({
         users: {
-          ...prev.users,
-          new: Math.floor(Math.random() * 50) + 10
-        }
-      }));
+          total: metricsData.users.total,
+          active: metricsData.users.active,
+          new: metricsData.users.new
+        },
+        transactions: {
+          total: metricsData.transactions.total,
+          today: metricsData.transactions.today,
+          trend: metricsData.transactions.trend
+        },
+        articles: {
+          total: metricsData.articles.total,
+          pending: metricsData.articles.pending
+        },
+        revenue: {
+          total: metricsData.revenue.total,
+          monthly: metricsData.revenue.monthly,
+          trend: metricsData.revenue.trend
+        },
+        alerts: metricsData.alerts.length > 0 ? metricsData.alerts : [
+          {
+            type: 'info',
+            message: 'Sistema funcionando correctamente'
+          }
+        ]
+      });
 
     } catch (error) {
+      console.error('Error al actualizar datos del dashboard:', error);
       setError('Error al actualizar los datos');
     } finally {
       setLoading(false);
@@ -698,8 +715,8 @@ const AdminDashboard = () => {
         <Grid item xs={12} sm={6} md={3}>
           <MetricCard
             title="Ingresos"
-            value={loading ? '---' : `$${dashboardData.revenue.total.toLocaleString()}`}
-            subtitle={loading ? 'Cargando...' : `$${dashboardData.revenue.monthly.toLocaleString()} este mes`}
+            value={loading ? '---' : dashboardData.revenue.total.toLocaleString('es-CO', { style: 'currency', currency: 'COP' })}
+            subtitle={loading ? 'Cargando...' : `${dashboardData.revenue.monthly.toLocaleString('es-CO', { style: 'currency', currency: 'COP' })} este mes`}
             icon={<AttachMoney />}
             color="success"
             trend={loading ? null : parseFloat(dashboardData.revenue.trend)}
