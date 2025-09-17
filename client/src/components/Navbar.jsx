@@ -115,6 +115,27 @@ const Navbar = () => {
               }}
             >
               <MenuItem
+                onClick={() => navigate('/')}
+                sx={{
+                  py: 2,
+                  px: 3,
+                  borderRadius: 2,
+                  mx: 1,
+                  mb: 1,
+                  fontWeight: 500,
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    backgroundColor: 'rgba(69, 133, 140, 0.08)',
+                    color: '#2E5B61',
+                    transform: 'translateX(8px)',
+                    boxShadow: '0 2px 8px rgba(69, 133, 140, 0.15)',
+                  },
+                }}
+              >
+                Inicio
+              </MenuItem>
+
+              <MenuItem
                 onClick={() => navigate('/nosotros')}
                 sx={{
                   py: 2,
@@ -198,6 +219,25 @@ const Navbar = () => {
             {/* <Button onClick={() => navigate('/')} sx={{ color: 'white' }}>
               Inicio
             </Button> */}
+            <Button
+              onClick={() => navigate('/')}
+              sx={{
+                color: '#45858C',
+                px: 3,
+                py: 1.5,
+                borderRadius: 3,
+                fontWeight: 500,
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                '&:hover': {
+                  backgroundColor: 'rgba(69, 133, 140, 0.08)',
+                  color: '#2E5B61',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 4px 12px rgba(69, 133, 140, 0.2)',
+                },
+              }}
+            >
+              Inicio
+            </Button>
             <Button
               onClick={() => navigate('/nosotros')}
               sx={{
