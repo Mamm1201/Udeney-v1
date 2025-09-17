@@ -20,7 +20,7 @@ from .views import (ArticuloDetailAPIView, ArticulosViewSet, CacheStatsView,
                     RegistroUsuarioView, ResumenCompraAPIView, RolesViewSet,
                     TransaccionesViewSet, UsuarioRolViewSet, UsuariosViewSet,
                     WarmupCacheView, crear_con_detalles, historial_transacciones_api,
-                    admin_dashboard_metrics, admin_users_complete, admin_groups_list,
+                    admin_dashboard_metrics, AdminUsersCompleteView, admin_groups_list,
                     admin_update_user_groups)
 
 # ====================================
@@ -149,7 +149,7 @@ urlpatterns = [
     # Admin user management
     path(
         "admin/users/complete/",
-        admin_users_complete,
+        AdminUsersCompleteView.as_view(),
         name="admin-users-complete",
     ),
     path(

@@ -10,7 +10,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 # DRF
 from rest_framework import filters, status, viewsets
 from rest_framework.authentication import SessionAuthentication
-from rest_framework.decorators import action, api_view
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -895,62 +895,65 @@ def admin_dashboard_metrics(request):
 # GESTIÓN COMPLETA DE USUARIOS PARA ADMIN
 # ====================================
 
-@api_view(['GET'])
-def admin_users_complete(request):
+class AdminUsersCompleteView(APIView):
     """
     Endpoint para obtener lista completa de usuarios con información de roles y grupos
     """
-    try:
-        from django.contrib.auth.models import User, Group
+    permission_classes = [IsAuthenticated]
 
-        users_data = []
+    def get(self, request):
+        try:
+            from django.contrib.auth.models import User, Group
 
-        for user in User.objects.all().order_by('-date_joined'):
-            # Obtener usuario del modelo custom si existe
-            custom_user = None
-            try:
-                custom_user = Usuarios.objects.get(email_usuario=user.email)
-            except Usuarios.DoesNotExist:
-                pass
+            users_data = []
 
-            # Obtener grupos y roles
-            groups = list(user.groups.values_list('name', flat=True))
+            for user in User.objects.all().order_by('-date_joined'):
+                # Obtener usuario del modelo custom si existe
+                custom_user = None
+                try:
+                    custom_user = Usuarios.objects.get(email_usuario=user.email)
+                except Usuarios.DoesNotExist:
+                    pass
 
-            user_info = {
-                "id": user.id,
-                "id_usuario": custom_user.id_usuario if custom_user else None,
-                "username": user.username,
-                "email": user.email,
-                "first_name": user.first_name,
-                "last_name": user.last_name,
-                "nombres_usuario": custom_user.nombres_usuario if custom_user else user.first_name,
-                "apellidos_usuario": custom_user.apellidos_usuario if custom_user else user.last_name,
-                "telefono_usuario": custom_user.telefono_usuario if custom_user else "",
-                "direccion_usuario": custom_user.direccion_usuario if custom_user else "",
-                "fecha_registro": custom_user.fecha_registro if custom_user else user.date_joined.date(),
-                "is_active": user.is_active,
-                "is_superuser": user.is_superuser,
-                "is_staff": user.is_staff,
-                "groups": groups,
-                "last_login": user.last_login,
-                "date_joined": user.date_joined
-            }
+                # Obtener grupos y roles
+                groups = list(user.groups.values_list('name', flat=True))
 
-            users_data.append(user_info)
+                user_info = {
+                    "id": user.id,
+                    "id_usuario": custom_user.id_usuario if custom_user else None,
+                    "username": user.username,
+                    "email": user.email,
+                    "first_name": user.first_name,
+                    "last_name": user.last_name,
+                    "nombres_usuario": custom_user.nombres_usuario if custom_user else user.first_name,
+                    "apellidos_usuario": custom_user.apellidos_usuario if custom_user else user.last_name,
+                    "telefono_usuario": custom_user.telefono_usuario if custom_user else "",
+                    "direccion_usuario": custom_user.direccion_usuario if custom_user else "",
+                    "fecha_registro": custom_user.fecha_registro if custom_user else user.date_joined.date(),
+                    "is_active": user.is_active,
+                    "is_superuser": user.is_superuser,
+                    "is_staff": user.is_staff,
+                    "groups": groups,
+                    "last_login": user.last_login,
+                    "date_joined": user.date_joined
+                }
 
-        return Response({
-            "users": users_data,
-            "total": len(users_data)
-        }, status=200)
+                users_data.append(user_info)
 
-    except Exception as e:
-        return Response(
-            {"error": f"Error al obtener usuarios: {str(e)}"},
-            status=500
-        )
+            return Response({
+                "users": users_data,
+                "total": len(users_data)
+            }, status=200)
+
+        except Exception as e:
+            return Response(
+                {"error": f"Error al obtener usuarios: {str(e)}"},
+                status=500
+            )
 
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def admin_groups_list(request):
     """
     Endpoint para obtener lista de grupos disponibles
@@ -972,6 +975,7 @@ def admin_groups_list(request):
 
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def admin_update_user_groups(request, user_id):
     """
     Endpoint para actualizar los grupos de un usuario
