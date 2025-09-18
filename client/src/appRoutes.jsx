@@ -49,6 +49,9 @@ import MisTransacciones from './pages/MisTransacciones';
 import Calificar from './pages/Calificar';
 import Favoritos from './pages/Favoritos';
 
+// PQRs
+import PQRs from './pages/PQRs';
+
 // Administración
 import Rol from './pages/Rol';
 import PqrsAdmin from './components/admin/PqrsAdmin';
@@ -112,6 +115,16 @@ const AppRoutes = () => {
         />
         <Route path="/calificar/:id" element={<Calificar />} />
         <Route path="/favoritos" element={<div style={{padding: '20px'}}><h1>🔍 Página de Favoritos</h1><p>Esta página funciona correctamente</p></div>} />
+
+        {/* --- PQRs (Soporte al usuario) --- */}
+        <Route
+          path="/pqrs"
+          element={
+            <AuthenticatedRoute>
+              <PQRs />
+            </AuthenticatedRoute>
+          }
+        />
 
         {/* --- Administración --- */}
         <Route path="/rol" element={<Rol />} />

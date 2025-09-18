@@ -11,6 +11,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, status, viewsets
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import action, api_view, permission_classes
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -544,6 +546,168 @@ class PagosViewSet(viewsets.ModelViewSet):
 class PqrsViewSet(viewsets.ModelViewSet):
     queryset = Pqrs.objects.all()
     serializer_class = PqrsSerializer
+
+
+# ====================================
+# PQRS PARA USUARIOS (Endpoints específicos)
+# ====================================
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_transactions_for_pqrs(request):
+    """Obtener transacciones del usuario para crear PQRs"""
+    try:
+        # Obtener el usuario de la tabla personalizada basado en el email
+        django_user = request.user
+        usuario = Usuarios.objects.get(email_usuario=django_user.email)
+
+        # Obtener transacciones del usuario
+        transacciones = Transacciones.objects.filter(usuario=usuario).order_by('-fecha_transaccion')
+
+        transactions_data = []
+        for transaccion in transacciones:
+            transactions_data.append({
+                'id_transaccion': transaccion.id_transaccion,
+                'fecha_transaccion': transaccion.fecha_transaccion.strftime('%Y-%m-%d %H:%M'),
+                'descripcion': f"Transacción #{transaccion.id_transaccion} - {transaccion.fecha_transaccion.strftime('%d/%m/%Y')}"
+            })
+
+        return Response({
+            'transactions': transactions_data,
+            'user_info': {
+                'id_usuario': usuario.id_usuario,
+                'nombre': f"{usuario.nombres_usuario} {usuario.apellidos_usuario}",
+                'email': usuario.email_usuario
+            }
+        })
+
+    except Usuarios.DoesNotExist:
+        return Response(
+            {'error': 'Usuario no encontrado'},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response(
+            {'error': f'Error al obtener transacciones: {str(e)}'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class CreateUserPQRView(APIView):
+    """Vista para crear una nueva PQR por parte del usuario"""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        """Método GET para verificar que la vista funciona"""
+        return Response({
+            'message': 'CreateUserPQRView está funcionando correctamente',
+            'methods_allowed': ['GET', 'POST']
+        }, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        try:
+            # Obtener el usuario de la tabla personalizada
+            django_user = request.user
+            usuario = Usuarios.objects.get(email_usuario=django_user.email)
+
+            # Validar datos requeridos
+            tipo_pqr = request.data.get('tipo_pqr')
+            descripcion_pqr = request.data.get('descripcion_pqr')
+            id_transaccion = request.data.get('id_transaccion')
+
+            if not all([tipo_pqr, descripcion_pqr, id_transaccion]):
+                return Response(
+                    {'error': 'Todos los campos son requeridos'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Validar que la transacción pertenezca al usuario
+            try:
+                transaccion = Transacciones.objects.get(
+                    id_transaccion=id_transaccion,
+                    usuario=usuario
+                )
+            except Transacciones.DoesNotExist:
+                return Response(
+                    {'error': 'Transacción no encontrada o no pertenece al usuario'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Crear la PQR
+            pqr = Pqrs.objects.create(
+                tipo_pqr=tipo_pqr,
+                descripcion_pqr=descripcion_pqr,
+                id_transaccion=transaccion
+            )
+
+            # Retornar la PQR creada
+            return Response({
+                'message': 'PQR creada exitosamente',
+                'pqr': {
+                    'id_pqr': pqr.id_pqr,
+                    'tipo_pqr': pqr.tipo_pqr,
+                    'descripcion_pqr': pqr.descripcion_pqr,
+                    'fecha_pqr': pqr.fecha_pqr,
+                    'estado': 'Pendiente de revisión'
+                }
+            }, status=status.HTTP_201_CREATED)
+
+        except Usuarios.DoesNotExist:
+            return Response(
+                {'error': 'Usuario no encontrado'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {'error': f'Error al crear PQR: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_pqrs_list(request):
+    """Obtener todas las PQRs del usuario autenticado"""
+    try:
+        # Obtener el usuario de la tabla personalizada
+        django_user = request.user
+        usuario = Usuarios.objects.get(email_usuario=django_user.email)
+
+        # Obtener PQRs del usuario a través de transacciones
+        pqrs = Pqrs.objects.filter(
+            id_transaccion__usuario=usuario
+        ).select_related('id_transaccion').order_by('-fecha_pqr')
+
+        pqrs_data = []
+        for pqr in pqrs:
+            pqrs_data.append({
+                'id_pqr': pqr.id_pqr,
+                'tipo_pqr': pqr.tipo_pqr,
+                'descripcion_pqr': pqr.descripcion_pqr,
+                'fecha_pqr': pqr.fecha_pqr,
+                'estado': 'Pendiente de revisión',  # Por ahora estado fijo
+                'transaccion': {
+                    'id_transaccion': pqr.id_transaccion.id_transaccion,
+                    'fecha_transaccion': pqr.id_transaccion.fecha_transaccion
+                }
+            })
+
+        return Response({
+            'pqrs': pqrs_data,
+            'total': len(pqrs_data)
+        })
+
+    except Usuarios.DoesNotExist:
+        return Response(
+            {'error': 'Usuario no encontrado'},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response(
+            {'error': f'Error al obtener PQRs: {str(e)}'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 
 # ====================================

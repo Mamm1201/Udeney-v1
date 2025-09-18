@@ -21,7 +21,8 @@ from .views import (ArticuloDetailAPIView, ArticulosViewSet, CacheStatsView,
                     TransaccionesViewSet, UsuarioRolViewSet, UsuariosViewSet,
                     WarmupCacheView, crear_con_detalles, historial_transacciones_api,
                     admin_dashboard_metrics, AdminUsersCompleteView, admin_groups_list,
-                    admin_update_user_groups)
+                    admin_update_user_groups, user_transactions_for_pqrs, CreateUserPQRView,
+                    user_pqrs_list)
 
 # ====================================
 # ROUTER DRF (Rutas automáticas para ViewSets)
@@ -167,6 +168,22 @@ urlpatterns = [
         "admin/system/config/",
         system_configuration,
         name="system-config",
+    ),
+    # PQRs para usuarios
+    path(
+        "user-pqrs/transactions/",
+        user_transactions_for_pqrs,
+        name="user-transactions-pqrs",
+    ),
+    path(
+        "user-pqrs/create/",
+        CreateUserPQRView.as_view(),
+        name="create-user-pqr",
+    ),
+    path(
+        "user-pqrs/list/",
+        user_pqrs_list,
+        name="user-pqrs-list",
     ),
 ]
 
