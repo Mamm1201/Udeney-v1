@@ -49,12 +49,28 @@ const Registro = () => {
     try {
       const response = await registrarUsuario(formData);
 
+      console.log('Respuesta de registro:', response);
+      console.log('Data de respuesta:', response.data);
+      console.log('Verification required:', response.data.verification_required);
+
       if (response.status === 201 || response.status === 200) {
+        // SIEMPRE redirigir a verificación para usuarios nuevos
+        // Guardar información para la página de verificación
+        localStorage.setItem('pending_verification_email', formData.email_usuario);
+        localStorage.setItem('pending_verification_name', formData.nombres_usuario);
+
         setSnackbarError(false);
-        setSnackbarMessage('¡Usuario registrado exitosamente!');
+        setSnackbarMessage('¡Registro exitoso! Redirigiendo para verificar email...');
         setOpenSnackbar(true);
 
-        setTimeout(() => navigate('/login'), 2000);
+        setTimeout(() => {
+          navigate('/verification-pending', {
+            state: {
+              email: formData.email_usuario,
+              nombre: formData.nombres_usuario
+            }
+          });
+        }, 2000);
       } else {
         throw new Error('Error al registrar');
       }

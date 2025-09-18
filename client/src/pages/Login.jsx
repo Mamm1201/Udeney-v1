@@ -86,6 +86,28 @@ const Login = () => {
         navigate(user.dashboard_route || '/dashboard');
       }, 2000);
     } catch (err) {
+      // Manejar error de email no verificado
+      if (err.response?.data?.code === 'EMAIL_NOT_VERIFIED') {
+        const errorData = err.response.data;
+
+        // Guardar email para la página de verificación
+        localStorage.setItem('pending_verification_email', errorData.email);
+
+        setSnackbar({
+          open: true,
+          message: 'Email no verificado. Redirigiendo...',
+          severity: 'warning'
+        });
+
+        setTimeout(() => {
+          navigate('/verification-pending', {
+            state: { email: errorData.email }
+          });
+        }, 2000);
+
+        return;
+      }
+
       const msg =
         err.response?.data?.error ||
         'Error al iniciar sesión. Intenta de nuevo.';

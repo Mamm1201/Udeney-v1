@@ -52,6 +52,10 @@ import Favoritos from './pages/Favoritos';
 // PQRs
 import PQRs from './pages/PQRs';
 
+// Email Verification
+import EmailVerification from './pages/EmailVerification';
+import VerificationPending from './pages/VerificationPending';
+
 // Administración
 import Rol from './pages/Rol';
 import PqrsAdmin from './components/admin/PqrsAdmin';
@@ -83,6 +87,10 @@ const AppRoutes = () => {
         {/* --- Autenticación --- */}
         <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Registro />} />
+
+        {/* --- Verificación de Email --- */}
+        <Route path="/verify-email/:token" element={<EmailVerification />} />
+        <Route path="/verification-pending" element={<VerificationPending />} />
 
         {/* --- Catálogo de artículos --- */}
         <Route path="/articulos" element={<Articulos />} />

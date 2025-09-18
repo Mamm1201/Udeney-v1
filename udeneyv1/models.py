@@ -21,6 +21,11 @@ class Usuarios(models.Model):
     direccion_usuario = models.CharField(max_length=255)
     is_active = models.BooleanField(default=True, null=True)
 
+    # Campos para verificación de email
+    email_verified = models.BooleanField(default=True)  # True por defecto para usuarios existentes
+    verification_token = models.CharField(max_length=255, unique=True, null=True, blank=True)
+    verification_token_expires = models.DateTimeField(null=True, blank=True)
+
     class Meta:
         db_table = "usuarios"
         managed = True

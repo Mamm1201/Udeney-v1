@@ -29,6 +29,8 @@ from .jwt_utils import get_tokens_for_user, get_user_permissions_summary
 from .logging_utils import AuditLogger, SecurityLogger, log_api_call
 # Metrics utilities
 from .metrics import ApplicationMetrics
+# Email verification utilities
+from .email_utils import EmailVerificationUtils
 # Modelos
 from .models import (ArticuloDetalleTransaccion, Articulos, Calificaciones, Categorias,
                      DetalleTransaccion, Pagos, Pqrs, Roles, Transacciones, UsuarioRol,
@@ -94,7 +96,7 @@ class RegistroUsuarioView(APIView):
             comprador_group = Group.objects.get(name="Comprador")
             django_user.groups.add(comprador_group)
 
-            # Crear usuario Eduney vinculado
+            # Crear usuario Eduney vinculado (inactivo hasta verificar email)
             usuario_eduney = Usuarios.objects.create(
                 id_usuario=django_user.id,
                 nombres_usuario=nombres,
@@ -102,36 +104,53 @@ class RegistroUsuarioView(APIView):
                 email_usuario=email,
                 telefono_usuario=telefono,
                 direccion_usuario=direccion,
-                is_active=True,
+                is_active=False,  # Inactivo hasta verificar email
+                email_verified=False,  # Email no verificado
             )
             usuario_eduney.set_password(password)
             usuario_eduney.save()
 
-            # Generar tokens
-            refresh = RefreshToken.for_user(django_user)
-            permissions_summary = get_user_permissions_summary(django_user)
+            # Desactivar también el usuario Django hasta verificación
+            django_user.is_active = False
+            django_user.save()
 
-            return Response(
-                {
-                    "message": "Usuario registrado exitosamente",
-                    "user": {
-                        "id_usuario": usuario_eduney.id_usuario,
-                        "email": usuario_eduney.email_usuario,
-                        "nombres_usuario": usuario_eduney.nombres_usuario,
-                        "apellidos_usuario": usuario_eduney.apellidos_usuario,
-                        "groups": list(
-                            django_user.groups.values_list("name", flat=True)
-                        ),
-                        "permissions": permissions_summary,
-                        "dashboard_route": permissions_summary["dashboard_route"],
-                        "is_superuser": django_user.is_superuser,
-                        "is_staff": django_user.is_staff,
+            # Enviar email de verificación
+            email_sent = EmailVerificationUtils.send_verification_email(usuario_eduney)
+
+            if email_sent:
+                return Response(
+                    {
+                        "message": "Usuario registrado exitosamente. Revisa tu email para verificar tu cuenta.",
+                        "user": {
+                            "id_usuario": usuario_eduney.id_usuario,
+                            "email": usuario_eduney.email_usuario,
+                            "nombres_usuario": usuario_eduney.nombres_usuario,
+                            "apellidos_usuario": usuario_eduney.apellidos_usuario,
+                            "email_verified": False,
+                            "verification_required": True
+                        },
+                        "email_sent": True,
+                        "instructions": "Hemos enviado un email de verificación a tu dirección de correo. Haz clic en el enlace para activar tu cuenta."
                     },
-                    "access_token": str(refresh.access_token),
-                    "refresh_token": str(refresh),
-                },
-                status=status.HTTP_201_CREATED,
-            )
+                    status=status.HTTP_201_CREATED,
+                )
+            else:
+                return Response(
+                    {
+                        "message": "Usuario registrado, pero error al enviar email de verificación",
+                        "user": {
+                            "id_usuario": usuario_eduney.id_usuario,
+                            "email": usuario_eduney.email_usuario,
+                            "nombres_usuario": usuario_eduney.nombres_usuario,
+                            "apellidos_usuario": usuario_eduney.apellidos_usuario,
+                            "email_verified": False,
+                            "verification_required": True
+                        },
+                        "email_sent": False,
+                        "warning": "Error al enviar email. Puedes solicitar un reenvío más tarde."
+                    },
+                    status=status.HTTP_201_CREATED,
+                )
 
         except Group.DoesNotExist:
             return Response(
@@ -169,6 +188,18 @@ class LoginView(APIView):
             SecurityLogger.log_authentication_attempt(request, email, False)
             ApplicationMetrics.track_authentication(email, False)
             return Response({"error": "Cuenta desactivada"}, status=403)
+
+        # Verificar que el email esté verificado
+        if not usuario_eduney.email_verified:
+            SecurityLogger.log_authentication_attempt(request, email, False)
+            ApplicationMetrics.track_authentication(email, False)
+            return Response({
+                "error": "Email no verificado",
+                "code": "EMAIL_NOT_VERIFIED",
+                "message": "Debes verificar tu email antes de poder iniciar sesión",
+                "email": email,
+                "can_resend": EmailVerificationUtils.can_resend_verification(usuario_eduney)
+            }, status=403)
 
         if not usuario_eduney.check_password(password):
             SecurityLogger.log_authentication_attempt(request, email, False)
@@ -1176,3 +1207,122 @@ def admin_update_user_groups(request, user_id):
             {"error": f"Error al actualizar grupos: {str(e)}"},
             status=500
         )
+
+
+# ====================================
+# EMAIL VERIFICATION ENDPOINTS
+# ====================================
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def verify_email(request, token):
+    """Verificar email usando token"""
+    try:
+        usuario = EmailVerificationUtils.verify_email_token(token)
+
+        if not usuario:
+            return Response({
+                'error': 'Token inválido o expirado',
+                'code': 'INVALID_TOKEN'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Verificar email
+        EmailVerificationUtils.mark_email_verified(usuario)
+
+        return Response({
+            'message': 'Email verificado exitosamente',
+            'user': {
+                'id': usuario.id_usuario,
+                'nombres': usuario.nombres_usuario,
+                'email': usuario.email_usuario,
+                'verified': True
+            }
+        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response({
+            'error': f'Error al verificar email: {str(e)}',
+            'code': 'VERIFICATION_ERROR'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def resend_verification_email(request):
+    """Reenviar email de verificación"""
+    try:
+        email = request.data.get('email')
+
+        if not email:
+            return Response({
+                'error': 'Email es requerido'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            usuario = Usuarios.objects.get(email_usuario=email)
+        except Usuarios.DoesNotExist:
+            return Response({
+                'error': 'Usuario no encontrado'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        # Verificar si ya está verificado
+        if usuario.email_verified:
+            return Response({
+                'error': 'El email ya está verificado'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Verificar rate limiting
+        if not EmailVerificationUtils.can_resend_verification(usuario):
+            return Response({
+                'error': 'Debes esperar antes de solicitar otro email',
+                'code': 'RATE_LIMITED'
+            }, status=status.HTTP_429_TOO_MANY_REQUESTS)
+
+        # Enviar email
+        if EmailVerificationUtils.send_verification_email(usuario):
+            return Response({
+                'message': 'Email de verificación enviado',
+                'email': email
+            }, status=status.HTTP_200_OK)
+        else:
+            return Response({
+                'error': 'Error al enviar email'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    except Exception as e:
+        return Response({
+            'error': f'Error al reenviar email: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def verification_status(request):
+    """Verificar estado de verificación de un email"""
+    try:
+        email = request.GET.get('email')
+
+        if not email:
+            return Response({
+                'error': 'Email es requerido'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            usuario = Usuarios.objects.get(email_usuario=email)
+        except Usuarios.DoesNotExist:
+            return Response({
+                'error': 'Usuario no encontrado'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        return Response({
+            'email': email,
+            'verified': usuario.email_verified,
+            'active': usuario.is_active,
+            'has_pending_verification': bool(usuario.verification_token),
+            'token_expires': usuario.verification_token_expires
+        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response({
+            'error': f'Error al verificar estado: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

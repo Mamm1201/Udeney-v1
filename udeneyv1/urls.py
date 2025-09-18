@@ -22,7 +22,7 @@ from .views import (ArticuloDetailAPIView, ArticulosViewSet, CacheStatsView,
                     WarmupCacheView, crear_con_detalles, historial_transacciones_api,
                     admin_dashboard_metrics, AdminUsersCompleteView, admin_groups_list,
                     admin_update_user_groups, user_transactions_for_pqrs, CreateUserPQRView,
-                    user_pqrs_list)
+                    user_pqrs_list, verify_email, resend_verification_email, verification_status)
 
 # ====================================
 # ROUTER DRF (Rutas automáticas para ViewSets)
@@ -184,6 +184,22 @@ urlpatterns = [
         "user-pqrs/list/",
         user_pqrs_list,
         name="user-pqrs-list",
+    ),
+    # Email verification endpoints
+    path(
+        "verify-email/<str:token>/",
+        verify_email,
+        name="verify-email",
+    ),
+    path(
+        "resend-verification/",
+        resend_verification_email,
+        name="resend-verification",
+    ),
+    path(
+        "verification-status/",
+        verification_status,
+        name="verification-status",
     ),
 ]
 
