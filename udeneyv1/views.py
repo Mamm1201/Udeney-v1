@@ -13,7 +13,7 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import action, api_view, permission_classes
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError, PermissionDenied
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -253,20 +253,50 @@ class UsuariosViewSet(viewsets.ModelViewSet):
     ]  # Solo usuarios autenticados pueden ver otros usuarios
 
     def get_queryset(self):
-        # Los usuarios solo pueden ver su propia información
+        # Superusuarios y staff pueden ver todos los usuarios
         if self.request.user and self.request.user.is_authenticated:
-            return Usuarios.objects.filter(id_usuario=self.request.user.id)
+            if self.request.user.is_superuser or self.request.user.is_staff:
+                return Usuarios.objects.all()
+            else:
+                # Los usuarios normales solo pueden ver su propia información
+                return Usuarios.objects.filter(id_usuario=self.request.user.id)
         return Usuarios.objects.none()
 
     def get_permissions(self):
         """
         Instantiates and returns the list of permissions that this view requires.
         """
-        if self.action == "me":
+        if self.action in ['destroy', 'update', 'partial_update']:
+            # Solo superusuarios y staff pueden eliminar/modificar usuarios
+            permission_classes = [IsAuthenticated]  # La validación adicional se hace en perform_destroy
+        elif self.action == "me":
             permission_classes = [IsAuthenticated]
         else:
             permission_classes = [IsAuthenticated]
         return [permission() for permission in permission_classes]
+
+    def perform_destroy(self, instance):
+        """Eliminar usuario personalizado y su correspondiente usuario Django"""
+        # Solo superusuarios y staff pueden eliminar
+        if not (self.request.user.is_superuser or self.request.user.is_staff):
+            raise PermissionDenied("No tienes permisos para eliminar usuarios")
+
+        try:
+            # Buscar y eliminar el usuario Django correspondiente
+            from django.contrib.auth.models import User
+            django_user = User.objects.get(id=instance.id_usuario)
+
+            # Eliminar primero el usuario personalizado
+            instance.delete()
+
+            # Luego eliminar el usuario Django
+            django_user.delete()
+
+        except User.DoesNotExist:
+            # Si no existe el usuario Django, solo eliminar el personalizado
+            instance.delete()
+        except Exception as e:
+            raise ValidationError(f"Error al eliminar usuario: {str(e)}")
 
     @action(detail=False, methods=["get", "put", "patch"])
     def me(self, request):
