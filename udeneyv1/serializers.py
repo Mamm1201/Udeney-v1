@@ -27,6 +27,19 @@ class UsuariosSerializer(serializers.ModelSerializer):
             "password_usuario",
         ]
 
+    def validate_password_usuario(self, value):
+        """Validar contraseña según configuración del sistema"""
+        if value:  # Solo validar si se proporciona contraseña
+            from .models import SystemConfig
+            config = SystemConfig.get_config()
+            min_length = config.password_min_length
+
+            if len(value) < min_length:
+                raise serializers.ValidationError(
+                    f"La contraseña debe tener al menos {min_length} caracteres."
+                )
+        return value
+
     def create(self, validated_data):
         user = Usuarios(
             nombres_usuario=validated_data["nombres_usuario"],
