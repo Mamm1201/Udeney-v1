@@ -583,7 +583,13 @@ def system_metrics(request):
         # Métricas de rendimiento del servidor
         cpu_percent = psutil.cpu_percent(interval=1)
         memory = psutil.virtual_memory()
-        disk = psutil.disk_usage('/')
+
+        # Detectar el disco principal según el sistema operativo
+        import os
+        if os.name == 'nt':  # Windows
+            disk = psutil.disk_usage('C:')
+        else:  # Unix/Linux
+            disk = psutil.disk_usage('/')
 
         # Métricas de base de datos
         with connection.cursor() as cursor:
