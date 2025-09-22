@@ -256,6 +256,89 @@ class Pqrs(models.Model):
 
 
 # ====================================
+# MODELO CONFIGURACIÓN DEL SISTEMA
+# ====================================
+class SystemConfig(models.Model):
+    # Configuración general
+    site_name = models.CharField(max_length=255, default='Eduney Marketplace')
+    site_description = models.TextField(default='Plataforma de comercio electrónico')
+    maintenance_mode = models.BooleanField(default=False)
+    registration_enabled = models.BooleanField(default=True)
+
+    # Configuración de seguridad
+    password_min_length = models.IntegerField(default=8)
+    session_timeout = models.IntegerField(default=30)  # minutos
+    max_login_attempts = models.IntegerField(default=5)
+    two_factor_auth = models.BooleanField(default=False)
+
+    # Configuración de emails
+    email_notifications = models.BooleanField(default=True)
+    welcome_emails = models.BooleanField(default=True)
+    order_notifications = models.BooleanField(default=True)
+    smtp_host = models.CharField(max_length=255, default='smtp.gmail.com')
+    smtp_port = models.IntegerField(default=587)
+    smtp_username = models.CharField(max_length=255, blank=True, null=True)
+    smtp_password = models.CharField(max_length=255, blank=True, null=True)
+
+    # Configuración de pagos
+    payment_gateway = models.CharField(
+        max_length=20,
+        choices=[
+            ('stripe', 'Stripe'),
+            ('paypal', 'PayPal'),
+            ('mercadopago', 'MercadoPago'),
+        ],
+        default='stripe'
+    )
+    min_order_amount = models.DecimalField(max_digits=10, decimal_places=2, default=10000)
+    max_order_amount = models.DecimalField(max_digits=10, decimal_places=2, default=5000000)
+    tax_rate = models.DecimalField(max_digits=5, decimal_places=2, default=19.00)
+
+    # Configuración de sistema
+    cache_enabled = models.BooleanField(default=True)
+    debug_mode = models.BooleanField(default=False)
+    logging_level = models.CharField(
+        max_length=10,
+        choices=[
+            ('DEBUG', 'Debug'),
+            ('INFO', 'Info'),
+            ('WARNING', 'Warning'),
+            ('ERROR', 'Error'),
+        ],
+        default='INFO'
+    )
+    backup_frequency = models.CharField(
+        max_length=10,
+        choices=[
+            ('daily', 'Diario'),
+            ('weekly', 'Semanal'),
+            ('monthly', 'Mensual'),
+        ],
+        default='daily'
+    )
+
+    # Metadatos
+    updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey(
+        'Usuarios', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='config_updates'
+    )
+
+    class Meta:
+        db_table = "system_config"
+        managed = True
+
+    def __str__(self):
+        return f"System Config - {self.site_name}"
+
+    @classmethod
+    def get_config(cls):
+        """Obtener la configuración actual o crear una por defecto"""
+        config, created = cls.objects.get_or_create(pk=1)
+        return config
+
+
+# ====================================
 # MODELO REPORTES (Sistema de moderación)
 # ====================================
 class Reportes(models.Model):

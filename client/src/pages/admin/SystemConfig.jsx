@@ -44,7 +44,7 @@ import {
   Delete,
   Add
 } from '@mui/icons-material';
-import axios from 'axios';
+import { systemConfigAPI } from '../../api/systemConfig.api';
 
 const SystemConfig = () => {
   const [loading, setLoading] = useState(false);
@@ -53,47 +53,61 @@ const SystemConfig = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [config, setConfig] = useState({
     // Configuración general
-    siteName: 'Eduney Marketplace',
-    siteDescription: 'Plataforma de comercio electrónico',
-    maintenanceMode: false,
-    registrationEnabled: true,
+    site_name: 'Eduney Marketplace',
+    site_description: 'Plataforma de comercio electrónico',
+    maintenance_mode: false,
+    registration_enabled: true,
 
     // Configuración de seguridad
-    passwordMinLength: 8,
-    sessionTimeout: 30,
-    maxLoginAttempts: 5,
-    twoFactorAuth: false,
+    password_min_length: 8,
+    session_timeout: 30,
+    max_login_attempts: 5,
+    two_factor_auth: false,
 
     // Configuración de emails
-    emailNotifications: true,
-    welcomeEmails: true,
-    orderNotifications: true,
+    email_notifications: true,
+    welcome_emails: true,
+    order_notifications: true,
+    smtp_host: 'smtp.gmail.com',
+    smtp_port: 587,
+    smtp_username: '',
+    smtp_password: '',
 
     // Configuración de pagos
-    paymentGateway: 'stripe',
-    minOrderAmount: 10000,
-    maxOrderAmount: 5000000,
-    taxRate: 19,
+    payment_gateway: 'stripe',
+    min_order_amount: 10000,
+    max_order_amount: 5000000,
+    tax_rate: 19,
 
     // Configuración de sistema
-    cacheEnabled: true,
-    debugMode: false,
-    loggingLevel: 'INFO',
-    backupFrequency: 'daily'
+    cache_enabled: true,
+    debug_mode: false,
+    logging_level: 'INFO',
+    backup_frequency: 'daily'
+  });
+
+  const [systemMetrics, setSystemMetrics] = useState({
+    performance: { cpu_usage: 0, memory_usage: 0, disk_usage: 0 },
+    database: { connections: 0, size_mb: 0, usage_percent: 0 },
+    traffic: { active_users_24h: 0, transactions_24h: 0, traffic_percent: 0 },
+    uptime: { percent: 0 }
   });
 
   // Cargar configuración actual
   const fetchConfig = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('access_token');
 
-      // Simular carga de configuración (en producción vendría de la API)
-      setTimeout(() => {
-        setLoading(false);
-        setError(null);
-      }, 1000);
+      // Cargar configuración real desde la API
+      const configData = await systemConfigAPI.getConfig();
+      setConfig(configData);
 
+      // Cargar métricas del sistema
+      const metricsData = await systemConfigAPI.getSystemMetrics();
+      setSystemMetrics(metricsData);
+
+      setLoading(false);
+      setError(null);
     } catch (err) {
       setError('Error al cargar configuración');
       console.error('Error:', err);
@@ -109,16 +123,24 @@ const SystemConfig = () => {
   const handleSaveConfig = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('access_token');
 
-      // Simular guardado (en producción se enviaría a la API)
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Guardar configuración real en la API
+      const response = await systemConfigAPI.updateConfig(config);
 
       setSuccess('Configuración guardada exitosamente');
       setError(null);
 
+      // Actualizar configuración con los datos devueltos por la API
+      if (response.config) {
+        setConfig(response.config);
+      }
+
     } catch (err) {
-      setError('Error al guardar configuración');
+      if (err.response?.data?.details) {
+        setError(`Error de validación: ${JSON.stringify(err.response.data.details)}`);
+      } else {
+        setError('Error al guardar configuración');
+      }
       console.error('Error:', err);
     } finally {
       setLoading(false);
@@ -128,10 +150,7 @@ const SystemConfig = () => {
   // Reiniciar cache
   const handleClearCache = async () => {
     try {
-      const token = localStorage.getItem('access_token');
-      await axios.delete('http://localhost:8000/api/v1/cache/stats/', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await systemConfigAPI.clearCache();
       setSuccess('Cache limpiado exitosamente');
     } catch (err) {
       setError('Error al limpiar cache');
@@ -142,10 +161,7 @@ const SystemConfig = () => {
   // Precalentar cache
   const handleWarmupCache = async () => {
     try {
-      const token = localStorage.getItem('access_token');
-      await axios.post('http://localhost:8000/api/v1/cache/warmup/', {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await systemConfigAPI.warmupCache();
       setSuccess('Cache precalentado exitosamente');
     } catch (err) {
       setError('Error al precalentar cache');
@@ -204,14 +220,14 @@ const SystemConfig = () => {
             <Box display="flex" flexDirection="column" gap={2}>
               <TextField
                 label="Nombre del Sitio"
-                value={config.siteName}
-                onChange={(e) => setConfig({ ...config, siteName: e.target.value })}
+                value={config.site_name}
+                onChange={(e) => setConfig({ ...config, site_name: e.target.value })}
                 fullWidth
               />
               <TextField
                 label="Descripción"
-                value={config.siteDescription}
-                onChange={(e) => setConfig({ ...config, siteDescription: e.target.value })}
+                value={config.site_description}
+                onChange={(e) => setConfig({ ...config, site_description: e.target.value })}
                 fullWidth
                 multiline
                 rows={2}
@@ -219,8 +235,8 @@ const SystemConfig = () => {
               <FormControlLabel
                 control={
                   <Switch
-                    checked={config.maintenanceMode}
-                    onChange={(e) => setConfig({ ...config, maintenanceMode: e.target.checked })}
+                    checked={config.maintenance_mode}
+                    onChange={(e) => setConfig({ ...config, maintenance_mode: e.target.checked })}
                   />
                 }
                 label="Modo Mantenimiento"
@@ -228,8 +244,8 @@ const SystemConfig = () => {
               <FormControlLabel
                 control={
                   <Switch
-                    checked={config.registrationEnabled}
-                    onChange={(e) => setConfig({ ...config, registrationEnabled: e.target.checked })}
+                    checked={config.registration_enabled}
+                    onChange={(e) => setConfig({ ...config, registration_enabled: e.target.checked })}
                   />
                 }
                 label="Permitir Registro de Usuarios"
@@ -245,29 +261,29 @@ const SystemConfig = () => {
               <TextField
                 label="Longitud Mínima de Contraseña"
                 type="number"
-                value={config.passwordMinLength}
-                onChange={(e) => setConfig({ ...config, passwordMinLength: parseInt(e.target.value) })}
+                value={config.password_min_length}
+                onChange={(e) => setConfig({ ...config, password_min_length: parseInt(e.target.value) })}
                 fullWidth
               />
               <TextField
                 label="Tiempo de Sesión (minutos)"
                 type="number"
-                value={config.sessionTimeout}
-                onChange={(e) => setConfig({ ...config, sessionTimeout: parseInt(e.target.value) })}
+                value={config.session_timeout}
+                onChange={(e) => setConfig({ ...config, session_timeout: parseInt(e.target.value) })}
                 fullWidth
               />
               <TextField
                 label="Máximo Intentos de Login"
                 type="number"
-                value={config.maxLoginAttempts}
-                onChange={(e) => setConfig({ ...config, maxLoginAttempts: parseInt(e.target.value) })}
+                value={config.max_login_attempts}
+                onChange={(e) => setConfig({ ...config, max_login_attempts: parseInt(e.target.value) })}
                 fullWidth
               />
               <FormControlLabel
                 control={
                   <Switch
-                    checked={config.twoFactorAuth}
-                    onChange={(e) => setConfig({ ...config, twoFactorAuth: e.target.checked })}
+                    checked={config.two_factor_auth}
+                    onChange={(e) => setConfig({ ...config, two_factor_auth: e.target.checked })}
                   />
                 }
                 label="Autenticación de Dos Factores"
@@ -283,8 +299,8 @@ const SystemConfig = () => {
               <FormControlLabel
                 control={
                   <Switch
-                    checked={config.emailNotifications}
-                    onChange={(e) => setConfig({ ...config, emailNotifications: e.target.checked })}
+                    checked={config.email_notifications}
+                    onChange={(e) => setConfig({ ...config, email_notifications: e.target.checked })}
                   />
                 }
                 label="Notificaciones por Email"
@@ -292,8 +308,8 @@ const SystemConfig = () => {
               <FormControlLabel
                 control={
                   <Switch
-                    checked={config.welcomeEmails}
-                    onChange={(e) => setConfig({ ...config, welcomeEmails: e.target.checked })}
+                    checked={config.welcome_emails}
+                    onChange={(e) => setConfig({ ...config, welcome_emails: e.target.checked })}
                   />
                 }
                 label="Emails de Bienvenida"
@@ -301,11 +317,24 @@ const SystemConfig = () => {
               <FormControlLabel
                 control={
                   <Switch
-                    checked={config.orderNotifications}
-                    onChange={(e) => setConfig({ ...config, orderNotifications: e.target.checked })}
+                    checked={config.order_notifications}
+                    onChange={(e) => setConfig({ ...config, order_notifications: e.target.checked })}
                   />
                 }
                 label="Notificaciones de Pedidos"
+              />
+              <TextField
+                label="Host SMTP"
+                value={config.smtp_host}
+                onChange={(e) => setConfig({ ...config, smtp_host: e.target.value })}
+                fullWidth
+              />
+              <TextField
+                label="Puerto SMTP"
+                type="number"
+                value={config.smtp_port}
+                onChange={(e) => setConfig({ ...config, smtp_port: parseInt(e.target.value) })}
+                fullWidth
               />
             </Box>
           </ConfigSection>
@@ -318,24 +347,24 @@ const SystemConfig = () => {
               <TextField
                 label="Monto Mínimo de Pedido"
                 type="number"
-                value={config.minOrderAmount}
-                onChange={(e) => setConfig({ ...config, minOrderAmount: parseInt(e.target.value) })}
+                value={config.min_order_amount}
+                onChange={(e) => setConfig({ ...config, min_order_amount: parseInt(e.target.value) })}
                 fullWidth
                 InputProps={{ startAdornment: '$' }}
               />
               <TextField
                 label="Monto Máximo de Pedido"
                 type="number"
-                value={config.maxOrderAmount}
-                onChange={(e) => setConfig({ ...config, maxOrderAmount: parseInt(e.target.value) })}
+                value={config.max_order_amount}
+                onChange={(e) => setConfig({ ...config, max_order_amount: parseInt(e.target.value) })}
                 fullWidth
                 InputProps={{ startAdornment: '$' }}
               />
               <TextField
                 label="Tasa de Impuesto (%)"
                 type="number"
-                value={config.taxRate}
-                onChange={(e) => setConfig({ ...config, taxRate: parseInt(e.target.value) })}
+                value={config.tax_rate}
+                onChange={(e) => setConfig({ ...config, tax_rate: parseFloat(e.target.value) })}
                 fullWidth
               />
             </Box>
@@ -351,8 +380,8 @@ const SystemConfig = () => {
                   <FormControlLabel
                     control={
                       <Switch
-                        checked={config.cacheEnabled}
-                        onChange={(e) => setConfig({ ...config, cacheEnabled: e.target.checked })}
+                        checked={config.cache_enabled}
+                        onChange={(e) => setConfig({ ...config, cache_enabled: e.target.checked })}
                       />
                     }
                     label="Cache Habilitado"
@@ -360,8 +389,8 @@ const SystemConfig = () => {
                   <FormControlLabel
                     control={
                       <Switch
-                        checked={config.debugMode}
-                        onChange={(e) => setConfig({ ...config, debugMode: e.target.checked })}
+                        checked={config.debug_mode}
+                        onChange={(e) => setConfig({ ...config, debug_mode: e.target.checked })}
                       />
                     }
                     label="Modo Debug"
@@ -400,26 +429,52 @@ const SystemConfig = () => {
               <Grid container spacing={2}>
                 <Grid item xs={12} md={3}>
                   <Box textAlign="center">
-                    <Typography variant="h5" color="success.main">92%</Typography>
-                    <Typography variant="body2">Rendimiento</Typography>
+                    <Typography variant="h5" color="success.main">
+                      {Math.round(100 - systemMetrics.performance.cpu_usage)}%
+                    </Typography>
+                    <Typography variant="body2">CPU Disponible</Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      CPU usado: {systemMetrics.performance.cpu_usage}%
+                    </Typography>
                   </Box>
                 </Grid>
                 <Grid item xs={12} md={3}>
                   <Box textAlign="center">
-                    <Typography variant="h5" color="info.main">68%</Typography>
+                    <Typography
+                      variant="h5"
+                      color={systemMetrics.database.usage_percent > 80 ? "error.main" : "info.main"}
+                    >
+                      {systemMetrics.database.usage_percent}%
+                    </Typography>
                     <Typography variant="body2">Uso de DB</Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {systemMetrics.database.size_mb} MB
+                    </Typography>
                   </Box>
                 </Grid>
                 <Grid item xs={12} md={3}>
                   <Box textAlign="center">
-                    <Typography variant="h5" color="warning.main">45%</Typography>
+                    <Typography
+                      variant="h5"
+                      color={systemMetrics.traffic.traffic_percent > 70 ? "warning.main" : "success.main"}
+                    >
+                      {systemMetrics.traffic.traffic_percent}%
+                    </Typography>
                     <Typography variant="body2">Tráfico</Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {systemMetrics.traffic.transactions_24h} transacciones/24h
+                    </Typography>
                   </Box>
                 </Grid>
                 <Grid item xs={12} md={3}>
                   <Box textAlign="center">
-                    <Typography variant="h5" color="success.main">99.9%</Typography>
+                    <Typography variant="h5" color="success.main">
+                      {systemMetrics.uptime.percent}%
+                    </Typography>
                     <Typography variant="body2">Uptime</Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Memoria: {systemMetrics.performance.memory_usage}%
+                    </Typography>
                   </Box>
                 </Grid>
               </Grid>

@@ -9,7 +9,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 # Admin views (nuevos endpoints para roles administrativos)
 from .admin_views import (ContentModerationViewSet, MonitorViewSet, PromotionsViewSet,
-                          ReportsViewSet, UserManagementViewSet, system_configuration)
+                          ReportsViewSet, UserManagementViewSet, system_configuration, system_metrics)
 # Import metrics views
 from .metrics_views import (HealthCheckAPIView, MetricsAPIView, MetricsDashboardAPIView,
                             MetricsResetAPIView, PerformanceAPIView)
@@ -169,6 +169,11 @@ urlpatterns = [
         "admin/system/config/",
         system_configuration,
         name="system-config",
+    ),
+    path(
+        "admin/system/metrics/",
+        system_metrics,
+        name="system-metrics",
     ),
     # PQRs para usuarios
     path(

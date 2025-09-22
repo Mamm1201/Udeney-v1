@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 
 from .models import (ArticuloDetalleTransaccion, Articulos, Calificaciones, Categorias,
-                     DetalleTransaccion, Pagos, Pqrs, Reportes, Roles, Transacciones, UsuarioRol,
+                     DetalleTransaccion, Pagos, Pqrs, Reportes, Roles, SystemConfig, Transacciones, UsuarioRol,
                      Usuarios)
 
 
@@ -279,3 +279,53 @@ class TransaccionesUsuarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transacciones
         fields = ["id_transaccion", "fecha_transaccion", "usuario"]
+
+
+# ====================================
+# SERIALIZADOR DE CONFIGURACIÓN DEL SISTEMA
+# ====================================
+class SystemConfigSerializer(serializers.ModelSerializer):
+    smtp_password = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    updated_by_name = serializers.CharField(source='updated_by.nombres_usuario', read_only=True)
+
+    class Meta:
+        model = SystemConfig
+        fields = [
+            # Configuración general
+            'site_name', 'site_description', 'maintenance_mode', 'registration_enabled',
+            # Configuración de seguridad
+            'password_min_length', 'session_timeout', 'max_login_attempts', 'two_factor_auth',
+            # Configuración de emails
+            'email_notifications', 'welcome_emails', 'order_notifications',
+            'smtp_host', 'smtp_port', 'smtp_username', 'smtp_password',
+            # Configuración de pagos
+            'payment_gateway', 'min_order_amount', 'max_order_amount', 'tax_rate',
+            # Configuración de sistema
+            'cache_enabled', 'debug_mode', 'logging_level', 'backup_frequency',
+            # Metadatos
+            'updated_at', 'updated_by_name'
+        ]
+        extra_kwargs = {
+            'updated_at': {'read_only': True},
+            'updated_by_name': {'read_only': True},
+        }
+
+    def validate_password_min_length(self, value):
+        if value < 6 or value > 20:
+            raise serializers.ValidationError("La longitud mínima debe estar entre 6 y 20 caracteres")
+        return value
+
+    def validate_session_timeout(self, value):
+        if value < 5 or value > 1440:  # 5 minutos a 24 horas
+            raise serializers.ValidationError("El timeout debe estar entre 5 y 1440 minutos")
+        return value
+
+    def validate_max_login_attempts(self, value):
+        if value < 3 or value > 10:
+            raise serializers.ValidationError("Los intentos máximos deben estar entre 3 y 10")
+        return value
+
+    def validate_tax_rate(self, value):
+        if value < 0 or value > 100:
+            raise serializers.ValidationError("La tasa de impuesto debe estar entre 0 y 100%")
+        return value
