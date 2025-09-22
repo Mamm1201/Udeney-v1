@@ -38,7 +38,7 @@ import {
   Stepper,
   Step,
   StepLabel,
-  Divider
+  Divider,
 } from '@mui/material';
 import {
   Add,
@@ -48,9 +48,10 @@ import {
   Send,
   CheckCircle,
   Schedule,
-  Info
+  Info,
 } from '@mui/icons-material';
 import api from '../api/axiosConfig';
+import Navbar from '../components/Navbar';
 
 const PQRs = () => {
   const [loading, setLoading] = useState(false);
@@ -68,7 +69,7 @@ const PQRs = () => {
   const [formData, setFormData] = useState({
     tipo_pqr: '',
     descripcion_pqr: '',
-    id_transaccion: ''
+    id_transaccion: '',
   });
 
   // Cargar datos del usuario
@@ -77,7 +78,7 @@ const PQRs = () => {
       setLoading(true);
       const [pqrsRes, transactionsRes] = await Promise.all([
         api.get('/user-pqrs/list/'),
-        api.get('/user-pqrs/transactions/')
+        api.get('/user-pqrs/transactions/'),
       ]);
 
       setUserPqrs(pqrsRes.data.pqrs || []);
@@ -99,7 +100,11 @@ const PQRs = () => {
   // Crear nueva PQR
   const handleCreatePQR = async () => {
     try {
-      if (!formData.tipo_pqr || !formData.descripcion_pqr || !formData.id_transaccion) {
+      if (
+        !formData.tipo_pqr ||
+        !formData.descripcion_pqr ||
+        !formData.id_transaccion
+      ) {
         setError('Todos los campos son requeridos');
         return;
       }
@@ -121,27 +126,40 @@ const PQRs = () => {
     setTabValue(newValue);
   };
 
-  const getStatusColor = (estado) => {
+  const getStatusColor = estado => {
     switch (estado?.toLowerCase()) {
-      case 'resuelto': return 'success';
-      case 'revisando': return 'warning';
-      case 'pendiente de revisión': return 'info';
-      default: return 'default';
+      case 'resuelto':
+        return 'success';
+      case 'revisando':
+        return 'warning';
+      case 'pendiente de revisión':
+        return 'info';
+      default:
+        return 'default';
     }
   };
 
-  const getTypeColor = (tipo) => {
+  const getTypeColor = tipo => {
     switch (tipo) {
-      case 'peticion': return 'primary';
-      case 'queja': return 'warning';
-      case 'reclamo': return 'error';
-      default: return 'default';
+      case 'peticion':
+        return 'primary';
+      case 'queja':
+        return 'warning';
+      case 'reclamo':
+        return 'error';
+      default:
+        return 'default';
     }
   };
 
   if (loading && userPqrs.length === 0) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="400px"
+      >
         <CircularProgress />
       </Box>
     );
@@ -149,6 +167,7 @@ const PQRs = () => {
 
   return (
     <Container maxWidth="xl" sx={{ py: 3 }}>
+      <Navbar />
       {/* Header */}
       <Box mb={4}>
         <Box display="flex" alignItems="center" gap={2} mb={2}>
@@ -164,13 +183,19 @@ const PQRs = () => {
         </Box>
 
         {userInfo && (
-          <Card sx={{ mb: 3, background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)' }}>
+          <Card
+            sx={{
+              mb: 3,
+              background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+            }}
+          >
             <CardContent>
               <Typography variant="h6" color="primary">
                 ¡Hola, {userInfo.nombre}!
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Aquí puedes gestionar tus peticiones, quejas y reclamos relacionados con tus transacciones.
+                Aquí puedes gestionar tus peticiones, quejas y reclamos
+                relacionados con tus transacciones.
               </Typography>
             </CardContent>
           </Card>
@@ -185,7 +210,11 @@ const PQRs = () => {
       )}
 
       {success && (
-        <Alert severity="success" sx={{ mb: 3 }} onClose={() => setSuccess(null)}>
+        <Alert
+          severity="success"
+          sx={{ mb: 3 }}
+          onClose={() => setSuccess(null)}
+        >
           {success}
         </Alert>
       )}
@@ -208,7 +237,10 @@ const PQRs = () => {
             <CardContent sx={{ textAlign: 'center' }}>
               <Schedule sx={{ fontSize: 40, color: 'warning.main', mb: 1 }} />
               <Typography variant="h6">
-                {userPqrs.filter(pqr => pqr.estado === 'Pendiente de revisión').length}
+                {
+                  userPqrs.filter(pqr => pqr.estado === 'Pendiente de revisión')
+                    .length
+                }
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Pendientes
@@ -219,7 +251,9 @@ const PQRs = () => {
         <Grid item xs={12} sm={6} md={3}>
           <Card>
             <CardContent sx={{ textAlign: 'center' }}>
-              <CheckCircle sx={{ fontSize: 40, color: 'success.main', mb: 1 }} />
+              <CheckCircle
+                sx={{ fontSize: 40, color: 'success.main', mb: 1 }}
+              />
               <Typography variant="h6">
                 {userPqrs.filter(pqr => pqr.estado === 'Resuelto').length}
               </Typography>
@@ -266,22 +300,28 @@ const PQRs = () => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {userPqrs.map((pqr) => (
+                    {userPqrs.map(pqr => (
                       <TableRow key={pqr.id_pqr}>
                         <TableCell>#{pqr.id_pqr}</TableCell>
                         <TableCell>
                           <Chip
-                            label={pqr.tipo_pqr.charAt(0).toUpperCase() + pqr.tipo_pqr.slice(1)}
+                            label={
+                              pqr.tipo_pqr.charAt(0).toUpperCase() +
+                              pqr.tipo_pqr.slice(1)
+                            }
                             color={getTypeColor(pqr.tipo_pqr)}
                             size="small"
                           />
                         </TableCell>
                         <TableCell>
-                          <Typography variant="body2" noWrap style={{ maxWidth: 200 }}>
+                          <Typography
+                            variant="body2"
+                            noWrap
+                            style={{ maxWidth: 200 }}
+                          >
                             {pqr.descripcion_pqr.length > 50
                               ? `${pqr.descripcion_pqr.substring(0, 50)}...`
-                              : pqr.descripcion_pqr
-                            }
+                              : pqr.descripcion_pqr}
                           </Typography>
                         </TableCell>
                         <TableCell>
@@ -289,7 +329,9 @@ const PQRs = () => {
                             #{pqr.transaccion.id_transaccion}
                           </Typography>
                           <Typography variant="caption" color="text.secondary">
-                            {new Date(pqr.transaccion.fecha_transaccion).toLocaleDateString('es-ES')}
+                            {new Date(
+                              pqr.transaccion.fecha_transaccion
+                            ).toLocaleDateString('es-ES')}
                           </Typography>
                         </TableCell>
                         <TableCell>
@@ -309,12 +351,15 @@ const PQRs = () => {
               </TableContainer>
             ) : (
               <Box textAlign="center" py={5}>
-                <Assignment sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
+                <Assignment
+                  sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }}
+                />
                 <Typography variant="h6" color="text.secondary" gutterBottom>
                   No tienes PQRs registradas
                 </Typography>
                 <Typography variant="body2" color="text.secondary" mb={3}>
-                  Crea tu primera PQR para reportar cualquier inconveniente o solicitar ayuda
+                  Crea tu primera PQR para reportar cualquier inconveniente o
+                  solicitar ayuda
                 </Typography>
                 <Button
                   variant="contained"
@@ -341,8 +386,9 @@ const PQRs = () => {
                   />
                   <CardContent>
                     <Typography variant="body2">
-                      Una petición es una solicitud respetuosa para obtener información,
-                      servicios o para que se realice una acción específica.
+                      Una petición es una solicitud respetuosa para obtener
+                      información, servicios o para que se realice una acción
+                      específica.
                     </Typography>
                   </CardContent>
                 </Card>
@@ -355,8 +401,9 @@ const PQRs = () => {
                   />
                   <CardContent>
                     <Typography variant="body2">
-                      Una queja es la manifestación de insatisfacción por la prestación
-                      de un servicio o por el incumplimiento de las normas establecidas.
+                      Una queja es la manifestación de insatisfacción por la
+                      prestación de un servicio o por el incumplimiento de las
+                      normas establecidas.
                     </Typography>
                   </CardContent>
                 </Card>
@@ -369,8 +416,9 @@ const PQRs = () => {
                   />
                   <CardContent>
                     <Typography variant="body2">
-                      Un reclamo es la manifestación de insatisfacción por la prestación
-                      deficiente de un servicio o por el cobro indebido de una factura.
+                      Un reclamo es la manifestación de insatisfacción por la
+                      prestación deficiente de un servicio o por el cobro
+                      indebido de una factura.
                     </Typography>
                   </CardContent>
                 </Card>
@@ -411,7 +459,12 @@ const PQRs = () => {
       )}
 
       {/* Dialog para crear PQR */}
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="md" fullWidth>
+      <Dialog
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+        maxWidth="md"
+        fullWidth
+      >
         <DialogTitle>
           <Box display="flex" alignItems="center" gap={2}>
             <Support color="primary" />
@@ -425,7 +478,9 @@ const PQRs = () => {
               <Select
                 value={formData.tipo_pqr}
                 label="Tipo de PQR"
-                onChange={(e) => setFormData({ ...formData, tipo_pqr: e.target.value })}
+                onChange={e =>
+                  setFormData({ ...formData, tipo_pqr: e.target.value })
+                }
               >
                 <MenuItem value="peticion">Petición</MenuItem>
                 <MenuItem value="queja">Queja</MenuItem>
@@ -438,10 +493,15 @@ const PQRs = () => {
               <Select
                 value={formData.id_transaccion}
                 label="Transacción relacionada"
-                onChange={(e) => setFormData({ ...formData, id_transaccion: e.target.value })}
+                onChange={e =>
+                  setFormData({ ...formData, id_transaccion: e.target.value })
+                }
               >
-                {userTransactions.map((transaction) => (
-                  <MenuItem key={transaction.id_transaccion} value={transaction.id_transaccion}>
+                {userTransactions.map(transaction => (
+                  <MenuItem
+                    key={transaction.id_transaccion}
+                    value={transaction.id_transaccion}
+                  >
                     {transaction.descripcion}
                   </MenuItem>
                 ))}
@@ -453,7 +513,9 @@ const PQRs = () => {
               multiline
               rows={4}
               value={formData.descripcion_pqr}
-              onChange={(e) => setFormData({ ...formData, descripcion_pqr: e.target.value })}
+              onChange={e =>
+                setFormData({ ...formData, descripcion_pqr: e.target.value })
+              }
               fullWidth
               required
               placeholder="Describe detalladamente tu petición, queja o reclamo..."
@@ -467,7 +529,11 @@ const PQRs = () => {
             onClick={handleCreatePQR}
             variant="contained"
             startIcon={<Send />}
-            disabled={!formData.tipo_pqr || !formData.descripcion_pqr || !formData.id_transaccion}
+            disabled={
+              !formData.tipo_pqr ||
+              !formData.descripcion_pqr ||
+              !formData.id_transaccion
+            }
           >
             Enviar PQR
           </Button>
