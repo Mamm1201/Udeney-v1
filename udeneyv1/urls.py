@@ -22,7 +22,8 @@ from .views import (ArticuloDetailAPIView, ArticulosViewSet, CacheStatsView,
                     WarmupCacheView, crear_con_detalles, historial_transacciones_api,
                     admin_dashboard_metrics, AdminUsersCompleteView, admin_groups_list,
                     admin_update_user_groups, user_transactions_for_pqrs, CreateUserPQRView,
-                    user_pqrs_list, verify_email, resend_verification_email, verification_status)
+                    user_pqrs_list, verify_email, resend_verification_email, verification_status,
+                    vendedor_dashboard_metrics, vendedor_articulos_recientes, vendedor_transacciones_recientes)
 
 # ====================================
 # ROUTER DRF (Rutas automáticas para ViewSets)
@@ -200,6 +201,22 @@ urlpatterns = [
         "verification-status/",
         verification_status,
         name="verification-status",
+    ),
+    # Vendedor dashboard endpoints
+    path(
+        "vendedor/dashboard/metrics/",
+        vendedor_dashboard_metrics,
+        name="vendedor-dashboard-metrics",
+    ),
+    path(
+        "vendedor/articulos/recientes/",
+        vendedor_articulos_recientes,
+        name="vendedor-articulos-recientes",
+    ),
+    path(
+        "vendedor/transacciones/recientes/",
+        vendedor_transacciones_recientes,
+        name="vendedor-transacciones-recientes",
     ),
 ]
 

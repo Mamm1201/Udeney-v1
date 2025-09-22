@@ -1240,6 +1240,201 @@ def admin_update_user_groups(request, user_id):
 
 
 # ====================================
+# VENDEDOR DASHBOARD ENDPOINTS
+# ====================================
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def vendedor_dashboard_metrics(request):
+    """
+    Endpoint para obtener métricas específicas del dashboard de vendedor
+    """
+    try:
+        from django.db.models import Count, Sum, Q
+        from datetime import datetime, timedelta
+        from django.utils import timezone
+
+        # Obtener el usuario de Eduney basado en el usuario Django autenticado
+        try:
+            usuario_eduney = Usuarios.objects.get(id_usuario=request.user.id)
+        except Usuarios.DoesNotExist:
+            return Response(
+                {"error": "Usuario de Eduney no encontrado"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Fecha actual y rangos de tiempo
+        now = timezone.now()
+        today = now.date()
+        first_day_month = today.replace(day=1)
+
+        # ============ MÉTRICAS DE ARTÍCULOS DEL VENDEDOR ============
+        total_articles = Articulos.objects.filter(id_usuario=usuario_eduney).count()
+        active_articles = Articulos.objects.filter(
+            id_usuario=usuario_eduney,
+            disponible=True
+        ).count()
+        sold_articles = total_articles - active_articles
+
+        # ============ MÉTRICAS DE VENTAS ============
+        # Obtener todas las transacciones donde se vendieron artículos del vendedor
+        ventas_query = ArticuloDetalleTransaccion.objects.filter(
+            id_articulo__id_usuario=usuario_eduney
+        ).select_related(
+            'id_detalle_transaccion__id_transaccion',
+            'id_articulo'
+        )
+
+        total_sales = ventas_query.count()
+
+        # Ventas del mes actual
+        monthly_sales = ventas_query.filter(
+            id_detalle_transaccion__id_transaccion__fecha_transaccion__date__gte=first_day_month
+        ).count()
+
+        # ============ MÉTRICAS DE INGRESOS ============
+        total_revenue = 0
+        monthly_revenue = 0
+
+        for venta in ventas_query:
+            subtotal = venta.id_articulo.precio_articulo * venta.cantidad
+            total_revenue += subtotal
+
+            # Ingresos del mes actual
+            if venta.id_detalle_transaccion.id_transaccion.fecha_transaccion.date() >= first_day_month:
+                monthly_revenue += subtotal
+
+        # ============ ESTADÍSTICAS ADICIONALES ============
+        # Para vistas e interés, por ahora usamos datos simulados ya que no tenemos tabla de vistas
+        total_views = total_articles * 15  # Simulación: promedio 15 vistas por artículo
+        interested_users = int(total_views * 0.1)  # Simulación: 10% de las vistas son usuarios interesados
+
+        # ============ RESPUESTA ============
+        metrics_data = {
+            "articulos": {
+                "total": total_articles,
+                "activos": active_articles,
+                "vendidos": sold_articles
+            },
+            "ventas": {
+                "total": total_sales,
+                "mes": monthly_sales,
+                "ingresos": int(total_revenue)
+            },
+            "estadisticas": {
+                "vistas": total_views,
+                "interes": interested_users
+            }
+        }
+
+        return Response(metrics_data, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response(
+            {"error": f"Error al obtener métricas del vendedor: {str(e)}"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def vendedor_articulos_recientes(request):
+    """
+    Endpoint para obtener los artículos más recientes del vendedor
+    """
+    try:
+        # Obtener el usuario de Eduney basado en el usuario Django autenticado
+        try:
+            usuario_eduney = Usuarios.objects.get(id_usuario=request.user.id)
+        except Usuarios.DoesNotExist:
+            return Response(
+                {"error": "Usuario de Eduney no encontrado"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Obtener los últimos 10 artículos del vendedor
+        articulos = Articulos.objects.filter(
+            id_usuario=usuario_eduney
+        ).select_related('id_categoria').order_by('-id_articulo')[:10]
+
+        articulos_data = []
+        for articulo in articulos:
+            # Simular vistas por artículo (en el futuro esto vendría de una tabla de analytics)
+            simulated_views = articulo.id_articulo * 3  # Simulación simple
+
+            articulos_data.append({
+                "id": articulo.id_articulo,
+                "titulo": articulo.titulo_articulo,
+                "categoria": articulo.id_categoria.nombre_categoria,
+                "precio": float(articulo.precio_articulo),
+                "disponible": articulo.disponible,
+                "vistas": simulated_views,
+                "imagen": request.build_absolute_uri(articulo.imagen.url) if articulo.imagen else None
+            })
+
+        return Response({
+            "articulos": articulos_data,
+            "total": len(articulos_data)
+        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response(
+            {"error": f"Error al obtener artículos: {str(e)}"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def vendedor_transacciones_recientes(request):
+    """
+    Endpoint para obtener las transacciones recientes donde se vendieron artículos del vendedor
+    """
+    try:
+        # Obtener el usuario de Eduney basado en el usuario Django autenticado
+        try:
+            usuario_eduney = Usuarios.objects.get(id_usuario=request.user.id)
+        except Usuarios.DoesNotExist:
+            return Response(
+                {"error": "Usuario de Eduney no encontrado"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Obtener las últimas 10 transacciones donde se vendieron artículos del vendedor
+        transacciones_vendedor = ArticuloDetalleTransaccion.objects.filter(
+            id_articulo__id_usuario=usuario_eduney
+        ).select_related(
+            'id_detalle_transaccion__id_transaccion',
+            'id_articulo'
+        ).order_by('-id_detalle_transaccion__id_transaccion__fecha_transaccion')[:10]
+
+        transacciones_data = []
+        for detalle in transacciones_vendedor:
+            transaccion = detalle.id_detalle_transaccion.id_transaccion
+            monto = float(detalle.id_articulo.precio_articulo * detalle.cantidad)
+
+            transacciones_data.append({
+                "articulo": detalle.id_articulo.titulo_articulo,
+                "fecha": transaccion.fecha_transaccion.strftime('%d %b %Y'),
+                "monto": monto,
+                "estado": "Completada",  # Por simplicidad, todas las transacciones están completadas
+                "cantidad": detalle.cantidad,
+                "id_transaccion": transaccion.id_transaccion
+            })
+
+        return Response({
+            "transacciones": transacciones_data,
+            "total": len(transacciones_data)
+        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response(
+            {"error": f"Error al obtener transacciones: {str(e)}"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+# ====================================
 # EMAIL VERIFICATION ENDPOINTS
 # ====================================
 

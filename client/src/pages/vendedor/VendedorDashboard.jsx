@@ -37,6 +37,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useRoleAuth } from '../../hooks/useRoleAuth';
+import { vendedorAPI } from '../../api/vendedor.api';
 
 /**
  * Componente de tarjeta de métrica para vendedor
@@ -195,98 +196,94 @@ const VendedorDashboard = () => {
     const loadVendedorData = async () => {
       setLoading(true);
       try {
-        // Simular llamadas a API
-        setTimeout(() => {
-          setVendedorData({
-            articulos: {
-              total: 12,
-              activos: 8,
-              vendidos: 4
-            },
-            ventas: {
-              total: 24,
-              mes: 3,
-              ingresos: 1250
-            },
-            estadisticas: {
-              vistas: 145,
-              interes: 23
-            }
-          });
+        // Cargar métricas del dashboard
+        const metricsResponse = await vendedorAPI.getDashboardMetrics();
+        setVendedorData(metricsResponse);
 
-          setArticulosRecientes([
-            {
-              id: 1,
-              titulo: 'MacBook Pro 2023',
-              categoria: 'Tecnología',
-              precio: 2500,
-              disponible: true,
-              vistas: 45
-            },
-            {
-              id: 2,
-              titulo: 'Libro de Cálculo',
-              categoria: 'Libros',
-              precio: 35,
-              disponible: true,
-              vistas: 12
-            },
-            {
-              id: 3,
-              titulo: 'Calculadora Científica',
-              categoria: 'Útiles',
-              precio: 25,
-              disponible: false,
-              vistas: 8
-            }
-          ]);
+        // Cargar artículos recientes
+        const articulosResponse = await vendedorAPI.getArticulosRecientes();
+        setArticulosRecientes(articulosResponse.articulos || []);
 
-          setTransaccionesRecientes([
-            {
-              articulo: 'iPhone 13',
-              fecha: '15 Ene 2025',
-              monto: 800,
-              estado: 'Completada'
-            },
-            {
-              articulo: 'Mochila Nike',
-              fecha: '12 Ene 2025',
-              monto: 45,
-              estado: 'Completada'
-            },
-            {
-              articulo: 'Auriculares Sony',
-              fecha: '10 Ene 2025',
-              monto: 120,
-              estado: 'Pendiente'
-            }
-          ]);
+        // Cargar transacciones recientes
+        const transaccionesResponse = await vendedorAPI.getTransaccionesRecientes();
+        setTransaccionesRecientes(transaccionesResponse.transacciones || []);
 
-          setLoading(false);
-        }, 1000);
+        setLoading(false);
       } catch (error) {
         console.error('Error cargando datos del vendedor:', error);
+        // En caso de error, mantener datos por defecto
+        setVendedorData({
+          articulos: {
+            total: 0,
+            activos: 0,
+            vendidos: 0
+          },
+          ventas: {
+            total: 0,
+            mes: 0,
+            ingresos: 0
+          },
+          estadisticas: {
+            vistas: 0,
+            interes: 0
+          }
+        });
+        setArticulosRecientes([]);
+        setTransaccionesRecientes([]);
         setLoading(false);
       }
     };
 
-    loadVendedorData();
-  }, []);
+    if (user) {
+      loadVendedorData();
+    }
+  }, [user]);
 
   const handleEditArticulo = (id) => {
     navigate(`/editar-articulo/${id}`);
   };
 
-  const handleDeleteArticulo = (id) => {
-    // Implementar lógica de eliminación
-    console.log('Eliminar artículo:', id);
+  const handleDeleteArticulo = async (id) => {
+    try {
+      // Confirmar eliminación
+      if (window.confirm('¿Estás seguro de que quieres eliminar este artículo?')) {
+        setLoading(true);
+        await vendedorAPI.deleteArticulo(id);
+
+        // Recargar datos después de eliminar
+        const articulosResponse = await vendedorAPI.getArticulosRecientes();
+        setArticulosRecientes(articulosResponse.articulos || []);
+
+        const metricsResponse = await vendedorAPI.getDashboardMetrics();
+        setVendedorData(metricsResponse);
+
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error('Error al eliminar artículo:', error);
+      setLoading(false);
+      alert('Error al eliminar el artículo. Por favor, inténtalo de nuevo.');
+    }
   };
 
-  const refreshData = () => {
+  const refreshData = async () => {
     setLoading(true);
-    setTimeout(() => {
+    try {
+      // Recargar todas las métricas y datos
+      const metricsResponse = await vendedorAPI.getDashboardMetrics();
+      setVendedorData(metricsResponse);
+
+      const articulosResponse = await vendedorAPI.getArticulosRecientes();
+      setArticulosRecientes(articulosResponse.articulos || []);
+
+      const transaccionesResponse = await vendedorAPI.getTransaccionesRecientes();
+      setTransaccionesRecientes(transaccionesResponse.transacciones || []);
+
       setLoading(false);
-    }, 1000);
+    } catch (error) {
+      console.error('Error al actualizar datos:', error);
+      setLoading(false);
+    }
   };
 
   return (
