@@ -21,7 +21,7 @@ import {
   IconButton,
   Tooltip,
   Fab,
-  CardActions
+  CardActions,
 } from '@mui/material';
 import {
   Store,
@@ -33,16 +33,24 @@ import {
   History,
   Edit,
   Delete,
-  Refresh
+  Refresh,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useRoleAuth } from '../../hooks/useRoleAuth';
 import { vendedorAPI } from '../../api/vendedor.api';
+import Navbar from '../../components/Navbar';
 
 /**
  * Componente de tarjeta de métrica para vendedor
  */
-const VendedorMetricCard = ({ title, value, subtitle, icon, color = 'primary', action = null }) => (
+const VendedorMetricCard = ({
+  title,
+  value,
+  subtitle,
+  icon,
+  color = 'primary',
+  action = null,
+}) => (
   <Card
     elevation={3}
     sx={{
@@ -53,17 +61,32 @@ const VendedorMetricCard = ({ title, value, subtitle, icon, color = 'primary', a
       transition: 'all 0.3s ease-in-out',
       '&:hover': {
         elevation: 6,
-        transform: 'translateY(-2px)'
-      }
+        transform: 'translateY(-2px)',
+      },
     }}
   >
     <CardContent sx={{ flexGrow: 1, p: 3 }}>
-      <Box display="flex" alignItems="flex-start" justifyContent="space-between" mb={2}>
+      <Box
+        display="flex"
+        alignItems="flex-start"
+        justifyContent="space-between"
+        mb={2}
+      >
         <Box flex={1} mr={2}>
-          <Typography variant="h3" fontWeight="bold" color={`${color}.main`} mb={1}>
+          <Typography
+            variant="h3"
+            fontWeight="bold"
+            color={`${color}.main`}
+            mb={1}
+          >
             {value}
           </Typography>
-          <Typography variant="h6" fontWeight="600" color="text.primary" mb={0.5}>
+          <Typography
+            variant="h6"
+            fontWeight="600"
+            color="text.primary"
+            mb={0.5}
+          >
             {title}
           </Typography>
           <Typography variant="body2" color="text.secondary" lineHeight={1.4}>
@@ -75,7 +98,7 @@ const VendedorMetricCard = ({ title, value, subtitle, icon, color = 'primary', a
             bgcolor: `${color}.main`,
             width: 64,
             height: 64,
-            boxShadow: 2
+            boxShadow: 2,
           }}
         >
           {icon}
@@ -102,14 +125,23 @@ const ArticuloItem = ({ articulo, onEdit, onDelete }) => (
       transition: 'all 0.2s ease-in-out',
       '&:hover': {
         elevation: 4,
-        transform: 'translateX(4px)'
-      }
+        transform: 'translateX(4px)',
+      },
     }}
   >
     <CardContent sx={{ p: 3 }}>
-      <Box display="flex" alignItems="flex-start" justifyContent="space-between">
+      <Box
+        display="flex"
+        alignItems="flex-start"
+        justifyContent="space-between"
+      >
         <Box flexGrow={1} mr={2}>
-          <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
+          <Box
+            display="flex"
+            alignItems="center"
+            justifyContent="space-between"
+            mb={1}
+          >
             <Typography variant="h6" fontWeight="bold" color="text.primary">
               {articulo.titulo}
             </Typography>
@@ -158,7 +190,7 @@ const ArticuloItem = ({ articulo, onEdit, onDelete }) => (
               color="primary"
               sx={{
                 bgcolor: 'primary.50',
-                '&:hover': { bgcolor: 'primary.100' }
+                '&:hover': { bgcolor: 'primary.100' },
               }}
             >
               <Edit />
@@ -170,7 +202,7 @@ const ArticuloItem = ({ articulo, onEdit, onDelete }) => (
               color="error"
               sx={{
                 bgcolor: 'error.50',
-                '&:hover': { bgcolor: 'error.100' }
+                '&:hover': { bgcolor: 'error.100' },
               }}
             >
               <Delete />
@@ -188,7 +220,12 @@ const ArticuloItem = ({ articulo, onEdit, onDelete }) => (
 const TransaccionesRecientes = ({ transacciones = [] }) => (
   <Card elevation={3} sx={{ borderRadius: 2 }}>
     <CardContent sx={{ p: 3 }}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={3}
+      >
         <Typography variant="h6" fontWeight="bold" color="text.primary">
           Transacciones Recientes
         </Typography>
@@ -204,46 +241,60 @@ const TransaccionesRecientes = ({ transacciones = [] }) => (
       </Box>
 
       <List sx={{ p: 0 }}>
-        {transacciones.length > 0 ? transacciones.map((transaccion, index) => (
-          <React.Fragment key={index}>
-            <ListItem
-              sx={{
-                px: 0,
-                py: 2,
-                borderRadius: 1,
-                '&:hover': {
-                  bgcolor: 'action.hover'
-                }
-              }}
-            >
-              <Box display="flex" flexDirection="column" flexGrow={1} mr={2}>
-                <Typography variant="subtitle1" fontWeight="600" color="text.primary" mb={0.5}>
-                  {transaccion.articulo}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {transaccion.fecha}
-                </Typography>
-                <Typography variant="h6" color="primary.main" fontWeight="bold" mt={0.5}>
-                  ${transaccion.monto?.toLocaleString()}
-                </Typography>
-              </Box>
-
-              <Chip
-                label={transaccion.estado}
-                size="medium"
-                color={transaccion.estado === 'Completada' ? 'success' : 'warning'}
-                variant="filled"
+        {transacciones.length > 0 ? (
+          transacciones.map((transaccion, index) => (
+            <React.Fragment key={index}>
+              <ListItem
                 sx={{
-                  fontWeight: 500,
-                  minWidth: 100
+                  px: 0,
+                  py: 2,
+                  borderRadius: 1,
+                  '&:hover': {
+                    bgcolor: 'action.hover',
+                  },
                 }}
-              />
-            </ListItem>
-            {index < transacciones.length - 1 && (
-              <Divider sx={{ my: 1, opacity: 0.6 }} />
-            )}
-          </React.Fragment>
-        )) : (
+              >
+                <Box display="flex" flexDirection="column" flexGrow={1} mr={2}>
+                  <Typography
+                    variant="subtitle1"
+                    fontWeight="600"
+                    color="text.primary"
+                    mb={0.5}
+                  >
+                    {transaccion.articulo}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {transaccion.fecha}
+                  </Typography>
+                  <Typography
+                    variant="h6"
+                    color="primary.main"
+                    fontWeight="bold"
+                    mt={0.5}
+                  >
+                    ${transaccion.monto?.toLocaleString()}
+                  </Typography>
+                </Box>
+
+                <Chip
+                  label={transaccion.estado}
+                  size="medium"
+                  color={
+                    transaccion.estado === 'Completada' ? 'success' : 'warning'
+                  }
+                  variant="filled"
+                  sx={{
+                    fontWeight: 500,
+                    minWidth: 100,
+                  }}
+                />
+              </ListItem>
+              {index < transacciones.length - 1 && (
+                <Divider sx={{ my: 1, opacity: 0.6 }} />
+              )}
+            </React.Fragment>
+          ))
+        ) : (
           <Box
             display="flex"
             flexDirection="column"
@@ -251,10 +302,19 @@ const TransaccionesRecientes = ({ transacciones = [] }) => (
             justifyContent="center"
             py={4}
           >
-            <Typography variant="body1" color="text.secondary" textAlign="center" mb={1}>
+            <Typography
+              variant="body1"
+              color="text.secondary"
+              textAlign="center"
+              mb={1}
+            >
               No hay transacciones recientes
             </Typography>
-            <Typography variant="body2" color="text.secondary" textAlign="center">
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              textAlign="center"
+            >
               Las ventas aparecerán aquí cuando tengas transacciones
             </Typography>
           </Box>
@@ -275,17 +335,17 @@ const VendedorDashboard = () => {
     articulos: {
       total: 0,
       activos: 0,
-      vendidos: 0
+      vendidos: 0,
     },
     ventas: {
       total: 0,
       mes: 0,
-      ingresos: 0
+      ingresos: 0,
     },
     estadisticas: {
       vistas: 0,
-      interes: 0
-    }
+      interes: 0,
+    },
   });
 
   const [articulosRecientes, setArticulosRecientes] = useState([]);
@@ -305,7 +365,8 @@ const VendedorDashboard = () => {
         setArticulosRecientes(articulosResponse.articulos || []);
 
         // Cargar transacciones recientes
-        const transaccionesResponse = await vendedorAPI.getTransaccionesRecientes();
+        const transaccionesResponse =
+          await vendedorAPI.getTransaccionesRecientes();
         setTransaccionesRecientes(transaccionesResponse.transacciones || []);
 
         setLoading(false);
@@ -316,17 +377,17 @@ const VendedorDashboard = () => {
           articulos: {
             total: 0,
             activos: 0,
-            vendidos: 0
+            vendidos: 0,
           },
           ventas: {
             total: 0,
             mes: 0,
-            ingresos: 0
+            ingresos: 0,
           },
           estadisticas: {
             vistas: 0,
-            interes: 0
-          }
+            interes: 0,
+          },
         });
         setArticulosRecientes([]);
         setTransaccionesRecientes([]);
@@ -339,14 +400,16 @@ const VendedorDashboard = () => {
     }
   }, [user]);
 
-  const handleEditArticulo = (id) => {
+  const handleEditArticulo = id => {
     navigate(`/editar-articulo/${id}`);
   };
 
-  const handleDeleteArticulo = async (id) => {
+  const handleDeleteArticulo = async id => {
     try {
       // Confirmar eliminación
-      if (window.confirm('¿Estás seguro de que quieres eliminar este artículo?')) {
+      if (
+        window.confirm('¿Estás seguro de que quieres eliminar este artículo?')
+      ) {
         setLoading(true);
         await vendedorAPI.deleteArticulo(id);
 
@@ -376,7 +439,8 @@ const VendedorDashboard = () => {
       const articulosResponse = await vendedorAPI.getArticulosRecientes();
       setArticulosRecientes(articulosResponse.articulos || []);
 
-      const transaccionesResponse = await vendedorAPI.getTransaccionesRecientes();
+      const transaccionesResponse =
+        await vendedorAPI.getTransaccionesRecientes();
       setTransaccionesRecientes(transaccionesResponse.transacciones || []);
 
       setLoading(false);
@@ -387,7 +451,11 @@ const VendedorDashboard = () => {
   };
 
   return (
-    <Box p={{ xs: 2, sm: 3 }} sx={{ bgcolor: 'background.default', minHeight: '100vh' }}>
+    <Box
+      p={{ xs: 2, sm: 3 }}
+      sx={{ bgcolor: 'background.default', minHeight: '100vh' }}
+    >
+      <Navbar />
       {/* Header */}
       <Box
         display="flex"
@@ -398,7 +466,7 @@ const VendedorDashboard = () => {
           background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
           borderRadius: 3,
           p: 3,
-          color: 'white'
+          color: 'white',
         }}
       >
         <Box>
@@ -417,7 +485,7 @@ const VendedorDashboard = () => {
               sx={{
                 color: 'white',
                 bgcolor: 'rgba(255,255,255,0.1)',
-                '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' }
+                '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' },
               }}
             >
               <Refresh />
@@ -433,7 +501,7 @@ const VendedorDashboard = () => {
             sx={{
               borderRadius: 1,
               height: 6,
-              bgcolor: 'action.hover'
+              bgcolor: 'action.hover',
             }}
           />
         </Box>
@@ -449,8 +517,8 @@ const VendedorDashboard = () => {
             icon={<Store />}
             color="primary"
             action={
-              <Button 
-                size="small" 
+              <Button
+                size="small"
                 variant="outlined"
                 startIcon={<Add />}
                 onClick={() => navigate('/crear-articulo')}
@@ -477,8 +545,8 @@ const VendedorDashboard = () => {
             icon={<TrendingUp />}
             color="success"
             action={
-              <Button 
-                size="small" 
+              <Button
+                size="small"
                 variant="outlined"
                 startIcon={<Assessment />}
                 onClick={() => navigate('/reportes-ventas')}
@@ -505,7 +573,12 @@ const VendedorDashboard = () => {
         <Grid item xs={12} lg={8}>
           <Card elevation={3} sx={{ borderRadius: 2, mb: 2 }}>
             <CardContent sx={{ p: 3 }}>
-              <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+              <Box
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
+                mb={3}
+              >
                 <Typography variant="h5" fontWeight="bold" color="text.primary">
                   Mis Artículos
                 </Typography>
@@ -517,7 +590,7 @@ const VendedorDashboard = () => {
                     borderRadius: 2,
                     px: 3,
                     boxShadow: 2,
-                    '&:hover': { boxShadow: 4 }
+                    '&:hover': { boxShadow: 4 },
                   }}
                 >
                   Nuevo Artículo
@@ -526,7 +599,7 @@ const VendedorDashboard = () => {
 
               {articulosRecientes.length > 0 ? (
                 <Box>
-                  {articulosRecientes.map((articulo) => (
+                  {articulosRecientes.map(articulo => (
                     <ArticuloItem
                       key={articulo.id}
                       articulo={articulo}
@@ -546,7 +619,12 @@ const VendedorDashboard = () => {
                   <Typography variant="h6" color="text.secondary" mb={2}>
                     No tienes artículos publicados
                   </Typography>
-                  <Typography variant="body2" color="text.secondary" textAlign="center" mb={3}>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    textAlign="center"
+                    mb={3}
+                  >
                     ¡Comienza tu negocio creando tu primer artículo!
                   </Typography>
                   <Button
@@ -585,17 +663,25 @@ const VendedorDashboard = () => {
                     py: 2,
                     borderRadius: 1,
                     mb: 1,
-                    bgcolor: 'action.hover'
+                    bgcolor: 'action.hover',
                   }}
                 >
                   <ListItemText
                     primary={
-                      <Typography variant="subtitle1" fontWeight="600" color="text.primary">
+                      <Typography
+                        variant="subtitle1"
+                        fontWeight="600"
+                        color="text.primary"
+                      >
                         📸 Sube fotos de calidad
                       </Typography>
                     }
                     secondary={
-                      <Typography variant="body2" color="text.secondary" mt={0.5}>
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        mt={0.5}
+                      >
                         Las imágenes claras aumentan las ventas en un 40%
                       </Typography>
                     }
@@ -608,17 +694,25 @@ const VendedorDashboard = () => {
                     py: 2,
                     borderRadius: 1,
                     mb: 1,
-                    bgcolor: 'action.hover'
+                    bgcolor: 'action.hover',
                   }}
                 >
                   <ListItemText
                     primary={
-                      <Typography variant="subtitle1" fontWeight="600" color="text.primary">
+                      <Typography
+                        variant="subtitle1"
+                        fontWeight="600"
+                        color="text.primary"
+                      >
                         📝 Describe detalladamente
                       </Typography>
                     }
                     secondary={
-                      <Typography variant="body2" color="text.secondary" mt={0.5}>
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        mt={0.5}
+                      >
                         Incluye especificaciones y estado del producto
                       </Typography>
                     }
@@ -630,17 +724,25 @@ const VendedorDashboard = () => {
                     px: 0,
                     py: 2,
                     borderRadius: 1,
-                    bgcolor: 'action.hover'
+                    bgcolor: 'action.hover',
                   }}
                 >
                   <ListItemText
                     primary={
-                      <Typography variant="subtitle1" fontWeight="600" color="text.primary">
+                      <Typography
+                        variant="subtitle1"
+                        fontWeight="600"
+                        color="text.primary"
+                      >
                         💰 Precio competitivo
                       </Typography>
                     }
                     secondary={
-                      <Typography variant="body2" color="text.secondary" mt={0.5}>
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        mt={0.5}
+                      >
                         Revisa precios similares en el mercado
                       </Typography>
                     }
